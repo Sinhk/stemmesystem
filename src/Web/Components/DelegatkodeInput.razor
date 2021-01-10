@@ -1,0 +1,36 @@
+﻿@using Stemmesystem.Web.Data
+@using Stemmesystem.Data
+
+@inject IDelegatService DelegatService
+
+Delegatkode: 
+<input @oninput="OnCodeChanged" /> 
+<span class="text-danger">@validationMessage</span>
+
+
+@code {
+    private string validationMessage = string.Empty;
+
+
+    [Parameter]
+    public EventCallback<Delegat> GyldigDelegat{ get; set; }
+
+
+    private async Task OnCodeChanged(ChangeEventArgs e)
+    {
+        var kode = e.Value?.ToString();
+
+        if(kode == null || kode.Length < 4) return;
+
+        var delegat = await DelegatService.ValiderKode(kode);
+
+        if(delegat != null){
+            await GyldigDelegat.InvokeAsync(delegat);
+            validationMessage = string.Empty;
+            return;
+        }
+
+        validationMessage = "Ugyldig kode. Delegat ikke funnet";
+    }
+}
+

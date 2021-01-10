@@ -1,0 +1,55 @@
+@page "/"
+
+@using Stemmesystem.Web.Data
+@using Stemmesystem.Data
+@inject ArrangementService ArrangementService
+@inject NavigationManager NavigationManager
+
+<h1>Arrangementer</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@if (arrangementer == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Navn</th>
+                <th>Beskrivelse</th>
+                <th>Saker</th>
+                <th>Delegater</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var arrangement in arrangementer)
+            {
+                <tr>
+                    <td>@arrangement.Navn</td>
+                    <td>@arrangement.Beskrivelse</td>
+                    <td>@arrangement.Saker.Count (@arrangement.Saker.Sum(s => s.Voteringer.Count) voteringer) </td>
+                    <td>@arrangement.Delegater.Count</td>
+                    <td><button class="btn btn-primary" @onclick="@(e => NavigerTilArrangement(arrangement.Navn))">Åpne</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private ICollection<Arrangement>? arrangementer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        arrangementer = await ArrangementService.HentArrangementAsync();
+    }
+
+    private void NavigerTilArrangement(string navn)
+    {
+        NavigationManager.NavigateTo(navn);
+    }
+}

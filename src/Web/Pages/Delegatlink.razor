@@ -1,0 +1,29 @@
+﻿@page "/kode/{kode}"
+
+@using Stemmesystem.Web.Data
+
+@inject IDelegatService DelegatService
+@inject NavigationManager NavigationManager
+
+<h3 class="text-danger">Ugyldig delegatlink</h3>
+
+@code {
+    [CascadingParameter]
+    private DelegatStateProvider? DelegatStateProvider { get; set; }
+
+    [Parameter]
+    public string? Kode { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Kode == null) return;
+
+        var delegat = await DelegatService.ValiderKode(Kode);
+        if(delegat == null) return;
+        if(DelegatStateProvider != null){
+            DelegatStateProvider.Delegatkode = Kode;
+            await DelegatStateProvider.SaveChangesAsync();
+        }
+        NavigationManager.NavigateTo(delegat.Arrangement.Navn);
+    }
+}

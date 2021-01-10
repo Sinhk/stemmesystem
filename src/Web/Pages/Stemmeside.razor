@@ -1,0 +1,135 @@
+﻿@page "/{navn}"
+
+@using Microsoft.AspNetCore.SignalR.Client
+@using Stemmesystem.Web.Data
+@using Stemmesystem.Data
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+
+@inject ArrangementService ArrangementService
+@inject IDelegatService DelegatService
+@inject NavigationManager NavigationManager
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+@implements IAsyncDisposable
+
+<h2>@Navn</h2>
+
+@if (arrangement == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @if (delegat != null)
+    {
+    <h3>Delegat: @delegat.Delegatnummer (@delegat.Navn)</h3>
+        if(arrangement.AktivVotering() != null){
+            <AktivVotering Votering=arrangement.AktivVotering() DelegatKode=@delegat.DelegatKode/>
+        }
+    }
+    else
+    {
+        <h3>Du er ikke logget inn. Du må logge inn for å kunne stemme</h3>
+        <DelegatkodeInput GyldigDelegat="@(SetDelegat)"/>
+    }
+    <br>
+    <br>
+    <h4>Saker</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Saknummer</th>
+                <th>Tittel</th>
+                <th>Beskrivelse</th>
+                <th>Voteringer</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sak in arrangement.Saker.OrderBy(s => s.Nummer))
+            {
+                <tr>
+                    <td>@sak.Nummer</td>
+                    <td>@sak.Tittel</td>
+                    <td>@sak.Beskrivelse</td>
+                    <table>
+                        @foreach (var votering in sak.Voteringer)
+                        {
+                            <tr><td>@votering.Tittel</td><td>@votering.AvgitStemme.Count()/@arrangement.Delegater.Count()</td></tr>
+                        }
+                    </table>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <h4>Delegater</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Delegatnummer</th>
+                <th>Navn</th>
+                <th>Epost</th>
+                <th>Telefon</th>
+                <th>kode</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var delegat in arrangement.Delegater.OrderBy(s => s.Delegatnummer))
+            {
+                <tr>
+                    <td>@delegat.Delegatnummer</td>
+                    <td>@delegat.Navn</td>
+                    <td>@delegat.Epost</td>
+                    <td>@delegat.Telefon</td>
+                    <td><a href="kode/@delegat.DelegatKode">@delegat.DelegatKode</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [CascadingParameter]
+    private DelegatStateProvider? DelegatStateProvider { get; set; }
+
+
+    [Parameter]
+    public string Navn { get; set; } = null!;
+
+    private Arrangement? arrangement;
+    private Delegat? delegat;
+
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/stemme-hub"))
+            .Build();
+
+        arrangement = await ArrangementService.HentArrangementAsync(Navn);
+        if (arrangement == null)
+            NavigationManager.NavigateTo("");
+
+        if (DelegatStateProvider != null)
+        {
+            delegat = await DelegatStateProvider.GetDelegat();
+        }
+
+    }
+
+    private async Task SetDelegat(Delegat delegat){
+        this.delegat = delegat;
+        if (DelegatStateProvider != null)
+        {
+            DelegatStateProvider.Delegatkode = delegat.DelegatKode;
+            await DelegatStateProvider.SaveChangesAsync();    
+        }
+    }
+
+
+    public async ValueTask DisposeAsync()
+    {
+        if(hubConnection != null)
+            await hubConnection.DisposeAsync();
+    }
+}

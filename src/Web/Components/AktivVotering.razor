@@ -1,0 +1,53 @@
+﻿@using Stemmesystem.Data
+@using Stemmesystem.Web.Data
+@inject StemmeService StemmeService
+
+
+<h3>@Votering.Sak.Tittel</h3>
+<h4>@Votering.Sak.Beskrivelse</h4>
+<h5>@Votering.Tittel</h5>
+
+<div class="btn-group btn-group-toggle" data-toggle="buttons">
+@foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
+  <label class="btn @(Stemme?.ValgId == valg.Id ? "btn-primary" :"btn-outline-primary") btn-lg">
+    <input type="radio" name="options" id="@valg.Id" disabled=@(HarStemmt && Stemme == null) autocomplete="off" @onclick="@(async e => await RegistrerStemme(valg.Id))">@valg.Navn
+  </label>
+}
+</div>
+<br>
+<br>
+<button class="btn @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
+
+
+@code {
+    [Parameter]
+    public Votering Votering { get; set; } = null!;
+
+    [Parameter]
+    public string? DelegatKode { get; set; }
+
+    protected Stemme? Stemme;
+    protected bool HarStemmt;
+
+
+    public async Task RegistrerStemme(Guid valgId){
+        if (DelegatKode == null)
+            return;
+        var stemme = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatKode, valgId, Stemme);
+        Stemme = stemme;
+        HarStemmt = true;
+
+    }
+
+    protected override async Task OnInitializedAsync(){
+        if (DelegatKode != null)
+        {
+            HarStemmt = await StemmeService.HarStemmt(Votering.Id, DelegatKode);
+
+            if (HarStemmt && !Votering.Hemmelig)
+            {
+                Stemme = await StemmeService.FinnStemme(Votering.Id, DelegatKode);
+            }
+        }
+    }
+}

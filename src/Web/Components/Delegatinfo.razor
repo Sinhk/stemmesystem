@@ -1,0 +1,37 @@
+﻿
+@using Stemmesystem.Data
+@using Stemmesystem.Web.Data
+
+@inject IDelegatService DelegatService
+@implements IDisposable
+
+@if (delegat != null)
+{
+    <div>Delegat: @delegat.Delegatnummer (@delegat.Navn)</div>
+}
+
+@code {
+    private Delegat? delegat;
+    [CascadingParameter]
+    private DelegatStateProvider? DelegatStateProvider { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDelegat();
+
+        if (DelegatStateProvider == null) return;
+        DelegatStateProvider.OnChangeAsync += LoadDelegat;
+    }
+
+    private async Task LoadDelegat()
+    {
+        if (DelegatStateProvider == null) return;
+        delegat = await DelegatStateProvider.GetDelegat();
+    }
+
+    public void Dispose()
+    {
+        if (DelegatStateProvider != null)
+            DelegatStateProvider.OnChangeAsync -= LoadDelegat;
+    }
+}

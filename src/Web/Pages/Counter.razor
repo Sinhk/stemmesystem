@@ -1,0 +1,50 @@
+@page "/counter"
+
+@using Stemmesystem.Web.Data
+@using System.Threading;
+@using Microsoft.AspNetCore.SignalR.Client;
+
+@inject CountService countService
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+    private HubConnection? hubConnection;
+
+    private async Task IncrementCount()
+    {
+        await hubConnection.SendAsync("SendUpdate");
+        //countService.IncrementCount();
+        //currentCount = countService.GetCurrentCount();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/count-hub"))
+            .Build();
+
+        hubConnection.On<int>("ReceiveMessage", (count) =>
+        {
+            currentCount = count;
+            StateHasChanged();
+        });
+
+        currentCount = countService.GetCurrentCount();
+
+        await hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if(hubConnection != null)
+            await hubConnection.DisposeAsync();
+    }
+}
