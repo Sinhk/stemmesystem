@@ -66,17 +66,9 @@ namespace Stemmesystem.Web
                     };
                     var connectionString = builder.ToString();
 
-                    var pgUserId = System.Environment.GetEnvironmentVariable("POSTGRES_USER_ID");
-                    var pgPassword = System.Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-                    var pgHost = System.Environment.GetEnvironmentVariable("POSTGRES_HOST");
-                    var pgPort = System.Environment.GetEnvironmentVariable("POSTGRES_PORT");
-                    var pgDatabase = System.Environment.GetEnvironmentVariable("POSTGRES_DB");
-
-                    var connStr = $"Server={pgHost};Port={pgPort};User Id={pgUserId};Password={pgPassword};Database={pgDatabase}";
-
-                    Console.WriteLine($"Alternate connection string: {connectionString}");
-                    Console.WriteLine($"Using connection string: {connStr}");
-                    options.UseNpgsql(connStr);
+                    Console.WriteLine($"Using connection string: {connectionString}");
+                    Console.WriteLine($"User info: {userInfo}");
+                    options.UseNpgsql(connectionString);
                     //options.UseSqlServer(Configuration.GetConnectionString("StemmesystemDb"));
                 }
             });
