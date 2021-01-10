@@ -50,7 +50,10 @@ namespace Stemmesystem.Web
                 }
                 else
                 {
-                    options.UseNpgsql(System.Environment.GetEnvironmentVariable("DATABASE_URL"));
+                    System.Console.WriteLine(string.Join('\n', System.Environment.GetEnvironmentVariables()));
+                    string? connectionString = System.Environment.GetEnvironmentVariable("DATABASE_URL");
+                    System.Console.WriteLine($"Using connection string: {connectionString}");
+                    options.UseNpgsql(connectionString);
                     //options.UseSqlServer(Configuration.GetConnectionString("StemmesystemDb"));
                 }
             });
