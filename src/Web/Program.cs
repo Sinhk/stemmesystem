@@ -22,7 +22,7 @@ namespace Stemmesystem.Web
                 StemmesystemContext db = scope.ServiceProvider.GetRequiredService<StemmesystemContext>();
                 var delgatService = scope.ServiceProvider.GetRequiredService<IDelegatService>();
 
-                if (true)//environment.IsDevelopment())
+                if (environment.IsDevelopment())
                 {
                     db.Database.EnsureDeleted();
                     db.Database.EnsureCreated();

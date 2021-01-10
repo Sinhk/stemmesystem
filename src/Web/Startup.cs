@@ -52,42 +52,9 @@ namespace Stemmesystem.Web
                 }
                 else
                 {
-                    var databaseUrl = System.Environment.GetEnvironmentVariable("DATABASE_URL");
-                    var databaseUri = new Uri(databaseUrl);
-                    var userInfo = databaseUri.UserInfo.Split(':');
+                    string connectionString = ParseHerokuPostgresString();
 
-                    var builder = new NpgsqlConnectionStringBuilder
-                    {
-                        Host = databaseUri.Host,
-                        Port = databaseUri.Port,
-                        Username = userInfo[0],
-                        Password = userInfo[1],
-                        Database = databaseUri.LocalPath.TrimStart('/')
-                    };
-                    var connectionString = builder.ToString();
-
-                    // Heroku provides PostgreSQL connection URL via env variable
-                    var connUrl = databaseUrl;
-
-                    // Parse connection URL to connection string for Npgsql
-                    connUrl = connUrl.Replace("postgres://", string.Empty);
-
-                    var pgUserPass = connUrl.Split("@")[0];
-                    var pgHostPortDb = connUrl.Split("@")[1];
-                    var pgHostPort = pgHostPortDb.Split("/")[0];
-
-                    var pgDb = pgHostPortDb.Split("/")[1];
-                    var pgUser = pgUserPass.Split(":")[0];
-                    var pgPass = pgUserPass.Split(":")[1];
-                    var pgHost = pgHostPort.Split(":")[0];
-                    var pgPort = pgHostPort.Split(":")[1];
-
-                    var connStr = $"Server={pgHost};Port={pgPort};User Id={pgUser};Password={pgPass};Database={pgDb}";
-
-                    Console.WriteLine($"Using connection string: {connStr}");
-                    Console.WriteLine($"Alternate connection string: {connectionString}");
-                    Console.WriteLine($"User info: {userInfo[0]}:{userInfo[1]}");
-                    options.UseNpgsql(connStr);
+                    options.UseNpgsql(connectionString);
                     //options.UseSqlServer(Configuration.GetConnectionString("StemmesystemDb"));
                 }
             });
@@ -109,6 +76,26 @@ namespace Stemmesystem.Web
                     options.ClientId = Configuration["Authentication:Google:ClientId"];
                     options.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
                 });
+        }
+
+        private static string ParseHerokuPostgresString()
+        {
+            var databaseUrl = System.Environment.GetEnvironmentVariable("DATABASE_URL");
+            var databaseUri = new Uri(databaseUrl);
+            var userInfo = databaseUri.UserInfo.Split(':');
+
+            var builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = databaseUri.Host,
+                Port = databaseUri.Port,
+                Username = userInfo[0],
+                Password = userInfo[1],
+                Database = databaseUri.LocalPath.TrimStart('/'),
+                TrustServerCertificate = true,
+                SslMode = SslMode.Prefer
+            };
+            var connectionString = builder.ToString();
+            return connectionString;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
