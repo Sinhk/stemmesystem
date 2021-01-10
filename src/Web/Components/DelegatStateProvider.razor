@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject ProtectedSessionStorage ProtectedSessionStore
-@using Stemmesystem.Web.Data
 @using Stemmesystem.Data
+@using Stemmesystem.Web.Data
 @inject IDelegatService DelegatService
 
 @if (isLoaded)
@@ -35,7 +35,6 @@ else
     {
         if (Delegatkode == null) return null;
         if (isLoadedDelegat) return _delegat;
-        Console.WriteLine("GETTING DELEGAT");
         _delegat = await DelegatService.ValiderKode(Delegatkode);
         isLoadedDelegat = true;
         return _delegat;

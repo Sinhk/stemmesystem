@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using Stemmesystem.Data;
 using Stemmesystem.Tools;
 using Stemmesystem.Web.Data;
@@ -50,8 +52,20 @@ namespace Stemmesystem.Web
                 }
                 else
                 {
-                    System.Console.WriteLine(string.Join('\n', System.Environment.GetEnvironmentVariables()));
-                    string? connectionString = System.Environment.GetEnvironmentVariable("DATABASE_URL");
+                    var databaseUrl = System.Environment.GetEnvironmentVariable("DATABASE_URL");
+                    var databaseUri = new Uri(databaseUrl);
+                    var userInfo = databaseUri.UserInfo.Split(':');
+
+                    var builder = new NpgsqlConnectionStringBuilder
+                    {
+                        Host = databaseUri.Host,
+                        Port = databaseUri.Port,
+                        Username = userInfo[0],
+                        Password = userInfo[1],
+                        Database = databaseUri.LocalPath.TrimStart('/')
+                    };
+                    var connectionString = builder.ToString();
+
                     System.Console.WriteLine($"Using connection string: {connectionString}");
                     options.UseNpgsql(connectionString);
                     //options.UseSqlServer(Configuration.GetConnectionString("StemmesystemDb"));
