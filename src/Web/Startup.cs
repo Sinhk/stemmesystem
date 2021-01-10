@@ -66,9 +66,28 @@ namespace Stemmesystem.Web
                     };
                     var connectionString = builder.ToString();
 
-                    Console.WriteLine($"Using connection string: {connectionString}");
-                    Console.WriteLine($"User info: {userInfo}");
-                    options.UseNpgsql(connectionString);
+                    // Heroku provides PostgreSQL connection URL via env variable
+                    var connUrl = databaseUrl;
+
+                    // Parse connection URL to connection string for Npgsql
+                    connUrl = connUrl.Replace("postgres://", string.Empty);
+
+                    var pgUserPass = connUrl.Split("@")[0];
+                    var pgHostPortDb = connUrl.Split("@")[1];
+                    var pgHostPort = pgHostPortDb.Split("/")[0];
+
+                    var pgDb = pgHostPortDb.Split("/")[1];
+                    var pgUser = pgUserPass.Split(":")[0];
+                    var pgPass = pgUserPass.Split(":")[1];
+                    var pgHost = pgHostPort.Split(":")[0];
+                    var pgPort = pgHostPort.Split(":")[1];
+
+                    var connStr = $"Server={pgHost};Port={pgPort};User Id={pgUser};Password={pgPass};Database={pgDb}";
+
+                    Console.WriteLine($"Using connection string: {connStr}");
+                    Console.WriteLine($"Alternate connection string: {connectionString}");
+                    Console.WriteLine($"User info: {userInfo[0]}:{userInfo[1]}");
+                    options.UseNpgsql(connStr);
                     //options.UseSqlServer(Configuration.GetConnectionString("StemmesystemDb"));
                 }
             });
