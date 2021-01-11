@@ -40,6 +40,11 @@ namespace Stemmesystem.Web.Data
             return stemme;
         }
 
+        public async Task<Votering?> AktivVotering(int arrangementId, CancellationToken cancellationToken = default)
+        {
+            var arrangement = await arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
+            return arrangement.AktivVotering();
+        }
         public async Task StartVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
         {
             var arrangement = await arrangementService.HentArrangementAsync(arrangementId, cancellationToken);

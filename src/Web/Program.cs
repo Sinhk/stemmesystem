@@ -50,7 +50,9 @@ namespace Stemmesystem.Web
             using (var scope = host.Services.CreateScope())
             {
                 var stemmeService = scope.ServiceProvider.GetRequiredService<StemmeService>();
-                await stemmeService.StartVotering(1, 1);
+                var aktiv = await stemmeService.AktivVotering(1);
+                if (aktiv == null)
+                    await stemmeService.StartVotering(1, 1);
             }
 
             await host.RunAsync();
