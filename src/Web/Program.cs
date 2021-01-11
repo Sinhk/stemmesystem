@@ -7,6 +7,7 @@ using Stemmesystem.Data;
 using Stemmesystem.Tools;
 using Stemmesystem.Web.Data;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Stemmesystem.Web
@@ -20,32 +21,22 @@ namespace Stemmesystem.Web
 
             using (var scope = host.Services.CreateScope())
             {
-                StemmesystemContext db = scope.ServiceProvider.GetRequiredService<StemmesystemContext>();
-                var delgatService = scope.ServiceProvider.GetRequiredService<IDelegatService>();
+                IDbContextFactory<StemmesystemContext> contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<StemmesystemContext>>();
+                await using var db = contextFactory.CreateDbContext();
+                var delegatService = scope.ServiceProvider.GetRequiredService<IDelegatService>();
 
                 if (environment.IsDevelopment())
                 {
                     db.Database.EnsureDeleted();
                     db.Database.EnsureCreated();
-
-                    Arrangement arrangement = new Arrangement("Testarrangement") { Beskrivelse = "Bare en test" };
-                    Sak sak = new Sak(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
-                    var votering1 = new EnkelVotering("Skal vi ha kretsting?", false, "Ja", "Nai", "Kanskje");
-                    var votering2 = new Flervalgsvotering("Hvem er best?", new[] { "Per", "Pål", "Espen Askeladd" });
-                    sak.LeggTil(votering1, votering2);
-                    arrangement.LeggTil(sak);
-                    delgatService.RegistrerNyDelegat(arrangement, new(1) {Navn = "Sindre", Epost = "sindre.kroknes@gmail.com", Telefon = "99150713" });
-                    delgatService.RegistrerNyDelegat(arrangement, new(2) {Navn = "Silje" });
-                    delgatService.RegistrerNyDelegat(arrangement, new(3) {Navn = "Patrick" });
-
-                    db.Arrangement.Add(arrangement);
-
-                    db.SaveChanges();
                 }
                 else
                 {
                     db.Database.Migrate();
                 }
+                var arr = db.Arrangement.FirstOrDefault();
+                if (arr == null)
+                    SeedData(db, delegatService);
             }
 
             using (var scope = host.Services.CreateScope())
@@ -59,12 +50,30 @@ namespace Stemmesystem.Web
             await host.RunAsync();
         }
 
+        private static void SeedData(StemmesystemContext db, IDelegatService delegatService)
+        {
+            Arrangement arrangement = new("Testarrangement") { Beskrivelse = "Bare en test" };
+            Sak sak = new(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
+            var votering1 = new EnkelVotering("Skal vi ha kretsting?", false, "Ja", "Nai", "Kanskje");
+            var votering2 = new Flervalgsvotering("Hvem er best?", new[] { "Per", "Pål", "Espen Askeladd" });
+            sak.LeggTil(votering1, votering2);
+            arrangement.LeggTil(sak);
+            delegatService.RegistrerNyDelegat(arrangement, new(1) { Navn = "Sindre", Epost = "sindre.kroknes@gmail.com", Telefon = "99150713" });
+            delegatService.RegistrerNyDelegat(arrangement, new(2) { Navn = "Silje" });
+            delegatService.RegistrerNyDelegat(arrangement, new(3) { Navn = "Patrick" });
+
+            db.Arrangement.Add(arrangement);
+
+            db.SaveChanges();
+        }
+
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-
-                    webBuilder.UseUrls("http://*:" + Environment.GetEnvironmentVariable("PORT"));
+                    var port = Environment.GetEnvironmentVariable("PORT");
+                    if (!string.IsNullOrEmpty(port))
+                        webBuilder.UseUrls($"http://*:{port}");
                     webBuilder.UseStartup<Startup>();
                 });
     }
