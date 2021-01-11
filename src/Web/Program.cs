@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Stemmesystem.Data;
 using Stemmesystem.Tools;
 using Stemmesystem.Web.Data;
+using System;
 using System.Threading.Tasks;
 
 namespace Stemmesystem.Web
@@ -62,6 +63,8 @@ namespace Stemmesystem.Web
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+
+                    webBuilder.UseUrls("http://*:" + Environment.GetEnvironmentVariable("PORT"));
                     webBuilder.UseStartup<Startup>();
                 });
     }
