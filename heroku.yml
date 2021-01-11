@@ -1,4 +1,5 @@
 build:
   docker:
-    web: 
-      dockerfile: Dockerfile
+    web: Dockerfile
+run:
+  web: dotnet Web.dll --urls "http://*:$PORT"
