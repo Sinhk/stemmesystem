@@ -34,8 +34,7 @@ namespace Stemmesystem.Web
                 {
                     db.Database.Migrate();
                 }
-                var arr = db.Arrangement.FirstOrDefault();
-                if (arr == null)
+                if (!db.Arrangement.Any())
                     SeedData(db, delegatService);
             }
 

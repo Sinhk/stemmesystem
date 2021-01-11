@@ -46,13 +46,12 @@ namespace Stemmesystem.Web.Data
             Stemme? gammelStemme = null;
             if (revoteKey != null)
             {
-                Console.WriteLine(revoteKey);
                 gammelStemme = votering.Stemmer.FirstOrDefault(s =>
                 {
                     var hash = context.Entry(s).Property("RevoteKey").CurrentValue as string;
-                    Console.WriteLine(hash);
                     return _keyHasher.VerifyHashedKey(hash, revoteKey);
                 });
+
                 if (gammelStemme == null)
                     throw new StemmeException("Ugyldig endring av stemme");
             }
@@ -69,7 +68,6 @@ namespace Stemmesystem.Web.Data
             var newKey = _keyGenerator.GenerateKey(20);
             var revoteHash = _keyHasher.CalculateHash(newKey);
 
-            Console.WriteLine(_keyHasher.VerifyHashedKey(revoteHash, newKey));
             context.Entry(stemme).Property("RevoteKey").CurrentValue = revoteHash;
             await context.SaveChangesAsync(cancellationToken);
 
