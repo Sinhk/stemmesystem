@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,11 @@ namespace Stemmesystem.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.HasDefaultSchema("stemme");
+
+            modelBuilder.Entity<Arrangement>(e =>{});
+
+            modelBuilder.Entity<Sak>(e =>{});
             modelBuilder.Entity<Votering>(e =>
             {
                 e.HasMany(v => v.AvgitStemme).WithMany(d=> d.HarStemmtI);
@@ -28,6 +34,7 @@ namespace Stemmesystem.Data
             modelBuilder.Entity<Stemme>(e =>
             {
                 e.HasKey(s => s.Id);
+                e.Property<string>("RevoteKey");
             });
 
             modelBuilder.Entity<Delegat>(e =>
@@ -35,6 +42,15 @@ namespace Stemmesystem.Data
                 e.HasIndex(x => new { x.ArrangementId, x.Delegatnummer }).IsUnique();
             });
         }
+    }
+    public class StemmesystemContextFactory : IDesignTimeDbContextFactory<StemmesystemContext>
+    {
+        public StemmesystemContext CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<StemmesystemContext>();
+            optionsBuilder.UseNpgsql("not important");
 
+            return new StemmesystemContext(optionsBuilder.Options);
+        }
     }
 }

@@ -23,6 +23,7 @@ namespace Stemmesystem.Data
 
         //public Valg Valg { get => valg ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Valg)); private set => valg = value; }
         public Delegat? Delegat { get; internal set; }
+        public int DelegatId { get; internal set; }
     }
 
     public class Delegat
@@ -66,7 +67,7 @@ namespace Stemmesystem.Data
 
     public class Arrangement
     {
-        public int Id { get; private set; }
+        public int Id { get; internal set; }
 
         public Votering? FinnVotering(int voteringId)
         {
@@ -117,9 +118,11 @@ namespace Stemmesystem.Data
 
     public class Sak
     {
-        public int Id { get; private set; }
+        public int Id { get; internal set; }
         public int Nummer { get; private set; }
         public string Tittel { get; private set; }
+
+        public int ArrangementId { get; internal set; }
 
         public void LeggTil(params Votering[] voteringer)
         {
@@ -148,7 +151,7 @@ namespace Stemmesystem.Data
         protected List<Delegat> avgitStemme = new List<Delegat>();
         private Sak? sak;
 
-        public int Id { get; private set; }
+        public int Id { get; internal set; }
         public string Tittel { get; init; }
         public bool Hemmelig { get; set; }
         public bool Aktiv { get; set; } = false;
@@ -158,12 +161,22 @@ namespace Stemmesystem.Data
         public IEnumerable<Stemme> Stemmer => stemmer;
         public IEnumerable<Delegat> AvgitStemme => avgitStemme;
 
-        public Sak Sak { get => sak ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Sak)); set => sak = value; }
-
+        public Sak Sak { get => sak! /*?? throw new InvalidOperationException("Uninitialized property: " + nameof(Sak))*/; set => sak = value; }
+        public int SakId { get; internal set; }
         public Votering(string tittel, bool hemmelig)
         {
             Tittel = tittel;
             Hemmelig = hemmelig;
+        }
+
+        public Votering(string tittel, bool hemmelig, params string[] valgtekst) : this (tittel, hemmelig)
+        {
+            var i = 0;
+            foreach (var tekst in valgtekst)
+            {
+                valg.Add(new(tekst, i));
+                i++;
+            }
         }
 
         public void StartVotering()
@@ -182,10 +195,7 @@ namespace Stemmesystem.Data
         {
             if(gammelStemme != null)
             {
-                var s = stemmer.FirstOrDefault(s=> s.Id == gammelStemme.Id);
-                if (s == null || gammelStemme.Delegat != delegat)
-                    throw new StemmeException("Ugyldig endring av stemme");
-                stemmer.Remove(s);
+                stemmer.Remove(gammelStemme);
             }
             else if (avgitStemme.Any(d => d.Id == delegat.Id))
                 throw new StemmeException("Delegat har allerede stemmt");
@@ -197,9 +207,9 @@ namespace Stemmesystem.Data
                 v = valg.SingleOrDefault(v => v.Id == valgId);
             if (v == null)
                 throw new StemmeException("Ugyldig valg");
-            Stemme? stemme = new Stemme(valgId);
+            Stemme? stemme = new(valgId);
             if (!Hemmelig)
-                stemme.Delegat = delegat;
+                stemme.DelegatId = delegat.Id;
 
             avgitStemme.Add(delegat);
             stemmer.Add(stemme);
