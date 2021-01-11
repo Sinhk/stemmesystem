@@ -34,6 +34,7 @@ namespace Stemmesystem.Web.Data
             await using var context = _contextFactory.CreateDbContext();
             context.Attach(delegat);
             var votering = await context.Votering
+                .AsSingleQuery()
                 .Include(v=> v.Stemmer)
                 .Include(v => v.AvgitStemme)
                 .SingleOrDefaultAsync(v => v.Id == voteringId, cancellationToken: cancellationToken);
