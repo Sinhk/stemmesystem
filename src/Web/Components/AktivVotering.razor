@@ -27,14 +27,16 @@
     public string? DelegatKode { get; set; }
 
     protected Stemme? Stemme;
+    private string? _revoteKey;
     protected bool HarStemmt;
 
 
     public async Task RegistrerStemme(Guid valgId){
         if (DelegatKode == null)
             return;
-        var stemme = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatKode, valgId, Stemme);
+        var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatKode, valgId, _revoteKey);
         Stemme = stemme;
+        _revoteKey =  revoteKey;
         HarStemmt = true;
 
     }

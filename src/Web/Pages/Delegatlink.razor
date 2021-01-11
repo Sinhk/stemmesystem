@@ -5,21 +5,30 @@
 @inject IDelegatService DelegatService
 @inject NavigationManager NavigationManager
 
-<h3 class="text-danger">Ugyldig delegatlink</h3>
+@if (isError)
+{
+    <h3 class="text-danger">Ugyldig delegatlink</h3>
+}
+else
+{
+    <p>Loading...</p>
+}
+
 
 @code {
+    private bool isError;
     [CascadingParameter]
     private DelegatStateProvider? DelegatStateProvider { get; set; }
 
     [Parameter]
     public string? Kode { get; set; }
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        if (Kode == null) return;
+        if (Kode == null) { isError = true; return; }
 
         var delegat = await DelegatService.ValiderKode(Kode);
-        if(delegat == null) return;
+        if(delegat == null) { isError = true; return; }
         if(DelegatStateProvider != null){
             DelegatStateProvider.Delegatkode = Kode;
             await DelegatStateProvider.SaveChangesAsync();

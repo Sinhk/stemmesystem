@@ -43,7 +43,7 @@ namespace Stemmesystem.Web
 
             services.AddSingleton<CountService>();
 
-            services.AddDbContext<StemmesystemContext>(options =>
+            services.AddDbContextFactory<StemmesystemContext>(options =>
             {
                 if (Environment.IsDevelopment())
                 {
@@ -63,6 +63,7 @@ namespace Stemmesystem.Web
             services.AddScoped<IDelegatService, DelegatService>();
             services.AddScoped<StemmeService>();
             services.AddSingleton<IKeyGenerator, RNGKeyGenerator>();
+            services.AddSingleton<IKeyHasher, KeyHasher>();
 
             services
                 .AddAuthentication(options =>
@@ -81,6 +82,7 @@ namespace Stemmesystem.Web
         private static string ParseHerokuPostgresString()
         {
             var databaseUrl = System.Environment.GetEnvironmentVariable("DATABASE_URL");
+            if (databaseUrl == null) return string.Empty;
             var databaseUri = new Uri(databaseUrl);
             var userInfo = databaseUri.UserInfo.Split(':');
 

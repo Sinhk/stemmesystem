@@ -16,13 +16,13 @@ namespace Stemmesystem.Web.Data
 
     public class DelegatService : IDelegatService
     {
-        private readonly StemmesystemContext _context;
+        private readonly IDbContextFactory<StemmesystemContext> _contextFactory;
         private readonly IKeyGenerator _keyGenerator;
 
-        public DelegatService(StemmesystemContext context, IKeyGenerator keyGenerator)
+        public DelegatService(IKeyGenerator keyGenerator, IDbContextFactory<StemmesystemContext> contextFactory)
         {
-            _context = context;
             _keyGenerator = keyGenerator;
+            _contextFactory = contextFactory;
         }
 
         public Delegat RegistrerNyDelegat(Arrangement arrangement, NyDelegatModel model)
@@ -36,7 +36,11 @@ namespace Stemmesystem.Web.Data
 
         public async Task<Delegat?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default)
         {
-            var delegat = await _context.Delegat.Where(d => d.DelegatKode == delegatKode).FirstOrDefaultAsync(cancellationToken);
+            await using var context = _contextFactory.CreateDbContext();
+            var delegat = await context.Delegat
+                .Include(d => d.Arrangement)
+                .Where(d => d.DelegatKode == delegatKode)
+                .FirstOrDefaultAsync(cancellationToken);
             return delegat;
         }
     }

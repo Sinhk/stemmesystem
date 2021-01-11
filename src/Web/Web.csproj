@@ -6,7 +6,7 @@
     <RootNamespace>Stemmesystem.Web</RootNamespace>
     <UserSecretsId>d97a116a-4f0b-4593-802e-d7e4a13cb259</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..\..</DockerfileContext>
+    <DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
