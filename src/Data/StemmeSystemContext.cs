@@ -1,11 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.EntityFrameworkCore.Metadata;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Stemmesystem.Data
 {
@@ -21,7 +15,8 @@ namespace Stemmesystem.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.HasDefaultSchema("stemme");
+            if (!Database.IsSqlite())
+                modelBuilder.HasDefaultSchema("stemme");
 
             modelBuilder.Entity<Arrangement>(e =>{});
 
@@ -40,6 +35,7 @@ namespace Stemmesystem.Data
             modelBuilder.Entity<Delegat>(e =>
             {
                 e.HasIndex(x => new { x.ArrangementId, x.Delegatnummer }).IsUnique();
+                e.HasIndex(x => x.Delegatkode).IsUnique();
             });
         }
     }

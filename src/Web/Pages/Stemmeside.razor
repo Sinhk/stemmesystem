@@ -14,7 +14,7 @@
 
 <h2>@Navn</h2>
 
-@if (arrangement == null)
+@if (_arrangement == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -23,8 +23,8 @@ else
     @if (delegat != null)
     {
     <h3>Delegat: @delegat.Delegatnummer (@delegat.Navn)</h3>
-        if(arrangement.AktivVotering() != null){
-            <AktivVotering Votering=arrangement.AktivVotering() DelegatKode=@delegat.DelegatKode/>
+        if(_arrangement.AktivVotering() != null){
+            <AktivVotering Votering=_arrangement.AktivVotering() DelegatKode=@delegat.Delegatkode/>
         }
     }
     else
@@ -45,7 +45,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var sak in arrangement.Saker.OrderBy(s => s.Nummer))
+            @foreach (var sak in _arrangement.Saker.OrderBy(s => s.Nummer))
             {
                 <tr>
                     <td>@sak.Nummer</td>
@@ -54,7 +54,7 @@ else
                     <table>
                         @foreach (var votering in sak.Voteringer)
                         {
-                            <tr><td>@votering.Tittel</td><td>@votering.AvgitStemme.Count()/@arrangement.Delegater.Count()</td></tr>
+                            <tr><td>@votering.Tittel</td><td>@votering.AvgitStemme.Count()/@_arrangement.Delegater.Count()</td></tr>
                         }
                     </table>
                 </tr>
@@ -73,63 +73,16 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var delegat in arrangement.Delegater.OrderBy(s => s.Delegatnummer))
+            @foreach (var delegat in _arrangement.Delegater.OrderBy(s => s.Delegatnummer))
             {
                 <tr>
                     <td>@delegat.Delegatnummer</td>
                     <td>@delegat.Navn</td>
                     <td>@delegat.Epost</td>
                     <td>@delegat.Telefon</td>
-                    <td><a href="kode/@delegat.DelegatKode">@delegat.DelegatKode</a></td>
+                    <td><a href="kode/@delegat.Delegatkode">@delegat.Delegatkode</a></td>
                 </tr>
             }
         </tbody>
     </table>
-}
-
-@code {
-    [CascadingParameter]
-    private DelegatStateProvider? DelegatStateProvider { get; set; }
-
-
-    [Parameter]
-    public string Navn { get; set; } = null!;
-
-    private Arrangement? arrangement;
-    private Delegat? delegat;
-
-    private HubConnection? hubConnection;
-
-    protected override async Task OnInitializedAsync()
-    {
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/stemme-hub"))
-            .Build();
-
-        arrangement = await ArrangementService.HentArrangementAsync(Navn);
-        if (arrangement == null)
-            NavigationManager.NavigateTo("");
-
-        if (DelegatStateProvider != null)
-        {
-            delegat = await DelegatStateProvider.GetDelegat();
-        }
-
-    }
-
-    private async Task SetDelegat(Delegat delegat){
-        this.delegat = delegat;
-        if (DelegatStateProvider != null)
-        {
-            DelegatStateProvider.Delegatkode = delegat.DelegatKode;
-            await DelegatStateProvider.SaveChangesAsync();    
-        }
-    }
-
-
-    public async ValueTask DisposeAsync()
-    {
-        if(hubConnection != null)
-            await hubConnection.DisposeAsync();
-    }
 }

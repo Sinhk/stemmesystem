@@ -40,9 +40,4 @@ namespace Stemmesystem.Web.Data
             await Clients.All.SendAsync("ReceiveMessage", countService.GetCurrentCount());
         }
     }
-
-    public class StemmeHub : Hub
-    {
-
-    }
 }

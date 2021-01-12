@@ -39,7 +39,7 @@ namespace Stemmesystem.Web.Data
             await using var context = _contextFactory.CreateDbContext();
             var delegat = await context.Delegat
                 .Include(d => d.Arrangement)
-                .Where(d => d.DelegatKode == delegatKode)
+                .Where(d => d.Delegatkode == delegatKode)
                 .FirstOrDefaultAsync(cancellationToken);
             return delegat;
         }

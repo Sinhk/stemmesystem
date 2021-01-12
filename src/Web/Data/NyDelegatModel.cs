@@ -1,3 +1,0 @@
-﻿namespace Stemmesystem.Web.Data
-{
-}

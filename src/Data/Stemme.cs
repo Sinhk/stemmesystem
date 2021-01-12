@@ -32,7 +32,7 @@ namespace Stemmesystem.Data
         private List<Votering> harStemmtI = new List<Votering>();
 
         public int Id { get; private set; }
-        public string DelegatKode { get; set; }
+        public string Delegatkode { get; set; }
         public int Delegatnummer { get; set; }
         public string? Navn { get; set; }
         public string? Epost { get; set; }
@@ -42,13 +42,13 @@ namespace Stemmesystem.Data
         public Arrangement Arrangement { get => arrangement ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Arrangement)); set => arrangement = value; }
 
         public IEnumerable<Votering> HarStemmtI => harStemmtI;
-        internal Delegat(int delegatnummer, string? navn, string? delegatKode = null)
+        internal Delegat(int delegatnummer, string? navn, string? delegatkode = null)
         {
             Delegatnummer = delegatnummer;
             Navn = navn;
 
-            delegatKode ??= ShortGuid.NewGuid();
-            DelegatKode = delegatKode.ToString();
+            delegatkode ??= ShortGuid.NewGuid();
+            Delegatkode = delegatkode.ToString();
         }
     }
 
@@ -81,6 +81,7 @@ namespace Stemmesystem.Data
 
 
         public IList<Sak> Saker { get; set; } = new List<Sak>();
+
         public IList<Delegat> Delegater { get; set; } = new List<Delegat>();
         public Arrangement(string navn)
         {
@@ -118,10 +119,13 @@ namespace Stemmesystem.Data
 
     public class Sak
     {
+        private Arrangement? arrangement;
+
         public int Id { get; internal set; }
         public int Nummer { get; private set; }
         public string Tittel { get; private set; }
 
+        public Arrangement Arrangement { get => arrangement ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Arrangement)); internal set => arrangement = value; }
         public int ArrangementId { get; internal set; }
 
         public void LeggTil(params Votering[] voteringer)
@@ -161,7 +165,7 @@ namespace Stemmesystem.Data
         public IEnumerable<Stemme> Stemmer => stemmer;
         public IEnumerable<Delegat> AvgitStemme => avgitStemme;
 
-        public Sak Sak { get => sak! /*?? throw new InvalidOperationException("Uninitialized property: " + nameof(Sak))*/; set => sak = value; }
+        public Sak Sak { get => sak ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Sak)); set => sak = value; }
         public int SakId { get; internal set; }
         public Votering(string tittel, bool hemmelig)
         {

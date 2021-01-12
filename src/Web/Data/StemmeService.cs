@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
 using Stemmesystem.Tools;
 using System;
@@ -14,22 +15,24 @@ namespace Stemmesystem.Web.Data
         private readonly IDbContextFactory<StemmesystemContext> _contextFactory;
         private readonly IKeyGenerator _keyGenerator;
         private readonly IKeyHasher _keyHasher;
+        private readonly IHubContext<StemmeHub, IStemmeClient> _hubContext;
         private readonly ArrangementService _arrangementService;
 
-        public StemmeService(IDelegatService delegatService, ArrangementService arrangementService, IDbContextFactory<StemmesystemContext> contextFactory, IKeyGenerator keyGenerator, IKeyHasher keyHasher)
+        public StemmeService(IDelegatService delegatService, ArrangementService arrangementService, IDbContextFactory<StemmesystemContext> contextFactory, IKeyGenerator keyGenerator, IKeyHasher keyHasher, IHubContext<StemmeHub,IStemmeClient> hubContext)
         {
             _delegatService = delegatService;
             _arrangementService = arrangementService;
             _contextFactory = contextFactory;
             _keyGenerator = keyGenerator;
             _keyHasher = keyHasher;
+            _hubContext = hubContext;
         }
-        public async Task<(Stemme stemme, string RevoteKey)> AvgiStemmeAsync(int voteringId, string delegatKode, Guid valgId, string? revoteKey = null, CancellationToken cancellationToken = default)
+        public async Task<(Stemme stemme, string RevoteKey)> AvgiStemmeAsync(int voteringId, string delegatkode, Guid valgId, string? revoteKey = null, CancellationToken cancellationToken = default)
         {
-            var delegat = await _delegatService.ValiderKode(delegatKode, cancellationToken);
+            var delegat = await _delegatService.ValiderKode(delegatkode, cancellationToken);
             if (delegat == null)
             {
-                throw new StemmeException($"Ugyldig delegat {delegatKode}");
+                throw new StemmeException($"Ugyldig delegat {delegatkode}");
             }
             await using var context = _contextFactory.CreateDbContext();
             context.Attach(delegat);
@@ -71,7 +74,8 @@ namespace Stemmesystem.Web.Data
 
             context.Entry(stemme).Property("RevoteKey").CurrentValue = revoteHash;
             await context.SaveChangesAsync(cancellationToken);
-
+            var arrangement = await context.Votering.Where(v => v.Id == votering.Id).Select(v => v.Sak.Arrangement.Navn).FirstAsync(cancellationToken: cancellationToken);
+            await _hubContext.Clients.Group(arrangement).NyStemme(new (votering.Id));
             return (stemme, newKey);
         }
 
