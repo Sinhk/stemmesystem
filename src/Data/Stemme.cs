@@ -161,9 +161,9 @@ namespace Stemmesystem.Data
         public bool Aktiv { get; set; } = false;
         public DateTimeOffset StartTid { get; set; }
         public DateTimeOffset SluttTid { get; set; }
-        public IEnumerable<Valg> Valg => valg;
-        public IEnumerable<Stemme> Stemmer => stemmer;
-        public IEnumerable<Delegat> AvgitStemme => avgitStemme;
+        public IReadOnlyList<Valg> Valg => valg;
+        public IReadOnlyList<Stemme> Stemmer => stemmer;
+        public IReadOnlyList<Delegat> AvgitStemme => avgitStemme;
 
         public Sak Sak { get => sak ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Sak)); set => sak = value; }
         public int SakId { get; internal set; }

@@ -32,6 +32,9 @@ namespace Stemmesystem.Web.Data
                 .Include(a => a.Saker)
                   .ThenInclude(s => s.Voteringer)
                     .ThenInclude(s=> s.AvgitStemme)
+                .Include(a => a.Saker)
+                  .ThenInclude(s => s.Voteringer)
+                    .ThenInclude(s => s.Stemmer)
                 .Where(a => a.Aktiv == true)
                 ;
         }

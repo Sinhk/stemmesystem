@@ -1,0 +1,37 @@
+﻿@using Stemmesystem.Data
+<h4>Delegater</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Delegatnummer</th>
+                <th>Navn</th>
+                <th>Epost</th>
+                <th>Telefon</th>
+                <th>kode</th>
+            </tr>
+        </thead>
+        @if(Delegater == null || !Delegater.Any())
+        {
+            <tr><td class="text-danger">Ingen delegater</td></tr>
+        }
+        else
+        {
+        <tbody>
+            @foreach (var delegat in Delegater.OrderBy(s => s.Delegatnummer))
+            {
+                <tr>
+                    <td>@delegat.Delegatnummer</td>
+                    <td>@delegat.Navn</td>
+                    <td>@delegat.Epost</td>
+                    <td>@delegat.Telefon</td>
+                    <td><a href="kode/@delegat.Delegatkode">@delegat.Delegatkode</a></td>
+                </tr>
+            }
+        </tbody>
+        }
+    </table>
+@code {
+    [Parameter]
+    public ICollection<Delegat>? Delegater { get; set; }
+
+}

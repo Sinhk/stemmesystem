@@ -34,55 +34,6 @@ else
     }
     <br>
     <br>
-    <h4>Saker</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Saknummer</th>
-                <th>Tittel</th>
-                <th>Beskrivelse</th>
-                <th>Voteringer</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var sak in _arrangement.Saker.OrderBy(s => s.Nummer))
-            {
-                <tr>
-                    <td>@sak.Nummer</td>
-                    <td>@sak.Tittel</td>
-                    <td>@sak.Beskrivelse</td>
-                    <table>
-                        @foreach (var votering in sak.Voteringer)
-                        {
-                            <tr><td>@votering.Tittel</td><td>@votering.AvgitStemme.Count()/@_arrangement.Delegater.Count()</td></tr>
-                        }
-                    </table>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <h4>Delegater</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Delegatnummer</th>
-                <th>Navn</th>
-                <th>Epost</th>
-                <th>Telefon</th>
-                <th>kode</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var delegat in _arrangement.Delegater.OrderBy(s => s.Delegatnummer))
-            {
-                <tr>
-                    <td>@delegat.Delegatnummer</td>
-                    <td>@delegat.Navn</td>
-                    <td>@delegat.Epost</td>
-                    <td>@delegat.Telefon</td>
-                    <td><a href="kode/@delegat.Delegatkode">@delegat.Delegatkode</a></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <Saksliste Saker=@_arrangement.Saker Delegater=@_arrangement.Delegater.Count/>
+    <Delegatliste Delegater="@_arrangement.Delegater" />
 }

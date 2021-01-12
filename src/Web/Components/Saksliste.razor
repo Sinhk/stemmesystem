@@ -1,0 +1,48 @@
+﻿@using Stemmesystem.Data
+<h4>Saker</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Saknummer</th>
+                <th>Tittel</th>
+                <th colspan="2">Beskrivelse</th>
+            </tr>
+        </thead>
+        <tbody>
+        @if(Saker == null || !Saker.Any())
+        {
+            <tr><td class="text-danger">Ingen saker</td></tr>
+        }
+        else
+        {
+            @foreach (var sak in Saker.OrderBy(s => s.Nummer))
+            {
+                <tr>
+                    <th rowspan=@(sak.Voteringer.Sum(v=> v.Valg.Count +1)+1) scope="row">@sak.Nummer</th>
+                    <td>@sak.Tittel</td>
+                    <td colspan="2">@sak.Beskrivelse</td>
+                </tr>
+                
+                @foreach (var votering in sak.Voteringer){
+                    <tr>
+                        <td rowspan="@(votering.Valg.Count+1)">@votering.Tittel</td>
+                        <td colspan="2">Registrerte stemmer: @votering.AvgitStemme.Count</td>                    
+                    </tr>
+                    @foreach (var valg in votering.Valg.OrderBy(v => v.SortId)){
+                        <tr>
+                            <th scope="row">@valg.Navn</th>
+                            <td>@votering.Stemmer.Count(s=> s.ValgId == valg.Id)</td>
+                        </tr>
+                    }
+                }
+                
+            }
+         }
+        </tbody>
+    </table>
+@code {
+        [Parameter]
+        public ICollection<Sak>? Saker { get; set; }
+        [Parameter]
+        public int Delegater { get; set; }
+}

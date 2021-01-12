@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Stemmesystem.Data;
-using Stemmesystem.Tools;
 using Stemmesystem.Web.Data;
 using System;
 using System.Linq;
@@ -54,7 +52,7 @@ namespace Stemmesystem.Web
             Arrangement arrangement = new("Testarrangement") { Beskrivelse = "Bare en test" };
             Sak sak = new(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
             var votering1 = new EnkelVotering("Skal vi ha kretsting?", false, "Ja", "Nai", "Kanskje");
-            var votering2 = new Flervalgsvotering("Hvem er best?", new[] { "Per", "Pål", "Espen Askeladd" });
+            var votering2 = new Flervalgsvotering("Beste farge", new[] { "Rød", "Gul", "Grønn", "Blå" });
             sak.LeggTil(votering1, votering2);
             arrangement.LeggTil(sak);
             delegatService.RegistrerNyDelegat(arrangement, new(1) { Navn = "Sindre", Epost = "sindre.kroknes@gmail.com", Telefon = "99150713" });
