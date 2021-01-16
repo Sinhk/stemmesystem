@@ -33,7 +33,7 @@ namespace Stemmesystem.Web
 
             using (var scope = host.Services.CreateScope())
             {
-                /*
+                
                 IDbContextFactory<StemmesystemContext> contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<StemmesystemContext>>();
                 await using var db = contextFactory.CreateDbContext();
                 var arrangement = db.Arrangement
@@ -41,9 +41,11 @@ namespace Stemmesystem.Web
                     .ThenInclude(s => s.Voteringer)
                     .Where(a=> a.Id == 1)
                     .Single();
-                arrangement.Saker.First().LeggTil(new Votering("Valg av person", false, 2, "Patrick", "Elin", "Torbjørn", "Annette", "Kjetil", "May Britt", "Odd Kjetil", "Ole", "Silje", "Synnøve", "Åge"));
-                db.SaveChanges();
-                */
+                if (arrangement.Saker.Count < 3)
+                {
+                    arrangement.Saker.First().LeggTil(new Votering("Valg av person", false, 2, "Patrick", "Elin", "Torbjørn", "Annette", "Kjetil", "May Britt", "Odd Kjetil", "Ole", "Silje", "Synnøve", "Åge"));
+                    db.SaveChanges();
+                }
 
                 var stemmeService = scope.ServiceProvider.GetRequiredService<StemmeService>();
                 var aktiv = await stemmeService.AktivVotering(1);
