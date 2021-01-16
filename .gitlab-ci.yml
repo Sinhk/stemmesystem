@@ -1,11 +1,5 @@
 image: mcr.microsoft.com/dotnet/sdk:5.0
 
-services:
-  - docker:dind
-
-variables:
-  DOCKER_DRIVER: overlay
-
 stages:
     - test
     - deploy
@@ -23,6 +17,10 @@ test:
 production:
     stage: deploy
     image: docker:latest
+    services:
+      - docker:dind
+    variables:
+      DOCKER_DRIVER: overlay
     script: 
     - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community nodejs-npm
     - npm i -g heroku
