@@ -1,8 +1,8 @@
-﻿@page "/{navn}"
+﻿@page "/arrangement/{id:int}"
+@page "/arrangement/{navn}"
 
-@using Microsoft.AspNetCore.SignalR.Client
+
 @using Stemmesystem.Web.Data
-@using Stemmesystem.Data
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 
 @inject ArrangementService ArrangementService
@@ -22,7 +22,9 @@ else
 {
     @if (delegat != null)
     {
-    <h3>Delegat: @delegat.Delegatnummer (@delegat.Navn)</h3>
+    <h3>Delegat: @delegat.Delegatnummer (@delegat.Navn) <span class="oi oi-pencil" data-toggle="modal" data-target="#delegatModal"></span></h3>
+        <EndreDelegatDialog Delegat=@delegat/>
+
         if(_arrangement.AktivVotering() != null){
             <AktivVotering Votering=_arrangement.AktivVotering() DelegatKode=@delegat.Delegatkode/>
         }

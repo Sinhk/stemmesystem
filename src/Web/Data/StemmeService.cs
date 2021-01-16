@@ -91,7 +91,8 @@ namespace Stemmesystem.Web.Data
             context.Attach(arrangement);
             var aktiv = arrangement.AktivVotering();
             if (aktiv != null)
-                throw new StemmeException($"Kun en votering kan være aktiv. {aktiv.Sak.Tittel}({aktiv.Tittel}) er aktiv");
+                aktiv.Aktiv = false;
+                //throw new StemmeException($"Kun en votering kan være aktiv. {aktiv.Sak.Tittel}({aktiv.Tittel}) er aktiv");
             var votering = arrangement.FinnVotering(voteringId);
             if (votering == null)
                 throw new StemmeException("Fant ikke valgt votering");

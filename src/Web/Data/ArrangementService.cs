@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
+using Stemmesystem.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +13,12 @@ namespace Stemmesystem.Web.Data
     public class ArrangementService
     {
         private readonly IDbContextFactory<StemmesystemContext> _contextFactory;
+        private readonly IMapper _mapper;
 
-        public ArrangementService(IDbContextFactory<StemmesystemContext> contextFactory)
+        public ArrangementService(IDbContextFactory<StemmesystemContext> contextFactory, IMapper mapper)
         {
             _contextFactory = contextFactory;
+            _mapper = mapper;
         }
         public async Task<Arrangement> HentArrangementAsync(string navn, CancellationToken cancellationToken = default)
         {
@@ -22,6 +26,21 @@ namespace Stemmesystem.Web.Data
             return await GetSingleQuery(context)
                 .Where(a => a.Navn == navn)
                 .FirstOrDefaultAsync(cancellationToken);
+        }
+        public async Task NyttArrangement(ArrangementModel model)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            if (!await IsNameAvailable(model.Navn!))
+                throw new StemmeException($"Det finnes allered et arrangement med navn {model.Navn}");
+            var entity = _mapper.Map<Arrangement>(model);
+            context.Arrangement.Add(entity);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsNameAvailable(string name)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Arrangement.AllAsync(a => a.Navn != name);
         }
 
         private IQueryable<Arrangement> GetSingleQuery(StemmesystemContext context)

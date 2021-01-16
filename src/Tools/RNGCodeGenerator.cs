@@ -13,9 +13,11 @@ namespace Stemmesystem.Tools
     }
     public class RNGKeyGenerator : IKeyGenerator
     {
-        private static readonly char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+        private static readonly char[] chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".ToCharArray();
 
-        public string GenerateKey(int length)
+        string IKeyGenerator.GenerateKey(int length) => RNGKeyGenerator.GenerateKey(length);
+        
+        public static string GenerateKey(int length)
         {
             StringBuilder builder = new StringBuilder(length);
             for (int i = 0; i < length; i++)

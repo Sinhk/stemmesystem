@@ -1,6 +1,7 @@
 ﻿using CSharpVitamins;
 using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data.Models;
+using Stemmesystem.Tools;
 using Stemmesystem.Web.Data;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace Stemmesystem.Data
             Delegatnummer = delegatnummer;
             Navn = navn;
 
-            delegatkode ??= ShortGuid.NewGuid();
+            delegatkode ??= RNGKeyGenerator.GenerateKey(4);
             Delegatkode = delegatkode.ToString();
         }
     }
@@ -159,6 +160,9 @@ namespace Stemmesystem.Data
         public string Tittel { get; init; }
         public bool Hemmelig { get; set; }
         public bool Aktiv { get; set; } = false;
+
+        public int KanVelge { get; set; } = 1;
+
         public DateTimeOffset StartTid { get; set; }
         public DateTimeOffset SluttTid { get; set; }
         public IReadOnlyList<Valg> Valg => valg;
@@ -173,7 +177,7 @@ namespace Stemmesystem.Data
             Hemmelig = hemmelig;
         }
 
-        public Votering(string tittel, bool hemmelig, params string[] valgtekst) : this (tittel, hemmelig)
+        public Votering(string tittel, bool hemmelig, params string[] valgtekst) : this(tittel, hemmelig)
         {
             var i = 0;
             foreach (var tekst in valgtekst)
@@ -181,6 +185,10 @@ namespace Stemmesystem.Data
                 valg.Add(new(tekst, i));
                 i++;
             }
+        }
+        public Votering(string tittel, bool hemmelig, int? kanVelge, params string[] valgtekst) : this (tittel, hemmelig, valgtekst)
+        {
+            KanVelge = kanVelge.GetValueOrDefault(1);
         }
 
         public void StartVotering()

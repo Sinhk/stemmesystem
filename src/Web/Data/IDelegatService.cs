@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
 using Stemmesystem.Data.Models;
 using Stemmesystem.Tools;
+using Stemmesystem.Web.Models;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,17 +15,40 @@ namespace Stemmesystem.Web.Data
     {
         Task<Delegat?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default);
         Delegat RegistrerNyDelegat(Arrangement arrangement, NyDelegatModel model);
+        Task<bool> IsValidNo(int arrangement, int number);
+
+        Task<DelegatModel> RegistrerNyDelegat(int arrangementId, DelegatModel model);
+        Task<DelegatModel?> HentDelegat(int arrangementId, int delegatId);
     }
 
     public class DelegatService : IDelegatService
     {
         private readonly IDbContextFactory<StemmesystemContext> _contextFactory;
+        private readonly IMapper _mapper;
         private readonly IKeyGenerator _keyGenerator;
 
-        public DelegatService(IKeyGenerator keyGenerator, IDbContextFactory<StemmesystemContext> contextFactory)
+        public DelegatService(IKeyGenerator keyGenerator, IDbContextFactory<StemmesystemContext> contextFactory, IMapper mapper)
         {
             _keyGenerator = keyGenerator;
             _contextFactory = contextFactory;
+            _mapper = mapper;
+        }
+
+        public async Task<DelegatModel?> HentDelegat(int arrangementId, int delegatId)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Delegat
+                .Where(d => d.ArrangementId == arrangementId && d.Id == delegatId)
+                .ProjectTo<DelegatModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> IsValidNo(int arrangement, int number)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Delegat
+                .Where(d => d.ArrangementId == arrangement)
+                .AllAsync(d => d.Delegatnummer != number);
         }
 
         public Delegat RegistrerNyDelegat(Arrangement arrangement, NyDelegatModel model)
@@ -32,6 +58,16 @@ namespace Stemmesystem.Web.Data
                 throw new StemmeException($"Delegatnummer {model.Nummer} allerede registrert");
 
             return arrangement.NyDelegat(model, delegatkode);
+        }
+
+        public async Task<DelegatModel> RegistrerNyDelegat(int arrangementId, DelegatModel model)
+        {
+            var delegat = _mapper.Map<Delegat>(model);
+            await using var context = _contextFactory.CreateDbContext();
+            delegat.ArrangementId = arrangementId;
+            context.Delegat.Add(delegat);
+            await context.SaveChangesAsync();
+            return _mapper.Map<DelegatModel>(delegat);
         }
 
         public async Task<Delegat?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default)

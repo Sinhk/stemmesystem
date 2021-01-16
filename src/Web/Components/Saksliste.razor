@@ -1,6 +1,13 @@
 ﻿@using Stemmesystem.Data
+@using Stemmesystem.Web.Data;
+
+@inject StemmeService StemmeService
 <h4>Saker</h4>
-    <table class="table">
+    <table class="table table-bordered">
+        <col width="120em">
+        <col width="340em">
+        <col>
+        <col>
         <thead>
             <tr>
                 <th>Saknummer</th>
@@ -26,7 +33,8 @@
                 @foreach (var votering in sak.Voteringer){
                     <tr>
                         <td rowspan="@(votering.Valg.Count+1)">@votering.Tittel</td>
-                        <td colspan="2">Registrerte stemmer: @votering.AvgitStemme.Count</td>                    
+                        <td>Registrerte stemmer: @votering.AvgitStemme.Count</td>                    
+                        <td><button class="btn btn-primary" @onclick="@(async e => await StartVotering(sak.ArrangementId, votering.Id))">Start</button></td>
                     </tr>
                     @foreach (var valg in votering.Valg.OrderBy(v => v.SortId)){
                         <tr>
@@ -40,9 +48,16 @@
          }
         </tbody>
     </table>
+
+
+
 @code {
         [Parameter]
         public ICollection<Sak>? Saker { get; set; }
         [Parameter]
         public int Delegater { get; set; }
+
+        public async Task StartVotering(int arrangementId, int voteringId){
+            await StemmeService.StartVotering(arrangementId, voteringId);
+        }
 }

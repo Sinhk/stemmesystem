@@ -5,40 +5,20 @@
 @inject ArrangementService ArrangementService
 @inject NavigationManager NavigationManager
 
-<h1>Arrangementer</h1>
+<h1>Romsdal og Nordmøre krets's stemmeside</h1>
 
-<p>This component demonstrates fetching data from a service.</p>
-
-@if (arrangementer == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Navn</th>
-                <th>Beskrivelse</th>
-                <th>Saker</th>
-                <th>Delegater</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var arrangement in arrangementer)
-            {
-                <tr>
-                    <td>@arrangement.Navn</td>
-                    <td>@arrangement.Beskrivelse</td>
-                    <td>@arrangement.Saker.Count (@arrangement.Saker.Sum(s => s.Voteringer.Count) voteringer) </td>
-                    <td>@arrangement.Delegater.Count</td>
-                    <td><button class="btn btn-primary" @onclick="@(e => NavigerTilArrangement(arrangement.Navn))">Åpne</button></td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<label >Skriv PIN her for å logge inn:</label>
+<form>
+  <div class="form-row align-items-center">
+      <div class="col-auto">
+        
+        <input type="text" class="form-control form-control-lg" id="pininput" placeholder="PIN">
+      </div>
+      <div class="col-auto">
+          <button type="submit" class="btn btn-primary mb-2">Submit</button>
+      </div>
+  </div>
+</form>
 
 @code {
     private ICollection<Arrangement>? arrangementer;

@@ -1,0 +1,67 @@
+﻿@page "/arrangement/{arrangementId:int}/ny-delegat"
+@page "/arrangement/{arrangementId:int}/{delegatId:int}"
+
+@using Models
+@using Stemmesystem.Web.Data
+@inject IDelegatService DelegatService
+@inject NavigationManager Navigation
+
+<h3>Ny delegat</h3>
+<EditForm Model="@_delegat" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="customValidator" />
+    <ValidationSummary />
+    <div class="form-group">
+        <label>Delegatnummer<InputNumber class="form-control" placeholder="Delegatnummer" @bind-Value="_delegat.Delegatnummer"/></label>
+    </div>
+    <div class="form-group">
+        <label>Navn<InputText class="form-control" placeholder="Navn" @bind-Value="_delegat.Navn"/></label>
+    </div>
+    <div class="form-group">
+        <label>Epost<InputText class="form-control" placeholder="Epost" @bind-Value="_delegat.Epost"/></label>
+    </div>
+    <div class="form-group">
+        <label>Telefon<InputText class="form-control" placeholder="Telefon" @bind-Value="_delegat.Telefon"/></label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lagre</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ArrangementId{get;set;}
+    [Parameter]
+    public int? DelegatId {get;set;}
+
+    private CustomValidator? customValidator;
+
+    private DelegatModel _delegat = new DelegatModel();
+
+    protected override async Task OnInitializedAsync(){
+        if(DelegatId != null){
+            var delegat = await DelegatService.HentDelegat(ArrangementId, DelegatId.Value);
+            if(delegat != null)
+                _delegat = delegat;
+        }
+    }
+
+    private async Task HandleValidSubmit(){
+        customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+        if(!await DelegatService.IsValidNo(ArrangementId, _delegat.Delegatnummer!.Value))
+           errors.Add(nameof(_delegat.Delegatnummer), new List<string>{"Delegatnummer er allerede brukt"});
+        if (errors.Count() > 0)
+        {
+           customValidator?.DisplayErrors(errors);
+           return;
+        }
+        var delegat = await DelegatService.RegistrerNyDelegat(ArrangementId, _delegat);
+        if(delegat != null){
+            Navigation.NavigateTo($"/arrangement/{ArrangementId}/{delegat.Id}");
+            return;
+        }
+        errors.Add(nameof(delegat), new List<string>{"Noe gikk galt"});
+        customValidator?.DisplayErrors(errors);
+    }
+
+}

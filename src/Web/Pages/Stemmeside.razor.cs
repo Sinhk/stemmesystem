@@ -1,23 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using System.Net.Http;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Web.Virtualization;
-using Microsoft.JSInterop;
-using Stemmesystem.Web;
-using Stemmesystem.Web.Shared;
 using Stemmesystem.Web.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Stemmesystem.Web.Data;
 using Stemmesystem.Data;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace Stemmesystem.Web.Pages
 {
@@ -27,7 +13,11 @@ namespace Stemmesystem.Web.Pages
         private DelegatStateProvider? DelegatStateProvider {get;set;}
 
         [Parameter]
-        public string Navn{get;set;}= null!;
+        public string? Navn{get; set;}
+
+        [Parameter]
+        public int? Id{ get; set; }
+
 
         private Arrangement? _arrangement;
         private Delegat? delegat;
@@ -38,7 +28,23 @@ namespace Stemmesystem.Web.Pages
             {
                 delegat = await DelegatStateProvider.GetDelegat();
             }
-            _arrangement = await ArrangementService.HentArrangementAsync(Navn);
+            if(Id != null)
+            {
+                _arrangement = await ArrangementService.HentArrangementAsync(Id.Value);
+                Navn = _arrangement.Navn;
+            }
+            else if(Navn != null)
+            {
+                _arrangement = await ArrangementService.HentArrangementAsync(Navn);
+                Id = _arrangement.Id;
+            }
+            else
+            {
+                //ERROR
+                NavigationManager.NavigateTo("");
+                return;
+            }
+
             if (_arrangement == null)
             {
                 NavigationManager.NavigateTo("");

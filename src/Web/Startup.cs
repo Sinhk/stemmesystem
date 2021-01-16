@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
@@ -32,6 +34,11 @@ namespace Stemmesystem.Web
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRouting(options =>
+            {
+                options.LowercaseUrls = true;
+                //options.LowercaseQueryStrings = true;
+            });
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSignalR();
@@ -40,8 +47,6 @@ namespace Stemmesystem.Web
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
-
-            services.AddSingleton<CountService>();
 
             services.AddDbContextFactory<StemmesystemContext>(options =>
             {
@@ -64,6 +69,8 @@ namespace Stemmesystem.Web
             services.AddScoped<StemmeService>();
             services.AddSingleton<IKeyGenerator, RNGKeyGenerator>();
             services.AddSingleton<IKeyHasher, KeyHasher>();
+
+            services.AddAutoMapper(typeof(AutoMapperConfig));
 
             services
                 .AddAuthentication(options =>
@@ -101,12 +108,13 @@ namespace Stemmesystem.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMapper mapper)
         {
             app.UseResponseCompression();
 
             if (env.IsDevelopment())
             {
+                mapper.ConfigurationProvider.AssertConfigurationIsValid();
                 app.UseDeveloperExceptionPage();
             }
             else

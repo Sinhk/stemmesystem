@@ -21,23 +21,30 @@ namespace Stemmesystem.Web
             {
                 IDbContextFactory<StemmesystemContext> contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<StemmesystemContext>>();
                 await using var db = contextFactory.CreateDbContext();
-                var delegatService = scope.ServiceProvider.GetRequiredService<IDelegatService>();
-
-                if (environment.IsDevelopment())
-                {
-                    db.Database.EnsureDeleted();
-                    db.Database.EnsureCreated();
-                }
-                else
-                {
-                    db.Database.Migrate();
-                }
+                
+                db.Database.Migrate();
+                
                 if (!db.Arrangement.Any())
+                {
+                    var delegatService = scope.ServiceProvider.GetRequiredService<IDelegatService>();
                     SeedData(db, delegatService);
+                }
             }
 
             using (var scope = host.Services.CreateScope())
             {
+                /*
+                IDbContextFactory<StemmesystemContext> contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<StemmesystemContext>>();
+                await using var db = contextFactory.CreateDbContext();
+                var arrangement = db.Arrangement
+                    .Include(a => a.Saker)
+                    .ThenInclude(s => s.Voteringer)
+                    .Where(a=> a.Id == 1)
+                    .Single();
+                arrangement.Saker.First().LeggTil(new Votering("Valg av person", false, 2, "Patrick", "Elin", "Torbjørn", "Annette", "Kjetil", "May Britt", "Odd Kjetil", "Ole", "Silje", "Synnøve", "Åge"));
+                db.SaveChanges();
+                */
+
                 var stemmeService = scope.ServiceProvider.GetRequiredService<StemmeService>();
                 var aktiv = await stemmeService.AktivVotering(1);
                 if (aktiv == null)
@@ -53,6 +60,7 @@ namespace Stemmesystem.Web
             Sak sak = new(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
             var votering1 = new EnkelVotering("Skal vi ha kretsting?", false, "Ja", "Nai", "Kanskje");
             var votering2 = new Flervalgsvotering("Beste farge", new[] { "Rød", "Gul", "Grønn", "Blå" });
+            var votering3 = new Votering("Valg av person", false, 2, "Patrick","Elin","Torbjørn","Annette", "Kjetil", "May Britt", "Odd Kjetil", "Ole", "Silje", "Synnøve","Åge");
             sak.LeggTil(votering1, votering2);
             arrangement.LeggTil(sak);
             delegatService.RegistrerNyDelegat(arrangement, new(1) { Navn = "Sindre", Epost = "sindre.kroknes@gmail.com", Telefon = "99150713" });

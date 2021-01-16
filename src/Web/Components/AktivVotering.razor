@@ -8,15 +8,32 @@
 <h5>@Votering.Tittel</h5>
 
 <div class="btn-group btn-group-toggle" data-toggle="buttons">
-@foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
-  <label class="btn @(Stemme?.ValgId == valg.Id ? "btn-primary" :"btn-outline-primary") btn-lg">
-    <input type="radio" name="options" id="@valg.Id" disabled=@(HarStemmt && Stemme == null) autocomplete="off" @onclick="@(async e => await RegistrerStemme(valg.Id))">@valg.Navn
-  </label>
+@if(Votering.KanVelge > 1){
+    <form>
+        @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
+        <div class="form-check">            
+            <input type="checkbox" class="form-check-input" value="@valg.Id" id="check@valg.Id">
+            <label class="form-check-label" for="check@valg.Id">@valg.Navn</label>
+        </div>
+        }
+        <br>
+        <button class="btn @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
+        <button class="btn btn-success" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem</button>
+    </form>
 }
-</div>
-<br>
+else
+{
+    @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
+      <label class="btn @(Stemme?.ValgId == valg.Id ? "btn-primary" :"btn-outline-primary") btn-lg">
+        <input type="radio" name="options" id="@valg.Id" disabled=@(HarStemmt && Stemme == null) autocomplete="off" @onclick="@(async e => await RegistrerStemme(valg.Id))">@valg.Navn
+      </label>
+    }
+    <br>
 <br>
 <button class="btn @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
+}
+</div>
+
 
 
 @code {

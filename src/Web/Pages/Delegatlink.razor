@@ -33,6 +33,6 @@ else
             DelegatStateProvider.Delegatkode = Kode;
             await DelegatStateProvider.SaveChangesAsync();
         }
-        NavigationManager.NavigateTo(delegat.Arrangement.Navn);
+        NavigationManager.NavigateTo($"/arrangement/{delegat.ArrangementId}");
     }
 }

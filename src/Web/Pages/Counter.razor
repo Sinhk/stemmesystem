@@ -17,7 +17,6 @@
 @code {
     private int currentCount = 0;
     private HubConnection? hubConnection;
-
     private async Task IncrementCount()
     {
         await hubConnection.SendAsync("SendUpdate");
