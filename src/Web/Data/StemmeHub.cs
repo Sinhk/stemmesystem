@@ -15,5 +15,7 @@ namespace Stemmesystem.Web.Data
     public interface IStemmeClient
     {
         Task NyStemme(NyStemmeEvent stemmEvent);
+        Task VoteringStartet(VoteringStartetEvent stemmEvent);
+        Task VoteringStoppet(VoteringStoppetEvent stemmEvent);
     }
 }

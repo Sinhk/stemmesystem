@@ -99,6 +99,21 @@ namespace Stemmesystem.Web.Data
             votering.StartVotering();
 
             await context.SaveChangesAsync(cancellationToken);
+            Console.WriteLine($"Har startet votering {voteringId} for arrangement {arrangement.Navn}");
+            await _hubContext.Clients.Group(arrangement.Navn).VoteringStartet(new(votering.Id));
+        }
+
+        public async Task StoppVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
+            context.Attach(arrangement);
+            var votering = arrangement.FinnVotering(voteringId);
+            if (votering == null)
+                throw new StemmeException("Fant ikke valgt votering");
+            votering.AvsluttVotering();
+            await context.SaveChangesAsync(cancellationToken);
+            await _hubContext.Clients.Group(arrangement.Navn).VoteringStoppet(new(votering.Id));
         }
 
         public async Task<bool> HarStemmt(int voteringId, string delegatKode, CancellationToken cancellationToken = default)

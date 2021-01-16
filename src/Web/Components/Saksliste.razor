@@ -33,8 +33,13 @@
                 @foreach (var votering in sak.Voteringer){
                     <tr>
                         <td rowspan="@(votering.Valg.Count+1)">@votering.Tittel</td>
-                        <td>Registrerte stemmer: @votering.AvgitStemme.Count</td>                    
-                        <td><button class="btn btn-primary" @onclick="@(async e => await StartVotering(sak.ArrangementId, votering.Id))">Start</button></td>
+                        <td>Registrerte stemmer: @votering.AvgitStemme.Count</td>
+                        @if(votering.Aktiv){
+                            <td><button class="btn btn-danger" @onclick="@(async e => await StoppVotering(sak.ArrangementId, votering.Id))">Stopp</button></td>
+                        }else{
+                            <td><button class="btn btn-success" @onclick="@(async e => await StartVotering(sak.ArrangementId, votering.Id))">Start</button></td>
+                        }
+                        
                     </tr>
                     @foreach (var valg in votering.Valg.OrderBy(v => v.SortId)){
                         <tr>
@@ -59,5 +64,8 @@
 
         public async Task StartVotering(int arrangementId, int voteringId){
             await StemmeService.StartVotering(arrangementId, voteringId);
+        }
+        public async Task StoppVotering(int arrangementId, int voteringId){
+            await StemmeService.StoppVotering(arrangementId, voteringId);
         }
 }

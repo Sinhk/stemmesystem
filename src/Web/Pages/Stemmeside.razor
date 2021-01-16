@@ -27,6 +27,8 @@ else
 
         if(_arrangement.AktivVotering() != null){
             <AktivVotering Votering=_arrangement.AktivVotering() DelegatKode=@delegat.Delegatkode/>
+        }else{
+            <p><em>Ingen aktiv votering</em></p>
         }
     }
     else

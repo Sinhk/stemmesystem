@@ -53,6 +53,8 @@ namespace Stemmesystem.Web.Pages
 
             _hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.ToAbsoluteUri("/stemme-hub")).WithAutomaticReconnect().Build();
             _hubConnection.On<NyStemmeEvent>(nameof(IStemmeClient.NyStemme), NyStemme);
+            _hubConnection.On<VoteringStartetEvent>(nameof(IStemmeClient.VoteringStartet), VoteringStartet);
+            _hubConnection.On<VoteringStoppetEvent>(nameof(IStemmeClient.VoteringStoppet), VoteringStoppet);
             await _hubConnection.StartAsync();
             await _hubConnection.SendAsync(nameof(StemmeHub.BliMedIArrangement), Navn);
         }
@@ -73,16 +75,33 @@ namespace Stemmesystem.Web.Pages
                 await _hubConnection.DisposeAsync();
         }
 
-        public async Task NyStemme(NyStemmeEvent stemme)
+        public async Task NyStemme(NyStemmeEvent e)
         {
-            //TODO: Update based on event
+            //TODO: Partial update based on event
             /*if (_arrangement == null) return;
             var votering = _arrangement.FinnVotering(stemme.VoteringId);
             
             ArrangementService.
             votering.Stemmer.Add()
             */
-            _arrangement = await ArrangementService.HentArrangementAsync(Navn);
+            System.Console.WriteLine($"Ny stemme {e.VoteringId}");
+            _arrangement = await ArrangementService.HentArrangementAsync(Id!.Value);
+            StateHasChanged();
+        }
+
+        public async Task VoteringStartet(VoteringStartetEvent e)
+        {
+            //TODO: Partial update based on event
+            System.Console.WriteLine($"Startet votering{e.VoteringId}");
+            _arrangement = await ArrangementService.HentArrangementAsync(Id!.Value);
+            StateHasChanged();
+        }
+
+        public async Task VoteringStoppet(VoteringStoppetEvent e)
+        {
+            //TODO: Partial update based on event
+            System.Console.WriteLine($"Stoppet votering{e.VoteringId}");
+            _arrangement = await ArrangementService.HentArrangementAsync(Id!.Value);
             StateHasChanged();
         }
     }
