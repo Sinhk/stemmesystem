@@ -6,14 +6,14 @@ namespace Stemmesystem.Tools
 {
     public interface IKeyHasher
     {
-        string CalculateHash(string key);
-        bool VerifyHashedKey(string hashedPassword, string providedPassword);
+        string CreateHash(string key);
+        bool VerifyHash(string hashedPassword, string providedPassword);
     }
     public class KeyHasher : IKeyHasher
     {
         private readonly int _iterCount = 1000;
         private readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
-        public string CalculateHash(string key)
+        public string CreateHash(string key)
         {
             return Convert.ToBase64String(HashKey(key, _rng));
         }
@@ -50,7 +50,7 @@ namespace Stemmesystem.Tools
             buffer[offset + 3] = (byte)(value >> 0);
         }
 
-        public virtual bool VerifyHashedKey(string hashedKey, string providedKey)
+        public virtual bool VerifyHash(string hashedKey, string providedKey)
         {
             if (hashedKey == null)
             {

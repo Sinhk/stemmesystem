@@ -9,19 +9,12 @@ namespace Tools.Tests
 {
     public class RNGCodeGeneratorTests
     {
-        private readonly IKeyGenerator _generator;
-
-        public RNGCodeGeneratorTests()
-        {
-            _generator = new RNGKeyGenerator();
-        }
-
         [Fact]
         public void GeneratesCorrectLength()
         {
             foreach (var length in Enumerable.Range(1, 20))
             {
-                var key = _generator.GenerateKey(length);
+                var key = RNGKeyGenerator.GenerateKey(length);
                 key.Length.ShouldBe(length);
             }
         }
@@ -30,14 +23,47 @@ namespace Tools.Tests
         public void GeneratesRandomKeys()
         {
             var toGenerate = 1000;
-            var length = 4;
+            var length = 20;
             var keys = new List<string>(toGenerate);
             for (int i = 0; i < toGenerate; i++)
             {
-                var key = _generator.GenerateKey(length);
+                var key = RNGKeyGenerator.GenerateKey(length);
                 keys.ShouldNotContain(key);
                 keys.Add(key);
             }
         }
+    }
+
+    public class KeyHasherTest
+    {
+        private KeyHasher _keyHasher;
+        public KeyHasherTest()
+        {
+            _keyHasher = new KeyHasher();
+        }
+
+        [Fact]
+        public void ValidatesOnCorrectKey()
+        {
+            var key = "some key";
+
+            var hash = _keyHasher.CreateHash(key);
+
+            _keyHasher.VerifyHash(hash, key).ShouldBeTrue();
+
+        }
+
+        [Fact]
+        public void FailesValidationOnIncorrectKey()
+        {
+            var key = "some key";
+            var wrongKey = "some other key";
+
+            var hash = _keyHasher.CreateHash(key);
+
+            _keyHasher.VerifyHash(hash, wrongKey).ShouldBeFalse();
+        }
+
+
     }
 }

@@ -53,7 +53,7 @@ namespace Stemmesystem.Web.Data
                 gammelStemme = votering.Stemmer.FirstOrDefault(s =>
                 {
                     var hash = context.Entry(s).Property("RevoteKey").CurrentValue as string;
-                    return _keyHasher.VerifyHashedKey(hash, revoteKey);
+                    return _keyHasher.VerifyHash(hash, revoteKey);
                 });
 
                 if (gammelStemme == null)
@@ -70,7 +70,7 @@ namespace Stemmesystem.Web.Data
 
             var stemme = votering.RegistrerStemme(valgId, delegat, gammelStemme);
             var newKey = _keyGenerator.GenerateKey(20);
-            var revoteHash = _keyHasher.CalculateHash(newKey);
+            var revoteHash = _keyHasher.CreateHash(newKey);
 
             context.Entry(stemme).Property("RevoteKey").CurrentValue = revoteHash;
             await context.SaveChangesAsync(cancellationToken);
