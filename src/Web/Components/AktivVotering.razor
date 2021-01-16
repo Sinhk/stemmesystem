@@ -7,7 +7,7 @@
 <h4>@Votering.Sak.Beskrivelse</h4>
 <h5>@Votering.Tittel</h5>
 
-<div class="btn-group btn-group-toggle" data-toggle="buttons">
+
 @if(Votering.KanVelge > 1){
     <form>
         @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
@@ -23,16 +23,18 @@
 }
 else
 {
+    <div class="btn-group btn-group-toggle" data-toggle="buttons">
     @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
       <label class="btn @(Stemme?.ValgId == valg.Id ? "btn-primary" :"btn-outline-primary") btn-lg">
         <input type="radio" name="options" id="@valg.Id" disabled=@(HarStemmt && Stemme == null) autocomplete="off" @onclick="@(async e => await RegistrerStemme(valg.Id))">@valg.Navn
       </label>
     }
     <br>
-<br>
-<button class="btn @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
-}
+    <br>
+    <button class="btn @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
 </div>
+}
+
 
 
 
