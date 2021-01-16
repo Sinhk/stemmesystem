@@ -5,7 +5,7 @@ stages:
 
 build:
     stage: build
-    image: mcr.microsoft.com/dotnet/sdk:5
+    image: mcr.microsoft.com/dotnet/sdk:5.0
     script:
         - "dotnet build"
     artifacts:
@@ -14,7 +14,7 @@ build:
 
 test:
     stage: test
-    image: mcr.microsoft.com/dotnet/sdk:5
+    image: mcr.microsoft.com/dotnet/sdk:5.0
     script: 
         - "dotnet test"
 production:
