@@ -3,6 +3,7 @@ image: mcr.microsoft.com/dotnet/core/sdk:latest
 stages:
     - build
     - test
+    - deploy
 
 build:
     stage: build
@@ -16,3 +17,13 @@ test:
     stage: test
     script: 
         - "dotnet test"
+production:
+    stage: deploy
+    script: 
+    - curl https://cli-assets.heroku.com/install.sh | sh
+    - heroku container:login
+    - docker build -t web
+    - heroku container:push web -a stemmesystem
+    - heroku container:release web -a stemmesystem
+    only: 
+    - master 
