@@ -2,34 +2,62 @@
 
 @using Stemmesystem.Web.Data
 @using Stemmesystem.Data
-@inject ArrangementService ArrangementService
+@inject IDelegatService DelegatService
 @inject NavigationManager NavigationManager
 
 <h1>Romsdal og Nordmøre krets's stemmeside</h1>
 
 <label >Skriv PIN her for å logge inn:</label>
-<form>
+<form @onsubmit="DelegatLogin">
+    @if(error != null){
+        <span class="text-danger">@error</span>
+    }
   <div class="form-row align-items-center">
       <div class="col-auto">
         
-        <input type="text" class="form-control form-control-lg" id="pininput" placeholder="PIN">
+        <input type="text" class="form-control form-control-lg" id="pininput" placeholder="PIN" @bind-value=pin>
       </div>
       <div class="col-auto">
-          <button type="submit" class="btn btn-primary mb-2">Submit</button>
+          <button type="submit" class="btn btn-primary mb-2">Logg inn</button>
       </div>
   </div>
 </form>
 
 @code {
+    private string? pin;
+    private string? error;
     private ICollection<Arrangement>? arrangementer;
 
+    [CascadingParameter]
+    private DelegatStateProvider? DelegatStateProvider { get; set; }
+
+    /*
     protected override async Task OnInitializedAsync()
     {
         arrangementer = await ArrangementService.HentArrangementAsync();
     }
+    */
+    private async Task DelegatLogin(){
+        error = null;
+        if (pin == null)
+        {
+            error = "Ingen PIN oppgitt";
+            return;
+        }
+        if (pin.Length < 4){
+            error = "PIN er minimum 4 tegn";
+            return;
+        }
 
-    private void NavigerTilArrangement(string navn)
-    {
-        NavigationManager.NavigateTo(navn);
+        var delegat = await DelegatService.ValiderKode(pin);
+        if(delegat == null){
+            error = "Ikke en gyldig PIN";
+            return;
+        }
+        if(DelegatStateProvider != null){
+            DelegatStateProvider.Delegatkode = pin;
+            await DelegatStateProvider.SaveChangesAsync();
+        }
+        NavigationManager.NavigateTo($"/arrangement/{delegat.ArrangementId}");
     }
 }

@@ -15,63 +15,41 @@ namespace Stemmesystem.Web
         public static async Task Main(string[] args)
         {
             IHost host = CreateHostBuilder(args).Build();
-            var environment = host.Services.GetRequiredService<IHostEnvironment>();
+            //var environment = host.Services.GetRequiredService<IHostEnvironment>();
 
             using (var scope = host.Services.CreateScope())
             {
                 IDbContextFactory<StemmesystemContext> contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<StemmesystemContext>>();
                 await using var db = contextFactory.CreateDbContext();
                 
-                db.Database.Migrate();
+                await db.Database.MigrateAsync();
                 
                 if (!db.Arrangement.Any())
                 {
                     var delegatService = scope.ServiceProvider.GetRequiredService<IDelegatService>();
-                    SeedData(db, delegatService);
+                    await SeedData(db, delegatService);
                 }
-            }
-
-            using (var scope = host.Services.CreateScope())
-            {
-                
-                IDbContextFactory<StemmesystemContext> contextFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<StemmesystemContext>>();
-                await using var db = contextFactory.CreateDbContext();
-                var arrangement = db.Arrangement
-                    .Include(a => a.Saker)
-                    .ThenInclude(s => s.Voteringer)
-                    .Where(a=> a.Id == 1)
-                    .Single();
-                if (arrangement.Saker.Count < 3)
-                {
-                    arrangement.Saker.First().LeggTil(new Votering("Valg av person", false, 2, "Patrick", "Elin", "Torbjørn", "Annette", "Kjetil", "May Britt", "Odd Kjetil", "Ole", "Silje", "Synnøve", "Åge"));
-                    db.SaveChanges();
-                }
-
-                var stemmeService = scope.ServiceProvider.GetRequiredService<StemmeService>();
-                var aktiv = await stemmeService.AktivVotering(1);
-                if (aktiv == null)
-                    await stemmeService.StartVotering(1, 1);
             }
 
             await host.RunAsync();
         }
 
-        private static void SeedData(StemmesystemContext db, IDelegatService delegatService)
+        private static async Task SeedData(StemmesystemContext db, IDelegatService delegatService)
         {
             Arrangement arrangement = new("Testarrangement") { Beskrivelse = "Bare en test" };
             Sak sak = new(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
             var votering1 = new EnkelVotering("Skal vi ha kretsting?", false, "Ja", "Nai", "Kanskje");
             var votering2 = new Flervalgsvotering("Beste farge", new[] { "Rød", "Gul", "Grønn", "Blå" });
             var votering3 = new Votering("Valg av person", false, 2, "Patrick","Elin","Torbjørn","Annette", "Kjetil", "May Britt", "Odd Kjetil", "Ole", "Silje", "Synnøve","Åge");
-            sak.LeggTil(votering1, votering2);
+            sak.LeggTil(votering1, votering2, votering3);
             arrangement.LeggTil(sak);
             delegatService.RegistrerNyDelegat(arrangement, new(1) { Navn = "Sindre", Epost = "sindre.kroknes@gmail.com", Telefon = "99150713" });
-            delegatService.RegistrerNyDelegat(arrangement, new(2) { Navn = "Silje" });
-            delegatService.RegistrerNyDelegat(arrangement, new(3) { Navn = "Patrick" });
+            delegatService.RegistrerNyDelegat(arrangement, new(2) { Navn = "Silje", Epost = "siljeth.kroknes@gmail.com"});
+            delegatService.RegistrerNyDelegat(arrangement, new(3) { Navn = "Patrick", Epost = "patrick.gule@gmail.com" });
 
             db.Arrangement.Add(arrangement);
 
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
