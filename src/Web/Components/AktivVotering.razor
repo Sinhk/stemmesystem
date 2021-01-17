@@ -29,10 +29,11 @@ else
         <input type="radio" name="options" id="@valg.Id" disabled=@(HarStemmt && Stemme == null) autocomplete="off" @onclick="@(async e => await RegistrerStemme(valg.Id))">@valg.Navn
       </label>
     }
+    </div>
     <br>
     <br>
     <button class="btn @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
-</div>
+
 }
 
 
