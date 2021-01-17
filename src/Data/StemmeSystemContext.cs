@@ -1,13 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace Stemmesystem.Data
 {
-    public class StemmesystemContext : DbContext
+    public class StemmesystemContext : DbContext, IDataProtectionKeyContext
     {
         public DbSet<Delegat> Delegat => Set<Delegat>();
         public DbSet<Arrangement> Arrangement => Set<Arrangement>();
         public DbSet<Votering> Votering => Set<Votering>();
+
+        public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
         public StemmesystemContext(DbContextOptions<StemmesystemContext> options) : base(options)
         {

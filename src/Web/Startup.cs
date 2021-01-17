@@ -4,6 +4,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Routing;
@@ -63,6 +64,12 @@ namespace Stemmesystem.Web
                     //options.UseSqlServer(Configuration.GetConnectionString("StemmesystemDb"));
                 }
             });
+
+            if (Environment.IsProduction())
+            {
+                services.AddDataProtection()
+                    .PersistKeysToDbContext<StemmesystemContext>();
+            }
 
             services.AddScoped<ArrangementService>();
             services.AddScoped<IDelegatService, DelegatService>();
