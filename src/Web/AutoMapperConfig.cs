@@ -17,6 +17,9 @@ namespace Stemmesystem.Web
 
             CreateMap<Delegat, DelegatModel>()
                 .ReverseMap();
+
+            CreateMap<Sak, SakModel>()
+                .ReverseMap();
         }
     }
 }

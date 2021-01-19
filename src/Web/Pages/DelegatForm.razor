@@ -1,5 +1,5 @@
-﻿@page "/arrangement/{arrangementId:int}/ny-delegat"
-@page "/arrangement/{arrangementId:int}/{delegatId:int}"
+﻿@page "/arrangement/{arrangementId:int}/delegat/ny-delegat"
+@page "/arrangement/{arrangementId:int}/delegat/{delegatId:int}"
 
 @using Models
 @using Stemmesystem.Web.Data
@@ -35,7 +35,7 @@
 
     private CustomValidator? customValidator;
 
-    private DelegatModel _delegat = new DelegatModel();
+    private DelegatModel _delegat = new();
 
     protected override async Task OnInitializedAsync(){
         if(DelegatId != null){
@@ -50,18 +50,14 @@
         var errors = new Dictionary<string, List<string>>();
         if(!await DelegatService.IsValidNo(ArrangementId, _delegat.Delegatnummer!.Value))
            errors.Add(nameof(_delegat.Delegatnummer), new List<string>{"Delegatnummer er allerede brukt"});
-        if (errors.Count() > 0)
+        if (errors.Count > 0)
         {
            customValidator?.DisplayErrors(errors);
            return;
         }
-        var delegat = await DelegatService.RegistrerNyDelegat(ArrangementId, _delegat);
-        if(delegat != null){
-            Navigation.NavigateTo($"/arrangement/{ArrangementId}/{delegat.Id}");
-            return;
-        }
-        errors.Add(nameof(delegat), new List<string>{"Noe gikk galt"});
-        customValidator?.DisplayErrors(errors);
+        _delegat = await DelegatService.RegistrerNyDelegat(ArrangementId, _delegat);
+        Navigation.NavigateTo($"/arrangement/{ArrangementId}/delegat/{_delegat.Id}");
+        return;
     }
 
 }

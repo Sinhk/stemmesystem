@@ -82,6 +82,7 @@ namespace Stemmesystem.Web
 
             services.AddScoped<ArrangementService>();
             services.AddScoped<IDelegatService, DelegatService>();
+            services.AddScoped<ISakService, SakService>();
             services.AddScoped<StemmeService>();
             services.AddSingleton<IKeyGenerator, RNGKeyGenerator>();
             services.AddSingleton<IKeyHasher, KeyHasher>();
