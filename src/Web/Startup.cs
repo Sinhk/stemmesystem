@@ -64,6 +64,7 @@ namespace Stemmesystem.Web
                     //options.UseSqlServer(Configuration.GetConnectionString("StemmesystemDb"));
                 }
             });
+            services.AddScoped<StemmesystemContext>(p => p.GetRequiredService<IDbContextFactory<StemmesystemContext>>().CreateDbContext());
 
             if (Environment.IsProduction())
             {
