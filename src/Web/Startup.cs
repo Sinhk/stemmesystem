@@ -79,18 +79,21 @@ namespace Stemmesystem.Web
 
             services.AddAutoMapper(typeof(AutoMapperConfig));
 
-            services
+            var authBuilder = services
                 .AddAuthentication(options =>
                 {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
                 })
-                .AddCookie()
-                .AddGoogle(options =>
+                .AddCookie();
+
+            if(Configuration.GetSection("Authentication:Google").GetChildren().Any()){
+                authBuilder.AddGoogle(options =>
                 {
                     options.ClientId = Configuration["Authentication:Google:ClientId"];
                     options.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
                 });
+            }
         }
 
         private static string ParseHerokuPostgresString()
