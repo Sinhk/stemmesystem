@@ -123,7 +123,7 @@ namespace Stemmesystem.Data
         private Arrangement? arrangement;
 
         public int Id { get; internal set; }
-        public int Nummer { get; private set; }
+        public string Nummer { get; private set; }
         public string Tittel { get; private set; }
 
         public Arrangement Arrangement { get => arrangement ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Arrangement)); internal set => arrangement = value; }
@@ -137,10 +137,13 @@ namespace Stemmesystem.Data
             }
         }
 
-        public Sak(int nummer, string tittel)
+        public Sak(string nummer, string tittel)
         {
             Nummer = nummer;
             Tittel = tittel;
+        }
+        public Sak(int nummer, string tittel) : this(nummer.ToString(), tittel)
+        {
         }
 
         public string? Beskrivelse { get; set; }
