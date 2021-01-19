@@ -3,38 +3,39 @@
 @inject StemmeService StemmeService
 
 
-<h3>@Votering.Sak.Tittel</h3>
-<h4>@Votering.Sak.Beskrivelse</h4>
-<h5>@Votering.Tittel</h5>
-
-
+<div class="row">
+  <div class="col-xl-4 col-md-6">
+    <h3>@Votering.Sak.Tittel</h3>
+    <h4>@Votering.Sak.Beskrivelse</h4>
+    <h5>@Votering.Tittel</h5>    
 @if(Votering.KanVelge > 1){
-    <form>
-        @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
-        <div class="form-check">            
-            <input type="checkbox" class="form-check-input" value="@valg.Id" id="check@valg.Id">
-            <label class="form-check-label" for="check@valg.Id">@valg.Navn</label>
-        </div>
-        }
-        <br>
-        <button class="btn @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
-        <button class="btn btn-success" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem</button>
-    </form>
+    <div class="btn-group-toggle btn-group-vertical btn-block" data-toggle="buttons">
+    @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
+        <label class="btn btn-outline-primary">
+        <input type="checkbox" autocomplete="off" value="@valg.Id"> @valg.Navn
+        </label>
+    }
+    </div>
+    <div class="row mt-2 justify-content-around">
+        <button class="btn col-4 @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>    
+        <button class="btn col-4 btn-outline-success" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem</button>    
+    </div>
 }
 else
 {
     <div class="btn-group btn-group-toggle" data-toggle="buttons">
     @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
-      <label class="btn @(Stemme?.ValgId == valg.Id ? "btn-primary" :"btn-outline-primary") btn-lg">
+        <label class="btn @(Stemme?.ValgId == valg.Id ? "btn-primary" :"btn-outline-primary") btn-lg">
         <input type="radio" name="options" id="@valg.Id" disabled=@(HarStemmt && Stemme == null) autocomplete="off" @onclick="@(async e => await RegistrerStemme(valg.Id))">@valg.Navn
-      </label>
+        </label>
     }
     </div>
-    <br>
-    <br>
-    <button class="btn @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
 
+    <button class="btn mt-2 @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
 }
+  </div>
+</div>
+
 
 
 
@@ -44,7 +45,7 @@ else
     public Votering Votering { get; set; } = null!;
 
     [Parameter]
-    public string? DelegatKode { get; set; }
+    public string? Delegatkode { get; set; }
 
     protected Stemme? Stemme;
     private string? _revoteKey;
@@ -52,9 +53,9 @@ else
 
 
     public async Task RegistrerStemme(Guid valgId){
-        if (DelegatKode == null)
+        if (Delegatkode == null)
             return;
-        var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatKode, valgId, _revoteKey);
+        var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, Delegatkode, valgId, _revoteKey);
         Stemme = stemme;
         _revoteKey =  revoteKey;
         HarStemmt = true;
@@ -62,13 +63,13 @@ else
     }
 
     protected override async Task OnInitializedAsync(){
-        if (DelegatKode != null)
+        if (Delegatkode != null)
         {
-            HarStemmt = await StemmeService.HarStemmt(Votering.Id, DelegatKode);
+            HarStemmt = await StemmeService.HarStemmt(Votering.Id, Delegatkode);
 
             if (HarStemmt && !Votering.Hemmelig)
             {
-                Stemme = await StemmeService.FinnStemme(Votering.Id, DelegatKode);
+                Stemme = await StemmeService.FinnStemme(Votering.Id, Delegatkode);
             }
         }
     }
