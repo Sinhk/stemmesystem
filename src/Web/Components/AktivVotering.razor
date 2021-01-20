@@ -8,69 +8,19 @@
     <h3>@Votering.Sak.Tittel</h3>
     <h4>@Votering.Sak.Beskrivelse</h4>
     <h5>@Votering.Tittel</h5>    
-@if(Votering.KanVelge > 1){
-    <div class="btn-group-toggle btn-group-vertical btn-block" data-toggle="buttons">
-    @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
-        <label class="btn btn-outline-primary">
-        <input type="checkbox" autocomplete="off" value="@valg.Id"> @valg.Navn
-        </label>
+    @if(Votering.KanVelge > 1)
+    {
+        <Flervalgsvotering Votering=@Votering />
     }
-    </div>
-    <div class="row mt-2 justify-content-around">
-        <button class="btn col-4 @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>    
-        <button class="btn col-4 btn-outline-success" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem</button>    
-    </div>
-}
-else
-{
-    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-    @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
-        <label class="btn @(Stemme?.ValgId == valg.Id ? "btn-primary" :"btn-outline-primary") btn-lg">
-        <input type="radio" name="options" id="@valg.Id" disabled=@(HarStemmt && Stemme == null) autocomplete="off" @onclick="@(async e => await RegistrerStemme(valg.Id))">@valg.Navn
-        </label>
+    else
+    {
+        <Enkelvotering Votering=@Votering />
     }
-    </div>
-
-    <button class="btn mt-2 @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
-}
   </div>
 </div>
-
-
-
 
 
 @code {
     [Parameter]
     public Votering Votering { get; set; } = null!;
-
-    [Parameter]
-    public string? Delegatkode { get; set; }
-
-    protected Stemme? Stemme;
-    private string? _revoteKey;
-    protected bool HarStemmt;
-
-
-    public async Task RegistrerStemme(Guid valgId){
-        if (Delegatkode == null)
-            return;
-        var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, Delegatkode, valgId, _revoteKey);
-        Stemme = stemme;
-        _revoteKey =  revoteKey;
-        HarStemmt = true;
-
-    }
-
-    protected override async Task OnInitializedAsync(){
-        if (Delegatkode != null)
-        {
-            HarStemmt = await StemmeService.HarStemmt(Votering.Id, Delegatkode);
-
-            if (HarStemmt && !Votering.Hemmelig)
-            {
-                Stemme = await StemmeService.FinnStemme(Votering.Id, Delegatkode);
-            }
-        }
-    }
 }

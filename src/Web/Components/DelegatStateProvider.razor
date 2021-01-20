@@ -16,7 +16,8 @@ else
 }
 
 @code {
-    private static readonly string key = "delegatkode";
+    private static readonly string delegatKey = "delegatkode";
+    private static readonly string revoteKey = "revotekeys";
     private bool isLoaded;
     private bool isLoadedDelegat;
     private string? delegatkode;
@@ -24,7 +25,8 @@ else
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    public string? Delegatkode { get => delegatkode; set { delegatkode = value; _delegat = null; isLoadedDelegat = false; } }
+    public string? Delegatkode { get => delegatkode; set { delegatkode = value; _delegat = null; isLoadedDelegat = false; RevoteKeys.Clear(); } }
+    public IDictionary<int, string> RevoteKeys { get; set; } = new Dictionary<int, string>();
 
     private Delegat? _delegat;
 
@@ -42,21 +44,27 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await ProtectedSessionStore.GetAsync<string>(key);
+        var result = await ProtectedSessionStore.GetAsync<string>(delegatKey);
         Delegatkode = result.Success ? result.Value : null;
+        
+        var keysResult = await ProtectedSessionStore.GetAsync<Dictionary<int, string>>(revoteKey);
+        if (keysResult.Success)
+            RevoteKeys = keysResult.Value;
+        
         isLoaded = true;
     }
 
     public async Task SaveChangesAsync()
     {
         if (!string.IsNullOrEmpty(Delegatkode))
-            await ProtectedSessionStore.SetAsync(key, Delegatkode);
+            await ProtectedSessionStore.SetAsync(delegatKey, Delegatkode);
+        if (RevoteKeys.Any())
+            await ProtectedSessionStore.SetAsync(revoteKey, RevoteKeys);
         OnChange?.Invoke();
         if (OnChangeAsync != null)
         {
             await OnChangeAsync.Invoke();
         }
     }
-
 
 }

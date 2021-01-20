@@ -84,7 +84,7 @@ namespace Stemmesystem.Web
             services.AddScoped<IDelegatService, DelegatService>();
             services.AddScoped<ISakService, SakService>();
             services.AddScoped<StemmeService>();
-            services.AddSingleton<IKeyGenerator, RNGKeyGenerator>();
+            services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
             services.AddSingleton<IKeyHasher, KeyHasher>();
 
             services.AddAutoMapper(typeof(AutoMapperConfig));

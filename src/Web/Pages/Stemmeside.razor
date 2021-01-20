@@ -26,7 +26,7 @@ else
         <EndreDelegatDialog Delegat=@delegat/>
 
         if(_arrangement.AktivVotering() != null){
-            <AktivVotering Votering=_arrangement.AktivVotering() DelegatKode=@delegat.Delegatkode/>
+            <AktivVotering Votering=_arrangement.AktivVotering()/>
         }else{
             <p><em>Ingen aktiv votering</em></p>
         }
