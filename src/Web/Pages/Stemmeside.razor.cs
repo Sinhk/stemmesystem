@@ -84,7 +84,6 @@ namespace Stemmesystem.Web.Pages
             ArrangementService.
             votering.Stemmer.Add()
             */
-            System.Console.WriteLine($"Ny stemme {e.VoteringId}");
             _arrangement = await ArrangementService.HentArrangementAsync(Id!.Value);
             StateHasChanged();
         }

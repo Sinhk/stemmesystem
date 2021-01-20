@@ -14,7 +14,7 @@ namespace Tools.Tests
         {
             foreach (var length in Enumerable.Range(1, 20))
             {
-                var key = RNGKeyGenerator.GenerateKey(length);
+                var key = RngKeyGenerator.GenerateKey(length);
                 key.Length.ShouldBe(length);
             }
         }
@@ -27,7 +27,7 @@ namespace Tools.Tests
             var keys = new List<string>(toGenerate);
             for (int i = 0; i < toGenerate; i++)
             {
-                var key = RNGKeyGenerator.GenerateKey(length);
+                var key = RngKeyGenerator.GenerateKey(length);
                 keys.ShouldNotContain(key);
                 keys.Add(key);
             }

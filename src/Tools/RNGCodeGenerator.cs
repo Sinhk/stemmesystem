@@ -1,24 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Stemmesystem.Tools
 {
+    public enum KeyType{SimpleAlphanumeric,FullAlphanumeric}
     public interface IKeyGenerator
     {
-        string GenerateKey(int length);
-
+        string GenerateKey(int length, KeyType type = KeyType.SimpleAlphanumeric);
     }
-    public class RNGKeyGenerator : IKeyGenerator
+    public class RngKeyGenerator : IKeyGenerator
     {
-        private static readonly char[] chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".ToCharArray();
+        private static readonly char[] CharsSimple = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".ToCharArray();
+        private static readonly char[] CharsFull = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
 
-        string IKeyGenerator.GenerateKey(int length) => RNGKeyGenerator.GenerateKey(length);
+        string IKeyGenerator.GenerateKey(int length, KeyType type) => GenerateKey(length,  type);
         
-        public static string GenerateKey(int length)
+        public static string GenerateKey(int length, KeyType type = KeyType.SimpleAlphanumeric)
         {
+            var chars = type switch
+            {
+                KeyType.SimpleAlphanumeric => CharsSimple
+                , KeyType.FullAlphanumeric => CharsFull
+                , _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
+            
             StringBuilder builder = new StringBuilder(length);
             for (int i = 0; i < length; i++)
             {

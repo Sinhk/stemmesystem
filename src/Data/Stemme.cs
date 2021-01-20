@@ -1,5 +1,4 @@
-﻿using CSharpVitamins;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data.Models;
 using Stemmesystem.Tools;
 using Stemmesystem.Web.Data;
@@ -7,14 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Stemmesystem.Data
 {
     public record Stemme
     {
         internal Guid Id { get; private set; }
-        public Guid ValgId { get; private set; }
+        public Guid? ValgId { get; private set; }
 
         private Stemme() { }
         public Stemme(Guid valgId)
@@ -25,6 +23,8 @@ namespace Stemmesystem.Data
         //public Valg Valg { get => valg ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Valg)); private set => valg = value; }
         public Delegat? Delegat { get; internal set; }
         public int DelegatId { get; internal set; }
+
+        internal string? RevoteKey { get; set; }
     }
 
     public class Delegat
@@ -48,7 +48,7 @@ namespace Stemmesystem.Data
             Delegatnummer = delegatnummer;
             Navn = navn;
 
-            delegatkode ??= RNGKeyGenerator.GenerateKey(4);
+            delegatkode ??= RngKeyGenerator.GenerateKey(4);
             Delegatkode = delegatkode.ToString();
         }
     }
@@ -154,9 +154,9 @@ namespace Stemmesystem.Data
 
     public class Votering
     {
-        protected List<Valg> valg = new List<Valg>();
-        protected List<Stemme> stemmer = new List<Stemme>();
-        protected List<Delegat> avgitStemme = new List<Delegat>();
+        private List<Valg> _valg = new();
+        private List<Stemme> _stemmer = new();
+        private List<Delegat> _avgitStemme = new();
         private Sak? sak;
 
         public int Id { get; internal set; }
@@ -168,9 +168,9 @@ namespace Stemmesystem.Data
 
         public DateTimeOffset StartTid { get; set; }
         public DateTimeOffset SluttTid { get; set; }
-        public IReadOnlyList<Valg> Valg => valg;
-        public IReadOnlyList<Stemme> Stemmer => stemmer;
-        public IReadOnlyList<Delegat> AvgitStemme => avgitStemme;
+        public IReadOnlyList<Valg> Valg => _valg;
+        public IReadOnlyList<Stemme> Stemmer => _stemmer;
+        public IReadOnlyList<Delegat> AvgitStemme => _avgitStemme;
 
         public Sak Sak { get => sak ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Sak)); set => sak = value; }
         public int SakId { get; internal set; }
@@ -185,13 +185,21 @@ namespace Stemmesystem.Data
             var i = 0;
             foreach (var tekst in valgtekst)
             {
-                valg.Add(new(tekst, i));
+                _valg.Add(new(tekst, i));
                 i++;
             }
         }
         public Votering(string tittel, bool hemmelig, int? kanVelge, params string[] valgtekst) : this (tittel, hemmelig, valgtekst)
         {
             KanVelge = kanVelge.GetValueOrDefault(1);
+        }
+
+        public static Votering EnkelVotering(string tittel, bool hemmelig = false) 
+        {
+            Votering v = new(tittel, hemmelig);
+            v._valg.Add(new("For"));
+            v._valg.Add(new("Mot"));
+            return v;
         }
 
         public void StartVotering()
@@ -206,55 +214,57 @@ namespace Stemmesystem.Data
             SluttTid = DateTimeOffset.Now;
         }
 
-        public Stemme RegistrerStemme(Guid valgId, Delegat delegat, Stemme? gammelStemme = null)
+        public (List<Stemme> stemmer, string key) RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat,  string? revoteKey, IKeyHasher keyHasher)
         {
-            if(gammelStemme != null)
+            List<Guid> idList = valgIder.ToList();
+            if(idList.Count > 1 && idList.Contains(Konstanter.BlankStemme))
+                throw new StemmeException("Kan ikke ha flere valg i en blank stemme");
+            
+            if(idList.Count > KanVelge)
+                throw new StemmeException($"For mange valg {idList.Count}, bare {KanVelge} er lov per delegat");
+
+            if (_avgitStemme.Any(d => d.Id == delegat.Id))
             {
-                stemmer.Remove(gammelStemme);
+                if (Hemmelig)
+                {
+                    if (revoteKey != null)
+                    {
+                        _stemmer.RemoveAll(s => keyHasher.VerifyHash(s.RevoteKey, revoteKey));
+                    }
+                    else
+                    {
+                        throw new StemmeException("Delegat har allerede stemmt");    
+                    }
+
+                }
+                else
+                {
+                    _stemmer.RemoveAll(s => s.DelegatId == delegat.Id);
+                }
             }
-            else if (avgitStemme.Any(d => d.Id == delegat.Id))
-                throw new StemmeException("Delegat har allerede stemmt");
 
-            Valg? v;
-            if (valgId == Konstanter.BlankStemme)
-                v = new Valg("Blankt");
-            else
-                v = valg.SingleOrDefault(v => v.Id == valgId);
-            if (v == null)
-                throw new StemmeException("Ugyldig valg");
-            Stemme? stemme = new(valgId);
-            if (!Hemmelig)
-                stemme.DelegatId = delegat.Id;
-
-            avgitStemme.Add(delegat);
-            stemmer.Add(stemme);
-            return stemme;
-        }
-    }
-
-    public class EnkelVotering : Votering
-    {
-        public EnkelVotering(string tittel, bool hemmelig = false) : base(tittel, hemmelig)
-        {
-            valg.Add(new("For"));
-            valg.Add(new("Mot"));
-        }
-        public EnkelVotering(string tittel, bool hemmelig = false, params string[] valgtekst) : base(tittel, hemmelig)
-        {
-            var i = 0;
-            foreach(var tekst in valgtekst)
+            var key = RngKeyGenerator.GenerateKey(20, KeyType.FullAlphanumeric);
+            List<Stemme> stemmer = new(); 
+            foreach (var valgId in idList)
             {
-                valg.Add(new(tekst,i));
-                i++;
+                if (valgId != Konstanter.BlankStemme && _valg.All(v => v.Id != valgId))
+                    throw new StemmeException("Ugyldig valg");
+                Stemme stemme = new(valgId);
+                if (!Hemmelig)
+                    stemme.DelegatId = delegat.Id;
+                stemme.RevoteKey = keyHasher.CreateHash(key);
+                stemmer.Add(stemme);
             }
-        }
-    }
 
-    public class Flervalgsvotering : Votering
-    {
-        public Flervalgsvotering(string tittel, IEnumerable<string> valg, bool hemmelig = true) : base(tittel, hemmelig)
+            _stemmer.AddRange(stemmer);
+            _avgitStemme.Add(delegat);
+
+            return (stemmer, key);
+        }
+
+        public TEntity RegistrerStemme<TEntity>(IEnumerable<Guid> valgIder, Delegat delegat, string? gammelStemme, IKeyHasher keyHasher) where TEntity : class
         {
-            this.valg = valg.Select((v,i) => new Valg(v,i)).ToList();
+            throw new NotImplementedException();
         }
     }
 

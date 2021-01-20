@@ -1,0 +1,94 @@
+﻿@using Stemmesystem.Data
+@using Stemmesystem.Web.Data
+@using System.Text.Json
+@inject StemmeService StemmeService
+
+<h6>Du har valg @_valg.Count, du kan velge @Votering.KanVelge</h6>
+<div class="btn-group-toggle btn-group-vertical btn-block" data-toggle="buttons">
+    @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
+    {
+        <label class="btn btn-outline-primary  @(_valg.Contains(valg.Id) ? "active" : "")">
+            <input type="checkbox" value="@valg.Id" @onchange="e => VoteChanged(e, valg.Id)"> @valg.Navn
+        </label>
+    }
+</div>
+<div class="row mt-2 justify-content-around">
+    <button class="btn col-4 @(Stemmer.Any(s => s.ValgId == Konstanter.BlankStemme) ? "btn-primary" : "btn-outline-primary")" disabled=@(HarStemmt && _revoteKey == null && !Stemmer.Any()) @onclick="@(async e => await StemBlankt())">Stem blankt</button>
+    <button class="btn col-4 @(Stemmer.Any() && Stemmer.All(s => s.ValgId != Konstanter.BlankStemme) ? "btn-success" : "btn-outline-success")" disabled=@(HarStemmt && !Stemmer.Any()) @onclick="@(async e => await RegistrerStemme())">Stem</button>
+</div>
+
+
+@code {
+    [Parameter]
+    public Votering Votering { get; set; } = null!;
+
+    [CascadingParameter]
+    private DelegatStateProvider? DelegatStateProvider {get;set;}
+
+    protected List<Stemme> Stemmer = new();
+    private string? _revoteKey;
+    protected bool HarStemmt;
+
+    private HashSet<Guid> _valg = new();
+
+    
+    public async Task StemBlankt(){
+        if (DelegatStateProvider?.Delegatkode == null)
+            return;
+        var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, Konstanter.BlankStemme, _revoteKey);
+        Stemmer = new List<Stemme>{stemme};
+        DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
+        await DelegatStateProvider.SaveChangesAsync();
+        _revoteKey =  revoteKey;
+        HarStemmt = true;
+    }
+    
+    public async Task RegistrerStemme(){
+        if (DelegatStateProvider?.Delegatkode == null)
+            return;
+        if (_valg.Count > Votering.KanVelge)
+        {
+            //ERROR
+            return;
+        }
+        var (stemmer, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, _valg, _revoteKey);
+        Stemmer = stemmer;
+        DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
+        await DelegatStateProvider.SaveChangesAsync();
+        _revoteKey = revoteKey;
+        HarStemmt = true;
+
+    }
+
+    protected override async Task OnInitializedAsync(){
+        if (DelegatStateProvider?.Delegatkode != null)
+        {
+            HarStemmt = await StemmeService.HarStemmt(Votering.Id, DelegatStateProvider.Delegatkode);
+
+            if (HarStemmt && !Votering.Hemmelig)
+            {
+                Stemmer = await StemmeService.FinnStemmer(Votering.Id, DelegatStateProvider.Delegatkode);
+            }
+        }
+        if (DelegatStateProvider?.RevoteKeys != null && DelegatStateProvider.RevoteKeys.TryGetValue(Votering.Id, out var key))
+        {
+            _revoteKey = key;
+        }
+    }
+
+    private void VoteChanged(ChangeEventArgs e, Guid valgId)
+    {   
+        if(e.Value == null) return;
+        if ((bool) e.Value)
+        {
+            if (_valg.Count >= Votering.KanVelge)
+                Console.WriteLine("ERROR");
+                else
+            _valg.Add(valgId);
+        }
+        else
+        {
+            _valg.Remove(valgId);
+        }
+    }
+}
