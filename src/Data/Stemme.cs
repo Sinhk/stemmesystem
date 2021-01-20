@@ -12,7 +12,7 @@ namespace Stemmesystem.Data
     public record Stemme
     {
         internal Guid Id { get; private set; }
-        public Guid? ValgId { get; private set; }
+        public Guid ValgId { get; private set; }
 
         private Stemme() { }
         public Stemme(Guid valgId)
