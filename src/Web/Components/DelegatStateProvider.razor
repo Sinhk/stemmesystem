@@ -42,14 +42,23 @@ else
         return _delegat;
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadStateAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadStateAsync()
     {
         var result = await ProtectedSessionStore.GetAsync<string>(delegatKey);
         Delegatkode = result.Success ? result.Value : null;
         
         var keysResult = await ProtectedSessionStore.GetAsync<Dictionary<int, string>>(revoteKey);
         if (keysResult.Success)
-            RevoteKeys = keysResult.Value;
+            RevoteKeys = keysResult.Value ?? new Dictionary<int, string>();
         
         isLoaded = true;
     }

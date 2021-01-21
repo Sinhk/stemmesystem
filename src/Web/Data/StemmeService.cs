@@ -37,6 +37,7 @@ namespace Stemmesystem.Web.Data
             return (stemmer.First(), key);
         }
 
+        //TODO: Ditch the revoteKey thing and just use delegatkode
         public async Task<(List<Stemme> stemmer, string RevoteKey)> AvgiStemmeAsync(int voteringId, string delegatkode, IEnumerable<Guid> valgIder, string? revoteKey = null, CancellationToken cancellationToken = default)
         {
             var delegat = await _delegatService.ValiderKode(delegatkode, cancellationToken);
