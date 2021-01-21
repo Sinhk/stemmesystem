@@ -72,7 +72,7 @@ namespace Stemmesystem.Web
                     //options.UseSqlServer(Configuration.GetConnectionString("StemmesystemDb"));
                 }
             });
-            services.AddScoped<StemmesystemContext>(p => p.GetRequiredService<IDbContextFactory<StemmesystemContext>>().CreateDbContext());
+            services.AddScoped(p => p.GetRequiredService<IDbContextFactory<StemmesystemContext>>().CreateDbContext());
 
             if (Environment.IsProduction())
             {
@@ -86,6 +86,11 @@ namespace Stemmesystem.Web
             services.AddScoped<StemmeService>();
             services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
             services.AddSingleton<IKeyHasher, KeyHasher>();
+
+            services.AddHttpClient<ISmsService, SveveSmsService>();
+            services.AddOptions<SveveOptions>()
+                .BindConfiguration("Sveve")
+                .ValidateDataAnnotations();
 
             services.AddAutoMapper(typeof(AutoMapperConfig));
 
