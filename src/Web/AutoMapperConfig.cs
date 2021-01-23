@@ -1,6 +1,7 @@
 using AutoMapper;
 using Stemmesystem.Data;
 using Stemmesystem.Web.Models;
+using System.Linq;
 
 namespace Stemmesystem.Web
 {
@@ -20,6 +21,13 @@ namespace Stemmesystem.Web
 
             CreateMap<Sak, SakModel>()
                 .ReverseMap();
+
+            CreateMap<Votering, VoteringModel>()
+                .ReverseMap();
+            
+            CreateMap<Valg, ValgModel>()
+                .ReverseMap();
+
         }
     }
 }

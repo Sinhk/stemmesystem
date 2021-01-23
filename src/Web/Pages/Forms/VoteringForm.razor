@@ -1,5 +1,105 @@
-﻿<h3>ArrangementForm</h3>
+﻿@page "/arrangement/{arrangementId:int}/sak/{sakId:int}/votering/ny-votering"
+@page "/arrangement/{arrangementId:int}/sak/{sakId:int}/votering/{voteringId:int}"
+
+@using Models
+@using Stemmesystem.Web.Data
+@inject ArrangementService ArrangementService
+@inject ISakService SakService
+@inject NavigationManager Navigation
+
+@if (_votering.Id == null)
+{
+    <h3>Ny votering</h3>    
+}
+else
+{
+    <h3>Rediger votering</h3>    
+}
+
+<EditForm Model="@_votering" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="customValidator" />
+    <ValidationSummary />
+    <div class="form-group">
+        <label>Tittel<InputText class="form-control" placeholder="Tittel" @bind-Value="_votering.Tittel"/></label>
+    </div>
+    <div class="form-group">
+        <label>Kan velge<InputNumber class="form-control" placeholder="Kan velge" @bind-Value="_votering.KanVelge"/></label>
+    </div>
+    <div class="form-check">
+        <InputCheckbox class="form-check-input" placeholder="Hemmelig" @bind-Value="_votering.Hemmelig" id="hemmeligCheck"/>
+        <label class="form-check-label" for="hemmeligCheck">Hemmelig</label>
+    </div>
+
+    <h4>Valg</h4>
+    @foreach (var valg in _votering.Valg.OrderBy(v => v.SortId))
+    {
+        <div class="form-row">
+        <InputText class="form-control col-6" placeholder="Navn" @bind-Value="valg.Navn"/>
+        <button type="button" class="btn btn-danger btn-sm col-2" @onclick="@(e => TaVekkValg(valg.Id))">ta vekk</button>
+        </div>
+    }
+    <div class="form-row">
+        <button type="button" class="btn btn-secondary btn-sm" @onclick=LeggTilValg>Legg til valg</button>
+    </div>
+    <div class="form-row mt-3">
+        <button type="submit" class="btn btn-primary">Lagre</button>
+    </div>
+</EditForm>
 
 @code {
+    [Parameter]
+    public int ArrangementId{get;set;}
+    [Parameter]
+    public int SakId {get;set;}
+    [Parameter]
+    public int? VoteringId {get;set;}
+
+    private CustomValidator? customValidator;
+
+    private VoteringModel _votering = new();
+
+    protected override async Task OnInitializedAsync(){
+        if(VoteringId != null)
+        {
+            var votering = await SakService.HentVotering(SakId, VoteringId.Value);
+            if(votering != null)
+                _votering = votering;
+        }
+    }
+
+    private async Task HandleValidSubmit(){
+        customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+
+        if (_votering.Id != default)
+        {
+            _votering = await SakService.OppdaterVotering(_votering);
+        }
+        else
+        {
+            /*
+             if(await SakService.ErNummerBrukt(ArrangementId, _votering.Nummer))
+                errors.Add(nameof(_votering.Nummer), new List<string>{"Saknummer er allerede brukt"});
+            */
+            if (errors.Count > 0)
+            {
+                customValidator?.DisplayErrors(errors);
+                return;
+            }
+            _votering = await SakService.LagreNyVotering(SakId, _votering);
+            Navigation.NavigateTo($"/arrangement/{ArrangementId}/sak/{SakId}/votering/{_votering.Id}");
+        }
+    }
+
+    private void LeggTilValg()
+    {
+        _votering.Valg.Add(new ValgModel(){SortId = _votering.Valg.Count});
+    }
+
+    private void TaVekkValg(Guid valgId)
+    {
+        _votering.Valg.RemoveAll(v => v.Id == valgId);
+    }
 
 }

@@ -8,6 +8,7 @@ namespace Stemmesystem.Data
     {
         public DbSet<Delegat> Delegat => Set<Delegat>();
         public DbSet<Arrangement> Arrangement => Set<Arrangement>();
+        public DbSet<Sak> Sak => Set<Sak>();
         public DbSet<Votering> Votering => Set<Votering>();
 
         public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();

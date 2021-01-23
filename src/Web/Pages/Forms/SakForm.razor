@@ -57,7 +57,7 @@
                 customValidator?.DisplayErrors(errors);
                 return;
             }
-            _sak = await SakService.RegistrerNySak(ArrangementId, _sak);
+            _sak = await SakService.LagreNySak(ArrangementId, _sak);
             Navigation.NavigateTo($"/arrangement/{ArrangementId}/sak/{_sak.Id}");
         }
     }
