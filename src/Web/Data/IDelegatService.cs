@@ -19,6 +19,7 @@ namespace Stemmesystem.Web.Data
 
         Task<DelegatModel> RegistrerNyDelegat(int arrangementId, DelegatModel model);
         Task<DelegatModel?> HentDelegat(int arrangementId, int delegatId);
+        Task<DelegatModel> OppdaterDelegat(int arrangementId, DelegatModel model);
     }
 
     public class DelegatService : IDelegatService
@@ -41,6 +42,24 @@ namespace Stemmesystem.Web.Data
                 .Where(d => d.ArrangementId == arrangementId && d.Id == delegatId)
                 .ProjectTo<DelegatModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<DelegatModel> OppdaterDelegat(int arrangementId, DelegatModel model)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            var delegat = await context.Delegat
+                .Where(d => d.ArrangementId == arrangementId)
+                .Where(d => d.Id == model.Id)
+                .FirstOrDefaultAsync();
+            if (delegat == null)
+                throw new StemmeException($"Fant ingen delegat med id {model.Id} å oppdatere");
+
+            delegat.Navn = model.Navn;
+            delegat.Epost = model.Epost;
+            delegat.Telefon = model.Telefon;
+            
+            await context.SaveChangesAsync();
+            return _mapper.Map<DelegatModel>(model);
         }
 
         public async Task<bool> IsValidNo(int arrangement, int number)

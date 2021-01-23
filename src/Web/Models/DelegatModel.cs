@@ -4,7 +4,7 @@ namespace Stemmesystem.Web.Models
 {
     public class DelegatModel
     {
-        public int Id { get; internal set; }
+        public int? Id { get; internal set; }
         [Required(ErrorMessage = "Delegatnummer er påkrevd")]
         public int? Delegatnummer { get; set; }
 
