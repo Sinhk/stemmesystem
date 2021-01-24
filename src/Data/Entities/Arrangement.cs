@@ -47,9 +47,9 @@ namespace Stemmesystem.Data
             Delegater.Add(delegat);
         }
 
-        public Votering? AktivVotering()
+        public IEnumerable<Votering> AktiveVoteringer()
         {
-            return Saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Aktiv);
+            return Saker.SelectMany(s => s.Voteringer).Where(v => v.Aktiv);
         }
 
         public Delegat NyDelegat(NyDelegatModel model, string delegatkode)

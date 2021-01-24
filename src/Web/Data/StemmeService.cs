@@ -14,19 +14,17 @@ namespace Stemmesystem.Web.Data
     {
         private readonly IDelegatService _delegatService;
         private readonly IDbContextFactory<StemmesystemContext> _contextFactory;
-        private readonly IKeyGenerator _keyGenerator;
         private readonly IKeyHasher _keyHasher;
-        private readonly IHubContext<StemmeHub, IStemmeClient> _hubContext;
         private readonly ArrangementService _arrangementService;
+        private readonly NotificationManager _notificationManager;
 
-        public StemmeService(IDelegatService delegatService, ArrangementService arrangementService, IDbContextFactory<StemmesystemContext> contextFactory, IKeyGenerator keyGenerator, IKeyHasher keyHasher, IHubContext<StemmeHub,IStemmeClient> hubContext)
+        public StemmeService(IDelegatService delegatService, ArrangementService arrangementService, IDbContextFactory<StemmesystemContext> contextFactory, IKeyGenerator keyGenerator, IKeyHasher keyHasher, NotificationManager notificationManager)
         {
             _delegatService = delegatService;
             _arrangementService = arrangementService;
             _contextFactory = contextFactory;
-            _keyGenerator = keyGenerator;
             _keyHasher = keyHasher;
-            _hubContext = hubContext;
+            _notificationManager = notificationManager;
         }
 
         public async Task<(Stemme stemme, string RevoteKey)> AvgiStemmeAsync(int voteringId, string delegatkode, Guid valgId, string? revoteKey = null, CancellationToken cancellationToken = default)
@@ -50,47 +48,25 @@ namespace Stemmesystem.Web.Data
                 .AsSingleQuery()
                 .Include(v=> v.Stemmer)
                 .Include(v => v.AvgitStemme)
+                .Include(v=> v.Sak)
                 .SingleOrDefaultAsync(v => v.Id == voteringId, cancellationToken: cancellationToken);
 
             if (votering == null)
             {
                 throw new StemmeException($"Ugyldig votering {voteringId}");
             }
-
-            Stemme? gammelStemme;
-            if (revoteKey != null)
-            {
-                gammelStemme = votering.Stemmer.FirstOrDefault(s =>
-                {
-                    var hash = context.Entry(s).Property("RevoteKey").CurrentValue as string;
-                    return _keyHasher.VerifyHash(hash, revoteKey);
-                });
-
-                if (gammelStemme == null)
-                    throw new StemmeException("Ugyldig endring av stemme");
-            }
-            else if (votering.AvgitStemme.Any(d => d.Id == delegat.Id))
-            {
-                if(votering.Hemmelig)
-                    throw new StemmeException("Delegat har allerede stemmt");
-                gammelStemme = votering.Stemmer.FirstOrDefault(s => s.DelegatId == delegat.Id);
-                if (gammelStemme == null)
-                    throw new StemmeException("Ugyldig endring av stemme");
-            }
             
-            var (stemmer, newKey) = votering.RegistrerStemme(valgIder, delegat, revoteKey, _keyHasher);
+            if (votering.Aktiv == false)
+            {
+                throw new StemmeException($"Votering er ferdig eller har ikke startet enda");
+            }
+
+            var (stemmer, newKey) = votering.RegistrerStemme(valgIder, delegat, revoteKey, _keyHasher, _notificationManager);
             
             await context.SaveChangesAsync(cancellationToken);
-            var arrangement = await context.Votering.Where(v => v.Id == votering.Id).Select(v => v.Sak.Arrangement.Navn).FirstAsync(cancellationToken);
-            await _hubContext.Clients.Group(arrangement).NyStemme(new NyStemmeEvent(votering.Id));
             return (stemmer, newKey);
         }
 
-        public async Task<Votering?> AktivVotering(int arrangementId, CancellationToken cancellationToken = default)
-        {
-            var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
-            return arrangement?.AktivVotering();
-        }
         public async Task StartVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
         {
             await using var context = _contextFactory.CreateDbContext();
@@ -98,18 +74,14 @@ namespace Stemmesystem.Web.Data
             if(arrangement == null)
                 return;
             context.Attach(arrangement);
-            var aktiv = arrangement.AktivVotering();
-            if (aktiv != null)
-                aktiv.Aktiv = false;
-                //throw new StemmeException($"Kun en votering kan være aktiv. {aktiv.Sak.Tittel}({aktiv.Tittel}) er aktiv");
             var votering = arrangement.FinnVotering(voteringId);
             if (votering == null)
                 throw new StemmeException("Fant ikke valgt votering");
             votering.StartVotering();
 
             await context.SaveChangesAsync(cancellationToken);
-            Console.WriteLine($"Har startet votering {voteringId} for arrangement {arrangement.Navn}");
-            await _hubContext.Clients.Group(arrangement.Navn).VoteringStartet(new(votering.Id));
+            
+            _notificationManager.ForArrangement(arrangementId).OnVoteringStartet(new(votering.Id));
         }
 
         public async Task StoppVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
@@ -124,7 +96,8 @@ namespace Stemmesystem.Web.Data
                 throw new StemmeException("Fant ikke valgt votering");
             votering.AvsluttVotering();
             await context.SaveChangesAsync(cancellationToken);
-            await _hubContext.Clients.Group(arrangement.Navn).VoteringStoppet(new(votering.Id));
+            
+            _notificationManager.ForArrangement(arrangementId).OnVoteringStoppet(new(votering.Id));
         }
 
         public async Task<bool> HarStemmt(int voteringId, string delegatKode, CancellationToken cancellationToken = default)

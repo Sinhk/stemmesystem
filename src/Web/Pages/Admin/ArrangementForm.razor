@@ -35,6 +35,11 @@ else
     <button type="submit" class="btn btn-primary" disabled="@(_arrangement.Id != null && !context.IsModified())">Lagre</button>
 </EditForm>
 
+@if(_arrangement.Id != null){
+    <Saksliste ArrangementId="_arrangement.Id.Value" />
+    <Delegatliste ArrangementId="_arrangement.Id.Value" />
+}
+
 @code {
     [Parameter]
     public int? ArrangementId {get;set;}

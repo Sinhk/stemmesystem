@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -12,13 +13,14 @@ namespace Stemmesystem.Web.Data
 {
     public interface ISakService
     {
-        Task<SakModel?> HentSak(int sakId, CancellationToken cancellationToken = default);
+        Task<SakInputModel?> HentSak(int sakId, CancellationToken cancellationToken = default);
         Task<bool> ErNummerBrukt(int arrangementId, string? nummer);
-        Task<SakModel> LagreNySak(int arrangementId, SakModel sak);
-        Task<SakModel> OppdaterSak(int arrangementId, SakModel sak);
+        Task<SakInputModel> LagreNySak(int arrangementId, SakInputModel sak);
+        Task<SakInputModel> OppdaterSak(int arrangementId, SakInputModel sak);
         Task<VoteringModel?> HentVotering(int sakId, int voteringId, CancellationToken cancellationToken = default);
         Task<VoteringModel> LagreNyVotering(int sakId, VoteringModel votering);
         Task<VoteringModel> OppdaterVotering(VoteringModel votering);
+        Task<ICollection<Sak>> HentSaker(int arrangementId);
     }
 
     public class SakService : ISakService
@@ -31,13 +33,13 @@ namespace Stemmesystem.Web.Data
             _dbContextFactory = dbContextFactory;
             _mapper = mapper;
         }
-        public async Task<SakModel?> HentSak(int sakId, CancellationToken cancellationToken = default)
+        public async Task<SakInputModel?> HentSak(int sakId, CancellationToken cancellationToken = default)
         {
             await using var db = _dbContextFactory.CreateDbContext();
             var sak = await db.Arrangement
                 .SelectMany(a => a.Saker)
                 .Where(s => s.Id == sakId)
-                .ProjectTo<SakModel>(_mapper.ConfigurationProvider)
+                .ProjectTo<SakInputModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken);
             return sak;
         }
@@ -64,7 +66,7 @@ namespace Stemmesystem.Web.Data
                 .AnyAsync(s => s.Nummer == nummer);
         }
 
-        public async Task<SakModel> LagreNySak(int arrangementId, SakModel model)
+        public async Task<SakInputModel> LagreNySak(int arrangementId, SakInputModel model)
         {
             await using var db = _dbContextFactory.CreateDbContext();
             var arrangement = await db.Arrangement
@@ -74,10 +76,10 @@ namespace Stemmesystem.Web.Data
             var sak = _mapper.Map<Sak>(model);
             arrangement.LeggTil(sak);
             await db.SaveChangesAsync();
-            return _mapper.Map<SakModel>(sak);
+            return _mapper.Map<SakInputModel>(sak);
         }
 
-        public async Task<SakModel> OppdaterSak(int arrangementId, SakModel model)
+        public async Task<SakInputModel> OppdaterSak(int arrangementId, SakInputModel model)
         {
             await using var db = _dbContextFactory.CreateDbContext();
             var sak = await db.Arrangement
@@ -87,7 +89,7 @@ namespace Stemmesystem.Web.Data
                 .FirstAsync();
             _mapper.Map(model, sak);
             await db.SaveChangesAsync();
-            return _mapper.Map<SakModel>(sak);
+            return _mapper.Map<SakInputModel>(sak);
         }
 
         public async Task<VoteringModel> LagreNyVotering(int sakId, VoteringModel model)
@@ -112,6 +114,18 @@ namespace Stemmesystem.Web.Data
             _mapper.Map(model, votering);
             await db.SaveChangesAsync();
             return _mapper.Map<VoteringModel>(votering);
+        }
+
+        public async Task<ICollection<Sak>> HentSaker(int arrangementId)
+        {
+            await using var db = _dbContextFactory.CreateDbContext();
+            return await db.Arrangement
+                .Where(a => a.Id == arrangementId)
+                .SelectMany(a => a.Saker)
+                .Include(s => s.Voteringer)
+                .ThenInclude(v=> v.Stemmer)
+                //.ProjectTo<SakModel>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
     }
 }

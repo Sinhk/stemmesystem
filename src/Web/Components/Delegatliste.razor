@@ -1,4 +1,12 @@
 ﻿@using Stemmesystem.Data
+@using Stemmesystem.Web.Data
+@using Stemmesystem.Web.Models
+@using Stemmesystem.Web.Services
+
+@inject IDelegatService DelegatService
+@inject IPinSender PinSender
+@inject NavigationManager Navigation
+
 <h4>Delegater</h4>
     <table class="table">
         <thead>
@@ -7,24 +15,27 @@
                 <th>Navn</th>
                 <th>Epost</th>
                 <th>Telefon</th>
-                <th>kode</th>
+                <th>Send PIN</th>
             </tr>
         </thead>
-        @if(Delegater == null || !Delegater.Any())
+        @if(_delegater == null || !_delegater.Any())
         {
             <tr><td class="text-danger">Ingen delegater</td></tr>
         }
         else
         {
         <tbody>
-            @foreach (var delegat in Delegater.OrderBy(s => s.Delegatnummer))
+            @foreach (var delegat in _delegater.OrderBy(s => s.Delegatnummer))
             {
                 <tr>
                     <td>@delegat.Delegatnummer</td>
                     <td>@delegat.Navn</td>
                     <td>@delegat.Epost</td>
                     <td>@delegat.Telefon</td>
-                    <td><a href="kode/@delegat.Delegatkode">@delegat.Delegatkode</a></td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Sms))">SMS</button>
+                        <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Epost))">e-post</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -32,6 +43,32 @@
     </table>
 @code {
     [Parameter]
-    public ICollection<Delegat>? Delegater { get; set; }
+    public int ArrangementId { get; set; }
+
+    private ICollection<Delegat> _delegater = null!;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _delegater = await DelegatService.HentDelegater(ArrangementId);
+    }
+
+    private Task SendPin(int delegatId, MeldingsType type)
+    {
+        switch (type)
+        {
+            case MeldingsType.Sms:
+                return PinSender.SendSms(delegatId, Navigation.BaseUri);
+            case MeldingsType.Epost:
+                return PinSender.SendEmail(delegatId, Navigation.BaseUri);
+            default:
+                return Task.CompletedTask;
+        }
+    }
+
+    private enum MeldingsType
+    {
+        Sms,
+        Epost
+    }
 
 }

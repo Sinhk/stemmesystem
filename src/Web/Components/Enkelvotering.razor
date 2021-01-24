@@ -2,6 +2,12 @@
 @using Stemmesystem.Web.Data
 @inject StemmeService StemmeService
 
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="alert alert-danger" role="alert">
+        @_error
+    </div>
+}
 <div class="col btn-group btn-group-toggle" data-toggle="buttons">
 @foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
     <label class="btn @(Stemme?.ValgId == valg.Id ? "btn-primary" :"btn-outline-primary") btn-lg">
@@ -22,17 +28,25 @@
     protected Stemme? Stemme;
     private string? _revoteKey;
     protected bool HarStemmt;
-
-    public async Task RegistrerStemme(Guid valgId){
+    private string? _error;
+    public async Task RegistrerStemme(Guid valgId)
+    {
+        _error = null;
         if (DelegatStateProvider?.Delegatkode == null)
             return;
-        var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, valgId, _revoteKey);
-        Stemme = stemme;
-        DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
-        await DelegatStateProvider.SaveChangesAsync();
-        _revoteKey =  revoteKey;
-        HarStemmt = true;
-
+        try
+        {
+            var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, valgId, _revoteKey);
+            Stemme = stemme;
+            DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
+            await DelegatStateProvider.SaveChangesAsync();
+            _revoteKey =  revoteKey;
+            HarStemmt = true;
+        }
+        catch (StemmeException e)
+        {
+            _error = e.Message;
+        }
     }
 
     protected override async Task OnInitializedAsync(){

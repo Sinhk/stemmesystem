@@ -12,18 +12,18 @@ using System.Threading.Tasks;
 
 namespace Stemmesystem.Web
 {
-    internal interface ISmsService
+    public interface ISmsSender
     {
         Task<bool> SendSms(string to, string message);
     }
 
-    internal class SveveSmsService : ISmsService
+    internal class SveveSmsSender : ISmsSender
     {
         private readonly HttpClient _httpClient;
         private readonly IOptionsMonitor<SveveOptions> _optionsMonitor;
         private readonly string _baseUrl = "https://sveve.no/SMS/SendMessage";
 
-        public SveveSmsService(HttpClient httpClient, IOptionsMonitor<SveveOptions> options)
+        public SveveSmsSender(HttpClient httpClient, IOptionsMonitor<SveveOptions> options)
         {
             _httpClient = httpClient;
             _optionsMonitor = options;

@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.VisualStudio.Web.CodeGeneration.Utils.Messaging;
 using Npgsql;
 using Stemmesystem.Data;
 using Stemmesystem.Tools;
@@ -122,15 +123,20 @@ namespace Stemmesystem.Web
             services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
             services.AddSingleton<IKeyHasher, KeyHasher>();
 
-            services.AddHttpClient<ISmsService, SveveSmsService>();
+            services.AddHttpClient<ISmsSender, SveveSmsSender>();
             services.AddOptions<SveveOptions>()
                 .BindConfiguration("Sveve")
                 .ValidateDataAnnotations();
 
             services.AddTransient<IEmailSender, EmailSender>();
+            services.AddTransient<IEpostSender, EmailSender>();
             services.AddOptions<SendMailOptions>()
                 .BindConfiguration("SendGrid")
                 .ValidateDataAnnotations();
+
+            services.AddTransient<IPinSender, PinSender>();
+
+            services.AddSingleton<NotificationManager>();
             
             services.AddAutoMapper(typeof(AutoMapperConfig));
         }
@@ -188,8 +194,6 @@ namespace Stemmesystem.Web
                 endpoints.MapControllers();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
-                endpoints.MapHub<CountHub>("/count-hub");
-                endpoints.MapHub<StemmeHub>("/stemme-hub");
             });
         }
     }

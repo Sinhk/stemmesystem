@@ -12,7 +12,7 @@ Delegatkode:
     private string validationMessage = string.Empty;
 
     [Parameter]
-    public EventCallback<Delegat> GyldigDelegat{ get; set; }
+    public EventCallback<Delegat> OnGyldigDelegat{ get; set; }
 
 
     private async Task OnCodeChanged(ChangeEventArgs e)
@@ -24,7 +24,7 @@ Delegatkode:
         var delegat = await DelegatService.ValiderKode(kode);
 
         if(delegat != null){
-            await GyldigDelegat.InvokeAsync(delegat);
+            await OnGyldigDelegat.InvokeAsync(delegat);
             validationMessage = string.Empty;
             return;
         }

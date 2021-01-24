@@ -105,5 +105,15 @@ namespace Stemmesystem.Web.Data
             await context.SaveChangesAsync();
             return _mapper.Map<ArrangementModel>(model);
         }
+
+        public async Task<ICollection<Votering>> FinnAktiveVoteringer(int arrangementId)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Arrangement
+                .SelectMany(a => a.Saker)
+                .SelectMany(s => s.Voteringer)
+                .Where(v => v.Aktiv)
+                .ToListAsync();
+        }
     }
 }
