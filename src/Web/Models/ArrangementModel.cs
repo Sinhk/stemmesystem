@@ -5,7 +5,7 @@ namespace Stemmesystem.Web.Models
 {
     public class ArrangementModel
     {
-        public int Id { get; internal set; }
+        public int? Id { get; internal set; }
         [Required(ErrorMessage = "Navn er påkrevd")]
         [StringLength(20)]
         public string? Navn { get; set; }

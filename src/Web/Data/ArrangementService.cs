@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper.QueryableExtensions;
 
 namespace Stemmesystem.Web.Data
 {
@@ -20,14 +21,14 @@ namespace Stemmesystem.Web.Data
             _contextFactory = contextFactory;
             _mapper = mapper;
         }
-        public async Task<Arrangement> HentArrangementAsync(string navn, CancellationToken cancellationToken = default)
+        public async Task<Arrangement?> HentArrangementAsync(string navn, CancellationToken cancellationToken = default)
         {
             await using var context = _contextFactory.CreateDbContext();
             return await GetSingleQuery(context)
                 .Where(a => a.Navn == navn)
                 .FirstOrDefaultAsync(cancellationToken);
         }
-        public async Task NyttArrangement(ArrangementModel model)
+        public async Task<ArrangementModel> NyttArrangement(ArrangementModel model)
         {
             await using var context = _contextFactory.CreateDbContext();
             if (!await IsNameAvailable(model.Navn!))
@@ -35,6 +36,7 @@ namespace Stemmesystem.Web.Data
             var entity = _mapper.Map<Arrangement>(model);
             context.Arrangement.Add(entity);
             await context.SaveChangesAsync();
+            return _mapper.Map<ArrangementModel>(entity);
         }
 
         public async Task<bool> IsNameAvailable(string name)
@@ -70,12 +72,38 @@ namespace Stemmesystem.Web.Data
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<Arrangement> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Arrangement?> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
         {
             await using var context = _contextFactory.CreateDbContext();
             return await GetSingleQuery(context)
                 .Where(a => a.Id == id)
                 .FirstOrDefaultAsync(cancellationToken);
+        }
+        
+        public async Task<ArrangementModel?> HentArrangementModelAsync(int id, CancellationToken cancellationToken = default)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await GetSingleQuery(context)
+                .Where(a => a.Id == id)
+                .ProjectTo<ArrangementModel>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task<ArrangementModel> OppdaterArrangement(ArrangementModel model)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            var arrangement = await context.Arrangement
+                .Where(a => a.Id == model.Id)
+                .FirstOrDefaultAsync();
+            if (arrangement == null)
+                throw new StemmeException($"Fant ingen arrangement med id {model.Id} å oppdatere");
+
+            arrangement.Beskrivelse = model.Beskrivelse;
+            arrangement.Startdato = model.Startdato;
+            arrangement.Sluttdato = model.Sluttdato;
+            
+            await context.SaveChangesAsync();
+            return _mapper.Map<ArrangementModel>(model);
         }
     }
 }

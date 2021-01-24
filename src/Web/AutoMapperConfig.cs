@@ -14,6 +14,7 @@ namespace Stemmesystem.Web
             .ForMember(d => d.Aktiv, o => o.Ignore())
             .ForMember(d => d.Saker, o => o.Ignore())
             .ForMember(d => d.Delegater, o => o.Ignore())
+            .ReverseMap()
             ;
 
             CreateMap<Delegat, DelegatModel>()

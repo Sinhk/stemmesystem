@@ -3,12 +3,10 @@
 
 
 @using Stemmesystem.Web.Data
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 
 @inject ArrangementService ArrangementService
 @inject IDelegatService DelegatService
 @inject NavigationManager NavigationManager
-@inject ProtectedSessionStorage ProtectedSessionStore
 
 @implements IAsyncDisposable
 
@@ -20,10 +18,10 @@
 }
 else
 {
-    @if (delegat != null)
+    @if (_delegat != null)
     {
-    <h3>Delegat: @delegat.Delegatnummer (@delegat.Navn) <span class="oi oi-pencil" data-toggle="modal" data-target="#delegatModal"></span></h3>
-        <EndreDelegatDialog Delegat=@delegat/>
+    <h3>Delegat: @_delegat.Delegatnummer (@_delegat.Navn) <span class="oi oi-pencil" data-toggle="modal" data-target="#delegatModal"></span></h3>
+        <EndreDelegatDialog Delegat=@_delegat/>
 
         if(_arrangement.AktivVotering() != null){
             <AktivVotering Votering=_arrangement.AktivVotering()/>

@@ -1,0 +1,87 @@
+﻿@page "/admin/arrangement/nytt-arrangement"
+@page "/admin/arrangement/{arrangementId:int}"
+@using Models
+@using Stemmesystem.Web.Data
+@inject ArrangementService ArrangementService
+@inject NavigationManager Navigation
+
+@if (_arrangement.Id == null)
+{
+    <h3>Ny delegat</h3>
+}
+else
+{
+    <h3>Rediger arrangement <b>@_arrangement.Navn</b></h3>    
+}
+<EditForm Model="@_arrangement" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="customValidator" />
+    <ValidationSummary />
+    <div class="form-group">
+        <label>Navn<InputText class="form-control" placeholder="Navn" @bind-Value="_arrangement.Navn" disabled="@(_arrangement.Id != null)"/></label>
+    </div>
+    <div class="form-group">
+        <label>Beskrivelse<InputText class="form-control" placeholder="Beskrivelse" @bind-Value="_arrangement.Beskrivelse"/></label>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md.6">
+            <label>Startdato<InputDate class="form-control" @bind-Value="_arrangement.Startdato"/></label>
+        </div>
+        <div class="form-group col-md-6">
+            <label>Sluttdato<InputDate class="form-control" @bind-Value="_arrangement.Sluttdato"/></label>
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-primary" disabled="@(_arrangement.Id != null && !context.IsModified())">Lagre</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? ArrangementId {get;set;}
+    private CustomValidator? customValidator;
+
+    private ArrangementModel _arrangement = new();
+    
+    protected override async Task OnInitializedAsync(){
+        if(ArrangementId != null){
+            var arrangement = await ArrangementService.HentArrangementModelAsync(ArrangementId.Value);
+            if(arrangement != null)
+                _arrangement = arrangement;
+        }
+    }
+
+    private async Task HandleValidSubmit(EditContext context){
+        customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+        if (_arrangement.Id == null)
+            await LeggTilArrangement(errors);
+        else
+            await OppdaterArrangement(errors);
+        
+        if (errors.Count > 0)
+        {
+            customValidator?.DisplayErrors(errors);
+        }
+        context.MarkAsUnmodified();
+    }
+
+    private async Task OppdaterArrangement(Dictionary<string,List<string>> errors)
+    {
+        if (errors.Count <= 0)
+        {
+            _arrangement = await ArrangementService.OppdaterArrangement(_arrangement);
+        }
+    }
+
+    private async Task LeggTilArrangement(IDictionary<string,List<string>> errors)
+    {
+        if(!await ArrangementService.IsNameAvailable(_arrangement.Navn!))
+            errors.Add(nameof(_arrangement.Navn), new List<string>{"Navn er allerede brukt"});
+
+        if (errors.Count <= 0)
+        {
+            _arrangement = await ArrangementService.NyttArrangement(_arrangement);
+            Navigation.NavigateTo($"admin/arrangement/{_arrangement.Id}");
+        }
+    }
+}

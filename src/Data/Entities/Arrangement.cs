@@ -1,5 +1,7 @@
-﻿using Stemmesystem.Data.Models;
+﻿using System;
+using Stemmesystem.Data.Models;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace Stemmesystem.Data
@@ -10,18 +12,24 @@ namespace Stemmesystem.Data
 
         public Votering? FinnVotering(int voteringId)
         {
-            return Saker.SelectMany(s => s.Voteringer).Where(v => v.Id == voteringId).FirstOrDefault();
+            return Saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
         }
 
         public string Navn { get; init; }
 
         public string? Beskrivelse { get; set; }
+        [Column(TypeName="date")]
+        public DateTime? Startdato { get; set; }
+        [Column(TypeName="date")]
+        public DateTime? Sluttdato { get; set; }
         public bool Aktiv { get; set; }
 
 
         public IList<Sak> Saker { get; set; } = new List<Sak>();
 
         public IList<Delegat> Delegater { get; set; } = new List<Delegat>();
+        
+
         public Arrangement(string navn)
         {
             Navn = navn;
@@ -41,7 +49,7 @@ namespace Stemmesystem.Data
 
         public Votering? AktivVotering()
         {
-            return Saker.SelectMany(s => s.Voteringer).Where(v => v.Aktiv).FirstOrDefault();
+            return Saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Aktiv);
         }
 
         public Delegat NyDelegat(NyDelegatModel model, string delegatkode)

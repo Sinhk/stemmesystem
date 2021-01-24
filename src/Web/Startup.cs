@@ -4,9 +4,12 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +20,9 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using Stemmesystem.Data;
 using Stemmesystem.Tools;
+using Stemmesystem.Web.Areas.Identity;
 using Stemmesystem.Web.Data;
+using Stemmesystem.Web.Services;
 
 namespace Stemmesystem.Web
 {
@@ -36,27 +41,19 @@ namespace Stemmesystem.Web
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<ForwardedHeadersOptions>(options =>
+                     {
+                         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                         options.KnownNetworks.Clear();
+                         options.KnownProxies.Clear();
+                     });
+            
             services.AddRouting(options =>
             {
                 options.LowercaseUrls = true;
                 //options.LowercaseQueryStrings = true;
             });
-            services.AddRazorPages();
-            services.AddServerSideBlazor();
-            services.AddSignalR();
-            services.AddResponseCompression(opts =>
-            {
-                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                    new[] { "application/octet-stream" });
-            });
             
-            services.Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                options.KnownNetworks.Clear();
-                options.KnownProxies.Clear();
-            });
-
             services.AddDbContextFactory<StemmesystemContext>(options =>
             {
                 if (Environment.IsDevelopment())
@@ -73,6 +70,44 @@ namespace Stemmesystem.Web
                 }
             });
             services.AddScoped(p => p.GetRequiredService<IDbContextFactory<StemmesystemContext>>().CreateDbContext());
+
+            #region Authentication
+            services.AddDefaultIdentity<IdentityUser>(options =>
+                {
+                    options.User.RequireUniqueEmail = true;
+                    options.SignIn.RequireConfirmedAccount = true;
+                    options.Password.RequireNonAlphanumeric = false;
+                })
+                .AddEntityFrameworkStores<StemmesystemContext>();
+
+
+            var authBuilder = services.AddAuthentication();
+
+            var googleAuthNSection = Configuration.GetSection("Authentication:Google");
+            if (googleAuthNSection.GetChildren().Any())
+            {
+                authBuilder.AddGoogle(options =>
+                {
+                    options.ClientId = googleAuthNSection["ClientId"];
+                    options.ClientSecret = googleAuthNSection["ClientSecret"];
+                });
+            }
+
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+            #endregion
+
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
+            
+            services.AddDatabaseDeveloperPageExceptionFilter();
+
+            services.AddSignalR();
+            services.AddResponseCompression(opts =>
+            {
+                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                    new[] { "application/octet-stream" });
+            });
+            
 
             if (Environment.IsProduction())
             {
@@ -92,23 +127,12 @@ namespace Stemmesystem.Web
                 .BindConfiguration("Sveve")
                 .ValidateDataAnnotations();
 
+            services.AddTransient<IEmailSender, EmailSender>();
+            services.AddOptions<SendMailOptions>()
+                .BindConfiguration("SendGrid")
+                .ValidateDataAnnotations();
+            
             services.AddAutoMapper(typeof(AutoMapperConfig));
-
-            var authBuilder = services
-                .AddAuthentication(options =>
-                {
-                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-                })
-                .AddCookie();
-
-            if(Configuration.GetSection("Authentication:Google").GetChildren().Any()){
-                authBuilder.AddGoogle(options =>
-                {
-                    options.ClientId = Configuration["Authentication:Google:ClientId"];
-                    options.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
-                });
-            }
         }
 
         private static string ParseHerokuPostgresString()
@@ -141,6 +165,7 @@ namespace Stemmesystem.Web
             {
                 mapper.ConfigurationProvider.AssertConfigurationIsValid();
                 app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
             }
             else
             {
@@ -160,6 +185,7 @@ namespace Stemmesystem.Web
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllers();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
                 endpoints.MapHub<CountHub>("/count-hub");

@@ -44,14 +44,11 @@ else
 
     private DelegatModel _delegat = new();
 
-    private bool _saved;
-
     protected override async Task OnInitializedAsync(){
         if(DelegatId != null){
             var delegat = await DelegatService.HentDelegat(ArrangementId, DelegatId.Value);
             if(delegat != null)
                 _delegat = delegat;
-            _saved = true;
         }
     }
 
@@ -75,7 +72,6 @@ else
         if (errors.Count <= 0)
         {
             _delegat = await DelegatService.OppdaterDelegat(ArrangementId, _delegat);
-            _saved = true;
         }
     }
 
@@ -88,7 +84,6 @@ else
         {
             _delegat = await DelegatService.RegistrerNyDelegat(ArrangementId, _delegat);
             Navigation.NavigateTo($"/arrangement/{ArrangementId}/delegat/{_delegat.Id}");
-            _saved = true;
         }
     }
 

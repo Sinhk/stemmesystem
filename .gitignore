@@ -444,3 +444,4 @@ $RECYCLE.BIN/
 !.vscode/launch.json
 !.vscode/extensions.json
 /src/Web/stemme.db
+/tmp/

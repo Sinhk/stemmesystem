@@ -1,11 +1,11 @@
 ﻿@using Stemmesystem.Web.Data
 @using Stemmesystem.Data
 @inject ArrangementService ArrangementService
-@inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 
 <h1>Arrangementer</h1>
 
-@if (arrangementer == null)
+@if (_arrangementer == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -22,14 +22,17 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var arrangement in arrangementer)
+            @foreach (var arrangement in _arrangementer)
             {
                 <tr>
                     <td>@arrangement.Navn</td>
                     <td>@arrangement.Beskrivelse</td>
                     <td>@arrangement.Saker.Count (@arrangement.Saker.Sum(s => s.Voteringer.Count) voteringer) </td>
                     <td>@arrangement.Delegater.Count</td>
-                    <td><button class="btn btn-primary" @onclick="@(e => NavigerTilArrangement(arrangement.Id))">Gå til</button></td>
+                    <td>
+                        <button class="btn btn-secondary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}"))">Rediger</button>
+                        <button class="btn btn-primary" @onclick="@(_ => Navigation.NavigateTo($"arrangement/{arrangement.Id}"))">Gå til</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -37,15 +40,15 @@ else
 }
 
 @code {
-    private ICollection<Arrangement>? arrangementer;
+    private ICollection<Arrangement>? _arrangementer;
 
     protected override async Task OnInitializedAsync()
     {
-        arrangementer = await ArrangementService.HentArrangementAsync();
+        _arrangementer = await ArrangementService.HentArrangementAsync();
     }
 
     private void NavigerTilArrangement(int id)
     {
-        NavigationManager.NavigateTo($"arrangement/{id}");
+        Navigation.NavigateTo($"arrangement/{id}");
     }
 }

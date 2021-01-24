@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stemmesystem.Data;
@@ -9,9 +10,10 @@ using Stemmesystem.Data;
 namespace Stemmesystem.Data.Migrations
 {
     [DbContext(typeof(StemmesystemContext))]
-    partial class StemmesystemContextModelSnapshot : ModelSnapshot
+    [Migration("20210124134336_DateOnArrangement")]
+    partial class DateOnArrangement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

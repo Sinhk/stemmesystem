@@ -89,12 +89,14 @@ namespace Stemmesystem.Web.Data
         public async Task<Votering?> AktivVotering(int arrangementId, CancellationToken cancellationToken = default)
         {
             var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
-            return arrangement.AktivVotering();
+            return arrangement?.AktivVotering();
         }
         public async Task StartVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
         {
             await using var context = _contextFactory.CreateDbContext();
             var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
+            if(arrangement == null)
+                return;
             context.Attach(arrangement);
             var aktiv = arrangement.AktivVotering();
             if (aktiv != null)
@@ -114,6 +116,8 @@ namespace Stemmesystem.Web.Data
         {
             await using var context = _contextFactory.CreateDbContext();
             var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
+            if(arrangement == null)
+                return;
             context.Attach(arrangement);
             var votering = arrangement.FinnVotering(voteringId);
             if (votering == null)
