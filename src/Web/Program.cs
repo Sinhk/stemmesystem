@@ -36,7 +36,22 @@ namespace Stemmesystem.Web
 
         private static async Task SeedData(StemmesystemContext db, IDelegatService delegatService)
         {
-            Arrangement arrangement = new("Testarrangement") { Beskrivelse = "Bare en test" };
+            Arrangement arrangemento = new("Testkretsting") { Beskrivelse = "Ikke bare-bare en test", Logo = "romnorkrets.png" };
+	    Sak saka = new(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
+            var votering4 = new Votering("Skal vi ha kretsting igjen?", false, "Ja", "Nai", "Kanskje");
+            saka.LeggTil(votering4);
+            arrangemento.LeggTil(saka);
+            Sak sake = new(5, "Testsak 5") { Beskrivelse = "Enda flere saker" };
+            var votering5 = new Votering("Beste farge på kretsting", true, 2, new[] { "Rød", "Gul", "Grønn", "Blå" });
+            sake.LeggTil(votering5);
+            arrangemento.LeggTil(sake);
+            delegatService.RegistrerNyDelegat(arrangemento, new(10) { Navn = "SindreHK", Epost = "sindre.kroknes@gmail.com", Telefon = "99150713" });
+            delegatService.RegistrerNyDelegat(arrangemento, new(2) { Navn = "SiljeTHK", Epost = "siljeth.kroknes@gmail.com"});
+            delegatService.RegistrerNyDelegat(arrangemento, new(1) { Navn = "PatrickG", Epost = "patrick.gule@gmail.com" });
+
+            db.Arrangement.Add(arrangemento);
+
+            Arrangement arrangement = new("Testarrangement") { Beskrivelse = "Bare en test", Logo = "testkrets.png" };
             Sak sak = new(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
             var votering1 = new Votering("Skal vi ha kretsting?", false, "Ja", "Nai", "Kanskje");
             var votering2 = new Votering("Beste farge", true, 2, new[] { "Rød", "Gul", "Grønn", "Blå" });

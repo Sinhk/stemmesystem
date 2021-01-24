@@ -66,6 +66,9 @@ namespace Stemmesystem.Data.Migrations
                     b.Property<string>("Beskrivelse")
                         .HasColumnType("text");
 
+                    b.Property<string>("Logo")
+                        .HasColumnType("text");
+
                     b.Property<string>("Navn")
                         .IsRequired()
                         .HasColumnType("text");

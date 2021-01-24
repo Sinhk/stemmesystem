@@ -78,6 +78,7 @@ namespace Stemmesystem.Data
         public string Navn { get; init; }
 
         public string? Beskrivelse { get; set; }
+        public string? Logo { get; set; }
         public bool Aktiv { get; set; }
 
 
@@ -194,7 +195,7 @@ namespace Stemmesystem.Data
             KanVelge = kanVelge.GetValueOrDefault(1);
         }
 
-        public static Votering EnkelVotering(string tittel, bool hemmelig = false) 
+        public static Votering EnkelVotering(string tittel, bool hemmelig = false)
         {
             Votering v = new(tittel, hemmelig);
             v._valg.Add(new("For"));
@@ -219,7 +220,7 @@ namespace Stemmesystem.Data
             List<Guid> idList = valgIder.ToList();
             if(idList.Count > 1 && idList.Contains(Konstanter.BlankStemme))
                 throw new StemmeException("Kan ikke ha flere valg i en blank stemme");
-            
+
             if(idList.Count > KanVelge)
                 throw new StemmeException($"For mange valg {idList.Count}, bare {KanVelge} er lov per delegat");
 
@@ -233,7 +234,7 @@ namespace Stemmesystem.Data
                     }
                     else
                     {
-                        throw new StemmeException("Delegat har allerede stemmt");    
+                        throw new StemmeException("Delegat har allerede stemmt");
                     }
 
                 }
@@ -244,7 +245,7 @@ namespace Stemmesystem.Data
             }
 
             var key = RngKeyGenerator.GenerateKey(20, KeyType.FullAlphanumeric);
-            List<Stemme> stemmer = new(); 
+            List<Stemme> stemmer = new();
             foreach (var valgId in idList)
             {
                 if (valgId != Konstanter.BlankStemme && _valg.All(v => v.Id != valgId))

@@ -10,7 +10,8 @@ namespace Stemmesystem.Web.Models
         [StringLength(20)]
         public string? Navn { get; set; }
         public string? Beskrivelse { get; set; }
-        
+        public string? Logo { get; set; }
+
         public DateTime? Startdato { get; set; }
         public DateTime? Sluttdato { get; set; }
     }
