@@ -23,7 +23,7 @@ namespace Stemmesystem.Data
         public DateTimeOffset StartTid { get; set; }
         public DateTimeOffset SluttTid { get; set; }
         public IReadOnlyList<Valg> Valg => _valg;
-        public IReadOnlyList<Stemme> Stemmer => _stemmer;
+        public List<Stemme> Stemmer => _stemmer;
         public IReadOnlyList<Delegat> AvgitStemme => _avgitStemme;
 
         public Sak Sak { get => sak ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Sak)); set => sak = value; }
@@ -68,7 +68,7 @@ namespace Stemmesystem.Data
             SluttTid = DateTimeOffset.Now;
         }
 
-        public (List<Stemme> stemmer, string key) RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat,  string? revoteKey, IKeyHasher keyHasher)
+        public (List<Stemme> stemmer, string key) RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat, string? revoteKey, IKeyHasher keyHasher, NotificationManager notificationManager)
         {
             List<Guid> idList = valgIder.ToList();
             if(idList.Count > 1 && idList.Contains(Konstanter.BlankStemme))
@@ -79,22 +79,29 @@ namespace Stemmesystem.Data
 
             if (_avgitStemme.Any(d => d.Id == delegat.Id))
             {
+                List<Stemme> fjernes;
                 if (Hemmelig)
                 {
+                    
                     if (revoteKey != null)
                     {
-                        _stemmer.RemoveAll(s => keyHasher.VerifyHash(s.RevoteKey, revoteKey));
+                        fjernes = _stemmer.Where(s => keyHasher.VerifyHash(s.RevoteKey, revoteKey)).ToList();
                     }
                     else
                     {
                         throw new StemmeException("Delegat har allerede stemmt");    
                     }
-
                 }
                 else
                 {
-                    _stemmer.RemoveAll(s => s.DelegatId == delegat.Id);
+                    fjernes = _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
                 }
+
+                if (!fjernes.Any())
+                    throw new StemmeException("Det er registrert at delegaten har stemmt, men ingen stemmer ble funnnet. Noe er galt");
+                
+                _stemmer.RemoveAll(s=>  fjernes.Contains(s));
+                fjernes.ForEach(s=> notificationManager.ForArrangement(Sak.ArrangementId).OnStemmeFjernet(new StemmeFjernetEvent(Id,s.Id)));
             }
 
             var key = RngKeyGenerator.GenerateKey(20, KeyType.FullAlphanumeric);
@@ -113,6 +120,7 @@ namespace Stemmesystem.Data
             _stemmer.AddRange(stemmer);
             _avgitStemme.Add(delegat);
 
+            stemmer.ForEach(s=> notificationManager.ForArrangement(Sak.ArrangementId).OnNyStemme(new NyStemmeEvent(Id,s)));
             return (stemmer, key);
         }
 

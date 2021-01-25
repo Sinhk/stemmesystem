@@ -1,14 +1,16 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Stemmesystem.Web.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Stemmesystem.Web.Data;
 using Stemmesystem.Data;
-using Stemmesystem.Web.Models;
 
 namespace Stemmesystem.Web.Pages
 {
-    public partial class Stemmeside : IStemmeClient
+    public partial class Stemmeside
     {
         [CascadingParameter]
         private DelegatStateProvider? DelegatStateProvider {get;set;}
@@ -19,24 +21,27 @@ namespace Stemmesystem.Web.Pages
         [Parameter]
         public int? Id{ get; set; }
 
-
-        private Arrangement? _arrangement;
+        private Arrangement _arrangement = null!;
         private Delegat? _delegat;
-        private HubConnection? _hubConnection;
+        private ICollection<Votering> _voteringer = new List<Votering>();
+        private NotifierService? _notifier;
+
         protected override async Task OnInitializedAsync()
         {
             if (DelegatStateProvider != null)
             {
                 _delegat = await DelegatStateProvider.GetDelegat();
             }
+
+            Arrangement? arrangement;
             if(Id != null)
             {
-                _arrangement = await ArrangementService.HentArrangementAsync(Id.Value);
+                arrangement = await ArrangementService.HentArrangementAsync(Id.Value);
                 Navn = _arrangement?.Navn;
             }
             else if(Navn != null)
             {
-                _arrangement = await ArrangementService.HentArrangementAsync(Navn);
+                arrangement = await ArrangementService.HentArrangementAsync(Navn);
                 Id = _arrangement?.Id;
             }
             else
@@ -46,18 +51,17 @@ namespace Stemmesystem.Web.Pages
                 return;
             }
 
-            if (_arrangement == null)
+            if (arrangement == null)
             {
                 NavigationManager.NavigateTo("");
                 return;
             }
 
-            _hubConnection = new HubConnectionBuilder().WithUrl(NavigationManager.ToAbsoluteUri("/stemme-hub")).WithAutomaticReconnect().Build();
-            _hubConnection.On<NyStemmeEvent>(nameof(IStemmeClient.NyStemme), NyStemme);
-            _hubConnection.On<VoteringStartetEvent>(nameof(IStemmeClient.VoteringStartet), VoteringStartet);
-            _hubConnection.On<VoteringStoppetEvent>(nameof(IStemmeClient.VoteringStoppet), VoteringStoppet);
-            await _hubConnection.StartAsync();
-            await _hubConnection.SendAsync(nameof(StemmeHub.BliMedIArrangement), Navn);
+            _arrangement = arrangement;
+            _notifier = Notifications.ForArrangement(_arrangement.Id);
+            _notifier.VoteringStartet += VoteringStartet;
+            _notifier.VoteringStoppet += VoteringStoppet;
+            _voteringer = _arrangement.AktiveVoteringer().ToList();
         }
 
         private async Task SetDelegat(Delegat delegat)
@@ -70,39 +74,43 @@ namespace Stemmesystem.Web.Pages
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
-            if (_hubConnection != null)
-                await _hubConnection.DisposeAsync();
-        }
-
-        public async Task NyStemme(NyStemmeEvent e)
-        {
-            //TODO: Partial update based on event
-            /*if (_arrangement == null) return;
-            var votering = _arrangement.FinnVotering(stemme.VoteringId);
+            if (_notifier == null) return;
+                
+            _notifier.VoteringStartet -= VoteringStartet;
+            _notifier.VoteringStoppet -= VoteringStoppet;
             
-            ArrangementService.
-            votering.Stemmer.Add()
-            */
-            _arrangement = await ArrangementService.HentArrangementAsync(Id!.Value);
-            StateHasChanged();
         }
 
-        public async Task VoteringStartet(VoteringStartetEvent e)
+        public void VoteringStartet(VoteringStartetEvent e)
         {
-            //TODO: Partial update based on event
-            System.Console.WriteLine($"Startet votering{e.VoteringId}");
-            _arrangement = await ArrangementService.HentArrangementAsync(Id!.Value);
-            StateHasChanged();
+            _ = InvokeAsync(async () =>
+            {
+                var votering = _arrangement!.FinnVotering(e.VoteringId);
+                if(votering != null)
+                    _voteringer.Add(votering);
+                else
+                {
+                    _voteringer = await ArrangementService.FinnAktiveVoteringer(_arrangement.Id);
+                }
+                StateHasChanged();
+            });
         }
 
-        public async Task VoteringStoppet(VoteringStoppetEvent e)
+        public void VoteringStoppet(VoteringStoppetEvent e)
         {
-            //TODO: Partial update based on event
-            System.Console.WriteLine($"Stoppet votering{e.VoteringId}");
-            _arrangement = await ArrangementService.HentArrangementAsync(Id!.Value);
-            StateHasChanged();
+            _ = InvokeAsync(async () =>
+            {
+                var votering = _arrangement!.FinnVotering(e.VoteringId);
+                if(votering != null)
+                    _voteringer.Remove(votering);
+                else
+                {
+                    _voteringer = await ArrangementService.FinnAktiveVoteringer(_arrangement.Id);
+                }
+                StateHasChanged();
+            });
         }
     }
 }

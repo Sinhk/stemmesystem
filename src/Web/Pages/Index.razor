@@ -1,21 +1,20 @@
 @page "/"
 
 @using Stemmesystem.Web.Data
-@using Stemmesystem.Data
 @inject IDelegatService DelegatService
-@inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 
 <h1>Romsdal og Nordmøre krets's stemmeside</h1>
 
-<label >Skriv PIN her for å logge inn:</label>
+<label>Skriv PIN her for å logge inn:</label>
 <form @onsubmit="DelegatLogin">
-    @if(error != null){
-        <span class="text-danger">@error</span>
+    @if(_error != null){
+        <span class="text-danger">@_error</span>
     }
   <div class="form-row align-items-center">
       <div class="col-auto">
         
-        <input type="text" class="form-control form-control-lg" id="pininput" placeholder="PIN" @bind-value=pin>
+        <input type="text" class="form-control form-control-lg" id="pininput" placeholder="PIN" @bind-value=_pin>
       </div>
       <div class="col-auto">
           <button type="submit" class="btn btn-primary mb-2">Logg inn</button>
@@ -24,39 +23,45 @@
 </form>
 
 @code {
-    private string? pin;
-    private string? error;
+    private string? _pin;
+    private string? _error;
 
     [CascadingParameter]
     private DelegatStateProvider? DelegatStateProvider { get; set; }
 
-    /*
     protected override async Task OnInitializedAsync()
     {
-        arrangementer = await ArrangementService.HentArrangementAsync();
-    }
-    */
-    private async Task DelegatLogin(){
-        error = null;
-        if (pin == null)
+        if (DelegatStateProvider?.Delegatkode != null)
         {
-            error = "Ingen PIN oppgitt";
+            var delegat = await DelegatStateProvider.GetDelegat();
+            if (delegat != null)
+            {
+                Navigation.NavigateTo($"/arrangement/{delegat.ArrangementId}");    
+            }
+        }
+    }
+
+    private async Task DelegatLogin(){
+        _error = null;
+        if (_pin == null)
+        {
+            _error = "Ingen PIN oppgitt";
             return;
         }
-        if (pin.Length < 4){
-            error = "PIN er minimum 4 tegn";
+        if (_pin.Length < 4){
+            _error = "PIN er minimum 4 tegn";
             return;
         }
 
-        var delegat = await DelegatService.ValiderKode(pin);
+        var delegat = await DelegatService.ValiderKode(_pin.ToUpperInvariant());
         if(delegat == null){
-            error = "Ikke en gyldig PIN";
+            _error = "Ikke en gyldig PIN";
             return;
         }
         if(DelegatStateProvider != null){
-            DelegatStateProvider.Delegatkode = pin;
+            DelegatStateProvider.Delegatkode = _pin;
             await DelegatStateProvider.SaveChangesAsync();
         }
-        NavigationManager.NavigateTo($"/arrangement/{delegat.ArrangementId}");
+        Navigation.NavigateTo($"/arrangement/{delegat.ArrangementId}");
     }
 }

@@ -4,6 +4,12 @@
 @inject StemmeService StemmeService
 
 <h6>Du har valg @_valg.Count, du kan velge @Votering.KanVelge</h6>
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="alert alert-danger" role="alert">
+        @_error
+    </div>
+}
 <div class="btn-group-toggle btn-group-vertical btn-block" data-toggle="buttons">
     @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
     {
@@ -30,34 +36,53 @@
     protected bool HarStemmt;
 
     private HashSet<Guid> _valg = new();
+    private string? _error;
 
-    
-    public async Task StemBlankt(){
+
+    public async Task StemBlankt()
+    {
+        _error = null;
         if (DelegatStateProvider?.Delegatkode == null)
             return;
-        var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, Konstanter.BlankStemme, _revoteKey);
-        Stemmer = new List<Stemme>{stemme};
-        DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
-        await DelegatStateProvider.SaveChangesAsync();
-        _revoteKey =  revoteKey;
-        HarStemmt = true;
+        try
+        {
+            var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, Konstanter.BlankStemme, _revoteKey);
+            Stemmer = new List<Stemme>{stemme};
+            DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
+            await DelegatStateProvider.SaveChangesAsync();
+            _revoteKey =  revoteKey;
+            HarStemmt = true;
+        }
+        catch (StemmeException e)
+        {
+            _error = e.Message;
+        }
+        
     }
     
-    public async Task RegistrerStemme(){
+    public async Task RegistrerStemme()
+    {
+        _error = null;
         if (DelegatStateProvider?.Delegatkode == null)
             return;
         if (_valg.Count > Votering.KanVelge)
         {
-            //ERROR
+            _error = "For mange valg!";
             return;
         }
-        var (stemmer, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, _valg, _revoteKey);
-        Stemmer = stemmer;
-        DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
-        await DelegatStateProvider.SaveChangesAsync();
-        _revoteKey = revoteKey;
-        HarStemmt = true;
-
+        try
+        {
+            var (stemmer, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, _valg, _revoteKey);
+            Stemmer = stemmer;
+            DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
+            await DelegatStateProvider.SaveChangesAsync();
+            _revoteKey = revoteKey;
+            HarStemmt = true;
+        }
+        catch (StemmeException e)
+        {
+            _error = e.Message;
+        }
     }
 
     protected override async Task OnInitializedAsync(){

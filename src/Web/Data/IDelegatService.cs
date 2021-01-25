@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
@@ -20,6 +21,7 @@ namespace Stemmesystem.Web.Data
         Task<DelegatModel> RegistrerNyDelegat(int arrangementId, DelegatModel model);
         Task<DelegatModel?> HentDelegat(int arrangementId, int delegatId);
         Task<DelegatModel> OppdaterDelegat(int arrangementId, DelegatModel model);
+        Task<ICollection<Delegat>> HentDelegater(int arrangementId);
     }
 
     public class DelegatService : IDelegatService
@@ -60,6 +62,15 @@ namespace Stemmesystem.Web.Data
             
             await context.SaveChangesAsync();
             return _mapper.Map<DelegatModel>(model);
+        }
+
+        public async Task<ICollection<Delegat>> HentDelegater(int arrangementId)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            return await context.Delegat
+                .Where(d => d.ArrangementId == arrangementId)
+                //.ProjectTo<DelegatModel>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
 
         public async Task<bool> IsValidNo(int arrangement, int number)
