@@ -7,7 +7,7 @@ using Stemmesystem.Web.Data;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace Stemmesystem.Web
 {
@@ -28,14 +28,15 @@ namespace Stemmesystem.Web
                 if (!db.Arrangement.Any())
                 {
                     var delegatService = scope.ServiceProvider.GetRequiredService<IDelegatService>();
-                    await SeedData(db, delegatService);
+                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+                    await SeedData(db, delegatService, userManager);
                 }
             }
 
             await host.RunAsync();
         }
 
-        private static async Task SeedData(StemmesystemContext db, IDelegatService delegatService)
+        private static async Task SeedData(StemmesystemContext db, IDelegatService delegatService, UserManager<IdentityUser> userManager)
         {
             Arrangement arrangement = new("Testarrangement") { Beskrivelse = "Bare en test" };
             Sak sak = new(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
@@ -51,6 +52,10 @@ namespace Stemmesystem.Web
             db.Arrangement.Add(arrangement);
 
             await db.SaveChangesAsync();
+            
+            await userManager.CreateAsync(new IdentityUser("sindre.kroknes@gmail.com") {Email = " sindre.kroknes@gmail.com", EmailConfirmed = true});
+            await userManager.CreateAsync(new IdentityUser("patrickg@romnorkrets.no") {Email = " patrickg@romnorkrets.no", EmailConfirmed = true});
+            await userManager.CreateAsync(new IdentityUser("siljeth.kroknes@gmail.com") {Email = " siljeth.kroknes@gmail.com", EmailConfirmed = true});
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
