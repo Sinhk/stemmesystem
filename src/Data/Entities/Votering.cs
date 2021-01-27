@@ -97,8 +97,8 @@ namespace Stemmesystem.Data
                     fjernes = _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
                 }
 
-                if (!fjernes.Any())
-                    throw new StemmeException("Det er registrert at delegaten har stemmt, men ingen stemmer ble funnnet. Noe er galt");
+                //if (!fjernes.Any())
+                    //throw new StemmeException("Det er registrert at delegaten har stemmt, men ingen stemmer ble funnnet. Noe er galt");
                 
                 _stemmer.RemoveAll(s=>  fjernes.Contains(s));
                 fjernes.ForEach(s=> notificationManager.ForArrangement(Sak.ArrangementId).OnStemmeFjernet(new StemmeFjernetEvent(Id,s.Id)));

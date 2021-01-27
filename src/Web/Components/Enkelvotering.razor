@@ -2,62 +2,21 @@
 @using Stemmesystem.Web.Data
 @inject StemmeService StemmeService
 
-@if (!string.IsNullOrEmpty(_error))
-{
-    <div class="alert alert-danger" role="alert">
-        @_error
-    </div>
-}
 <div class="col btn-group btn-group-toggle" data-toggle="buttons">
-@foreach(var valg in Votering.Valg.OrderBy(v=> v.SortId)){
-    <label class="btn @(Stemme?.ValgId == valg.Id ? "btn-primary" :"btn-outline-primary") btn-lg">
-        <input type="radio" name="options" id="@valg.Id" disabled=@(HarStemmt && Stemme == null) autocomplete="off" @onclick="@(async e => await RegistrerStemme(valg.Id))">@valg.Navn
+@foreach(var valg in Base.Votering.Valg.OrderBy(v=> v.SortId)){
+    <label class="btn @(Base.Stemmer.Any(s=> s.ValgId == valg.Id) ? "btn-primary" :"btn-outline-primary") btn-lg">
+        <input type="radio" name="options" id="@valg.Id" autocomplete="off" @onclick="@(async e => await Base.RegistrerStemme(valg.Id))">@valg.Navn
     </label>
 }
 </div>
 
-<button class="btn mt-2 @(Stemme?.ValgId == Konstanter.BlankStemme ? "btn-primary" :"btn-outline-primary")" disabled=@(HarStemmt && Stemme == null) @onclick="@(async e => await RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
+<button class="btn mt-2 @(Base.Stemmer.Any(s=> s.ValgId == Konstanter.BlankStemme) ? "btn-primary" :"btn-outline-primary")" @onclick="@(async e => await Base.RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
 
 @code {
-    [Parameter]
-    public Votering Votering { get; set; } = null!;
-
     [CascadingParameter]
-    private DelegatStateProvider? DelegatStateProvider {get;set;}
-
-    protected Stemme? Stemme;
-    private string? _revoteKey;
-    protected bool HarStemmt;
-    private string? _error;
-    public async Task RegistrerStemme(Guid valgId)
-    {
-        _error = null;
-        if (DelegatStateProvider?.Delegatkode == null)
-            return;
-        try
-        {
-            var (stemme, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, valgId, _revoteKey);
-            Stemme = stemme;
-            DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
-            await DelegatStateProvider.SaveChangesAsync();
-            _revoteKey =  revoteKey;
-            HarStemmt = true;
-        }
-        catch (StemmeException e)
-        {
-            _error = e.Message;
-        }
-    }
-
-    protected override async Task OnInitializedAsync(){
-        if (DelegatStateProvider?.Delegatkode != null)
-        {
-            HarStemmt = await StemmeService.HarStemmt(Votering.Id, DelegatStateProvider.Delegatkode);
-
-            if (HarStemmt && !Votering.Hemmelig)
-            {
-                Stemme = await StemmeService.FinnStemme(Votering.Id, DelegatStateProvider.Delegatkode);
-            }
-        }
-    }
+    public AktivVotering Base { get; set; }
+    [Parameter]
+    public string Error { get; set; }
+    [Parameter]
+    public EventCallback<string> ErrorChanged { get; set; }
 }
