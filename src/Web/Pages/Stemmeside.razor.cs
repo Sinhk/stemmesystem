@@ -1,11 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Stemmesystem.Web.Components;
-using Microsoft.AspNetCore.SignalR.Client;
-using Stemmesystem.Web.Data;
 using Stemmesystem.Data;
 
 namespace Stemmesystem.Web.Pages

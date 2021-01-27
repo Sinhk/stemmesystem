@@ -15,6 +15,7 @@
                 <th>Navn</th>
                 <th>Epost</th>
                 <th>Telefon</th>
+                <th>Pin</th>
                 <th>Send PIN</th>
             </tr>
         </thead>
@@ -32,6 +33,7 @@
                     <td>@delegat.Navn</td>
                     <td>@delegat.Epost</td>
                     <td>@delegat.Telefon</td>
+                    <td>@delegat.Delegatkode</td>
                     <td>
                         <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Sms))">SMS</button>
                         <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Epost))">e-post</button>
