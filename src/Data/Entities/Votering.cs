@@ -20,8 +20,8 @@ namespace Stemmesystem.Data
 
         public int KanVelge { get; set; } = 1;
 
-        public DateTimeOffset StartTid { get; set; }
-        public DateTimeOffset SluttTid { get; set; }
+        public DateTimeOffset? StartTid { get; set; }
+        public DateTimeOffset? SluttTid { get; set; }
         public IReadOnlyList<Valg> Valg => _valg;
         public List<Stemme> Stemmer => _stemmer;
         public IReadOnlyList<Delegat> AvgitStemme => _avgitStemme;

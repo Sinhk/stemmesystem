@@ -58,7 +58,6 @@ namespace Stemmesystem.Web.Data
 
         public async Task<bool> ErNummerBrukt(int arrangementId, string? nummer)
         {
-            Console.WriteLine($"Nummer:{nummer}");
             await using var db = _dbContextFactory.CreateDbContext();
             return await db.Arrangement
                 .Where(a => a.Id == arrangementId)
@@ -87,7 +86,11 @@ namespace Stemmesystem.Web.Data
                 .SelectMany(a => a.Saker)
                 .Where(s => s.Id == model.Id)
                 .FirstAsync();
-            _mapper.Map(model, sak);
+
+            sak.Nummer = model.Nummer!;
+            sak.Tittel = model.Tittel!;
+            sak.Beskrivelse = model.Beskrivelse;
+
             await db.SaveChangesAsync();
             return _mapper.Map<SakInputModel>(sak);
         }

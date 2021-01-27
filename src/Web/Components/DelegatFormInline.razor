@@ -1,0 +1,73 @@
+﻿@using Stemmesystem.Web.Models
+@using Stemmesystem.Web.Data
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@inject IDelegatService DelegatService
+
+<EditForm class="form-inline" Model="@Delegat" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="customValidator" />
+    <ValidationSummary />
+    
+    <input @ref="numInput" class="form-control" placeholder="Delegatnummer" @bind-value="Delegat.Delegatnummer" disabled="@(Delegat.Id != null)"/>
+    <InputText class="form-control" placeholder="Navn" @bind-Value="Delegat.Navn"/>
+    <InputText class="form-control" placeholder="Epost" @bind-Value="Delegat.Epost"/>
+    <InputText class="form-control" placeholder="Telefon" @bind-Value="Delegat.Telefon"/>
+    <button type="submit" class="btn btn-primary" disabled="@(Delegat.Id != null && !context.IsModified())">Lagre</button>
+</EditForm>
+
+@code {
+    private CustomValidator? customValidator;
+    private ElementReference numInput;
+
+    [Parameter]
+    public DelegatModel Delegat { get; set; }
+
+    [Parameter]
+    public int ArrangementId { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await numInput.FocusAsync();
+    }
+
+    private async Task HandleValidSubmit(EditContext context){
+        customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+        if (Delegat.Id == null)
+            await LeggTilDelegat(errors);
+        else
+            await OppdaterDelegat(errors);
+        
+        if (errors.Count > 0)
+        {
+            customValidator?.DisplayErrors(errors);
+        }
+        context.MarkAsUnmodified();
+    }
+
+    private async Task OppdaterDelegat(IDictionary<string,List<string>> errors)
+    {
+        if (errors.Count <= 0)
+        {
+            Delegat = await DelegatService.OppdaterDelegat(ArrangementId, Delegat);
+        }
+    }
+
+    private async Task LeggTilDelegat(Dictionary<string, List<string>> errors)
+    {
+        if (!await DelegatService.IsValidNo(ArrangementId, Delegat.Delegatnummer!.Value))
+            errors.Add(nameof(Delegat.Delegatnummer), new List<string> {"Delegatnummer er allerede brukt"});
+        
+        if (errors.Count <= 0)
+        {
+            Delegat = await DelegatService.RegistrerNyDelegat(ArrangementId, Delegat);
+        }
+    }
+
+    public async Task FocusAsync()
+    {
+        await numInput.FocusAsync();
+    }
+
+}

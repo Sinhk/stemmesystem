@@ -1,0 +1,18 @@
+﻿@using Microsoft.AspNetCore.Mvc.Formatters
+@using Microsoft.AspNetCore.Mvc.Razor
+@inherits InputBase<string>
+<input @ref="input" @bind="CurrentValue" class="@CssClass" />
+
+@code {
+    private ElementReference input;
+
+    public async ValueTask FocusAsync() => await input.FocusAsync();
+
+    protected override bool TryParseValueFromString(string? value, out string result, out string? validationErrorMessage)
+    {
+        result = value;
+        validationErrorMessage = null;
+        return true;
+    }
+}
+

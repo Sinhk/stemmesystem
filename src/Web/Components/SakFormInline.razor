@@ -1,0 +1,76 @@
+﻿@using Stemmesystem.Web.Models
+@using Stemmesystem.Web.Data
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@inject ISakService SakService
+@inject NavigationManager Nav
+
+<EditForm Model="@Sak" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="customValidator" />
+    <ValidationSummary />
+    <div class="form-row">
+        <div class="col-2">
+            <FocusableInputText @ref="firstInput" class="form-control" placeholder="Saknummer" @bind-Value="Sak.Nummer"/>
+        </div>
+        <div class="col-8">
+            <InputText class="form-control" placeholder="Tittel" @bind-Value="Sak.Tittel"/>
+        </div>
+        <div class="col-8">
+            <InputText class="my-1 form-control" placeholder="Beskrivelse" @bind-Value="Sak.Beskrivelse"/>    
+        </div>
+        
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary" disabled="@(Sak.Id != null && !context.IsModified())">Lagre</button>
+            <button class="btn btn-secondary" disabled="@(Sak.Id == null)" @onclick:preventDefault @onclick="@(_ => _voteringExpanded = !_voteringExpanded)"><i class="oi @(_voteringExpanded ? "oi-chevron-top":"oi-chevron-bottom")"></i></button>
+        </div>
+    </div>
+    @if (Sak.Id != null && _voteringExpanded)
+    {
+        <h5>Voteringer</h5>
+        foreach (var votering in Sak.Voteringer!)
+        {
+            <VoteringFormInline Votering="@votering" SakId="@Sak.Id.Value"/>
+        }
+        <button class="btn-sm btn-success" @onclick:preventDefault @onclick="@(_ => Sak.Voteringer!.Add(new VoteringModel()))">Legg til votering</button>
+    }
+    <hr/>
+</EditForm>
+@code {
+    [Parameter]
+    public int ArrangementId{get;set;}
+    [Parameter]
+    public SakInputModel Sak {get;set;}
+
+    private CustomValidator? customValidator;
+    private FocusableInputText firstInput;
+    private bool _voteringExpanded;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await firstInput.FocusAsync();
+    }
+    
+    private async Task HandleValidSubmit(EditContext context){
+        customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+
+        if (Sak.Id != default)
+        {
+            Sak = await SakService.OppdaterSak(ArrangementId, Sak);
+        }
+        else
+        {
+            if(await SakService.ErNummerBrukt(ArrangementId, Sak.Nummer))
+                errors.Add(nameof(Sak.Nummer), new List<string>{"Saknummer er allerede brukt"});
+            if (errors.Count > 0)
+            {
+                customValidator?.DisplayErrors(errors);
+                return;
+            }
+            Sak = await SakService.LagreNySak(ArrangementId, Sak);
+        }
+        context.MarkAsUnmodified();
+    }
+
+}

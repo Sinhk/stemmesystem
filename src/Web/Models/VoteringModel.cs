@@ -15,6 +15,7 @@ namespace Stemmesystem.Web.Models
 
         public List<ValgModel> Valg { get; set; } = new();
 
+        public DateTimeOffset? StartTid { get; private set; }
     }
     
     public class ValgModel

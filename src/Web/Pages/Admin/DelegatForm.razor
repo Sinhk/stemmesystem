@@ -6,6 +6,8 @@
 @inject IDelegatService DelegatService
 @inject NavigationManager Navigation
 
+@attribute [Authorize]
+
 @if (_delegat.Id == null)
 {
     <h3>Ny delegat</h3>

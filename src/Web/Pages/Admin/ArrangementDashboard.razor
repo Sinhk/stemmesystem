@@ -1,0 +1,26 @@
+﻿@page "/admin/arrangement/{arrangementId:int}/dashboard"
+@using Stemmesystem.Web.Models
+@using Stemmesystem.Web.Data
+@inject ArrangementService ArrangementService
+@attribute [Authorize]
+
+<h3><b>@_arrangement.Navn</b></h3>
+
+<Saksliste ArrangementId="ArrangementId" />
+<Delegatliste ArrangementId="ArrangementId" />
+
+@code {
+    [Parameter]
+    public int ArrangementId {get;set;}
+
+    private ArrangementModel _arrangement = new();
+
+    
+    protected override async Task OnInitializedAsync(){
+        if(ArrangementId != null){
+            var arrangement = await ArrangementService.HentArrangementModelAsync(ArrangementId);
+            if(arrangement != null)
+                _arrangement = arrangement;
+        }
+    }
+}

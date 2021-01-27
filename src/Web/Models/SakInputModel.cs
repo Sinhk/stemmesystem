@@ -6,7 +6,7 @@ namespace Stemmesystem.Web.Models
 {
     public class SakInputModel
     {
-        public int Id { get; internal set; }
+        public int? Id { get; internal set; }
 
         [Required(ErrorMessage = "Saknummer er påkrevd")]
         public string? Nummer { get; set; }

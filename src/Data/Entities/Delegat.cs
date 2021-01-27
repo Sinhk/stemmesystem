@@ -26,7 +26,7 @@ namespace Stemmesystem.Data
             Navn = navn;
 
             delegatkode ??= RngKeyGenerator.GenerateKey(4);
-            Delegatkode = delegatkode.ToString();
+            Delegatkode = delegatkode;
         }
     }
 }

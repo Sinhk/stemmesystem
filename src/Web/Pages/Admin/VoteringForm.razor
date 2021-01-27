@@ -7,6 +7,8 @@
 @inject ISakService SakService
 @inject NavigationManager Navigation
 
+@attribute [Authorize]
+
 @if (_votering.Id == null)
 {
     <h3>Ny votering</h3>    

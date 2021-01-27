@@ -7,6 +7,8 @@
 @inject ISakService SakService
 @inject NavigationManager Navigation
 
+@attribute [Authorize]
+
 @if (_sak.Id != null)
 {
     <h3>Redigerer sak <b>@_sak.Tittel</b></h3>
