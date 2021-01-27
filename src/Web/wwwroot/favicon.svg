@@ -18,7 +18,21 @@
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <defs
-     id="defs2" />
+     id="defs2">
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter901"
+       x="-2.547933e-05"
+       width="1.000051"
+       y="-3.6470831e-05"
+       height="1.0000729">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="4.7639324e-05"
+         id="feGaussianBlur903" />
+    </filter>
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -26,20 +40,33 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="15.839192"
-     inkscape:cx="36.581146"
-     inkscape:cy="12.391885"
+     inkscape:zoom="22.4"
+     inkscape:cx="18.525127"
+     inkscape:cy="17.150731"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
      showgrid="false"
      units="px"
-     showguides="false"
+     showguides="true"
      inkscape:window-width="1920"
-     inkscape:window-height="1017"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1" />
+     inkscape:window-height="1137"
+     inkscape:window-x="1912"
+     inkscape:window-y="535"
+     inkscape:window-maximized="1"
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       position="8.2918527,7.7225261"
+       orientation="0.62905225,-0.77736302"
+       id="guide905" />
+    <sodipodi:guide
+       position="8.266281,5.8357812"
+       orientation="-0.77714596,-0.62932039"
+       id="guide907"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+  </sodipodi:namedview>
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -58,34 +85,40 @@
      id="layer1">
     <path
        id="rect833"
-       style="fill:#3e648e;fill-rule:evenodd;stroke:none;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000;fill-opacity:1"
-       d="M 0.41639058,5.1670151 H 8.0502761 l 0,2.8564427 H 0.41639058 Z"
+       style="fill:#3e648e;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.293429;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+       d="M 2.51305e-4,5.2988025 H 8.4664154 V 8.4666667 H 2.51305e-4 Z"
        sodipodi:nodetypes="ccccc" />
     <path
        id="path836"
-       style="fill:#63ac3b;fill-rule:evenodd;stroke:none;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000;fill-opacity:1"
-       d="M 0.41639058,5.1670151 H 8.0502761 L 7.2020665,3.2126064 H 1.2646002 Z"
-       sodipodi:nodetypes="ccccc" />
+       style="fill:#63ac3b;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.293429;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+       d="M 0.9408499,3.131446 3.86015e-4,5.298926 H 8.4662804 L 7.5258166,3.131446 Z m 0.5599228,1.1238572 h 5.4651211 z" />
     <path
-       style="fill:#de8787;stroke:#000000;stroke-width:0.79375;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 1.7694424,4.2261995 H 6.6972242"
+       style="fill:#de8787;stroke:#000000;stroke-width:0.880288;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 1.5008186,4.2554152 H 6.9658481"
        id="path840" />
     <path
        id="rect838"
-       style="fill:#f6f6f6;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.258242;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
-       d="M 6.4054079,0.04269248 1.5262035,2.8594969 2.4790942,4.5101923 h 2.8485936 l 2.7423719,-1.583241 z"
+       style="fill:#f6f6f6;fill-opacity:1;fill-rule:evenodd;stroke:#8e8e8e;stroke-width:0.286387;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+       d="M 6.1467214,0.01344737 1.28964,3.9438606 2.2512582,5.1286424 5.2297943,5.08805 8.266281,2.6308855 Z"
        sodipodi:nodetypes="cccccc" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:1.25618px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0314045"
-       x="0.34557375"
-       y="5.1291513"
+       style="font-style:normal;font-weight:normal;font-size:1.20794px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0314045;filter:url(#filter901)"
+       x="-0.052692696"
+       y="5.1181483"
        id="text876"
-       transform="rotate(-30.216604)"><tspan
+       transform="matrix(0.90364746,-0.73896257,0.737671,0.90697137,-1.3179717,0.44659429)"><tspan
          sodipodi:role="line"
          id="tspan874"
-         x="0.34557375"
-         y="5.1291513"
-         style="stroke-width:0.0314045">BALJOT</tspan></text>
+         x="-0.052692696"
+         y="5.1181483"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.20794px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.0314045">STEMME</tspan></text>
+    <rect
+       style="fill:#63ac3b;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.282309;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+       id="rect883"
+       width="7.0606427"
+       height="0.6110037"
+       x="0.80911785"
+       y="4.6950455" />
   </g>
 </svg>
