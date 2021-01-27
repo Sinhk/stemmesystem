@@ -1,5 +1,5 @@
-﻿@page "/arrangement/{arrangementId:int}/delegat/ny-delegat"
-@page "/arrangement/{arrangementId:int}/delegat/{delegatId:int}"
+﻿@page "/admin/arrangement/{arrangementId:int}/delegat/ny-delegat"
+@page "/admin/arrangement/{arrangementId:int}/delegat/{delegatId:int}"
 
 @using Models
 @using Stemmesystem.Web.Data
@@ -83,7 +83,7 @@ else
         if (errors.Count <= 0)
         {
             _delegat = await DelegatService.RegistrerNyDelegat(ArrangementId, _delegat);
-            Navigation.NavigateTo($"/arrangement/{ArrangementId}/delegat/{_delegat.Id}");
+            Navigation.NavigateTo($"/admin/arrangement/{ArrangementId}/delegat/{_delegat.Id}");
         }
     }
 
