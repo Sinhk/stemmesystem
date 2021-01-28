@@ -3,40 +3,43 @@
 @inject StemmeService StemmeService
 
 <div class="col-xl-4 col-md-6">
-    <h3>@Votering.Sak.Tittel</h3>
-    <h4>@Votering.Sak.Beskrivelse</h4>
-    <h5>@Votering.Tittel</h5>    
-    
-    @if (HarStemmt && !Endre)
-    {
-        <p>Du har stemt <b>@StemmerSomString()</b></p>
-        if (KanEndre())
-        {
-            <button class="btn btn-secondary" @onclick="@(e => Endre = true)">Endre</button>
-        }
-        
-    }
-    else
-    {
-        @if (!string.IsNullOrEmpty(_error))
-        {
-            <div class="alert alert-danger" role="alert">
-                @_error
-            </div>
-        }
-        <CascadingValue Value=this>
-            @if(Votering.KanVelge > 1)
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">@Votering.Sak.Tittel</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@Votering.Sak.Beskrivelse</h6>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">@Votering.Tittel</h5>
+            @if (HarStemmt && !Endre)
             {
-                <Flervalgsvotering @bind-Error="_error"/>
+                <p>Du har stemt <b>@StemmerSomString()</b></p>
+                if (KanEndre())
+                {
+                    <button class="btn btn-secondary" @onclick="@(e => Endre = true)">Endre</button>
+                }
             }
             else
             {
-                <Enkelvotering @bind-Error="_error"/>
+                @if (!string.IsNullOrEmpty(_error))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @_error
+                    </div>
+                }
+                <CascadingValue Value=this>
+                    @if (Votering.KanVelge > 1)
+                    {
+                        <Flervalgsvotering @bind-Error="_error"/>
+                    }
+                    else
+                    {
+                        <Enkelvotering @bind-Error="_error"/>
+                    }
+                </CascadingValue>
             }
-        </CascadingValue>
-    }
+        </div>
+    </div>
 </div>
-
 
 @code {
     [Parameter]
