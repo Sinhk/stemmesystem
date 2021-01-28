@@ -43,4 +43,16 @@ else
         <h3>Du er ikke logget inn. Du må logge inn for å kunne stemme</h3>
         <DelegatkodeInput OnGyldigDelegat="@(SetDelegat)"/>
     }
+    <div class="row mt-4" @onclick=@(_ => _resulaterExpanded=!_resulaterExpanded)>
+        <h3>Resultater</h3>
+        <span class="ml-2 mt-1 oi @(_resulaterExpanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+    </div>
+    if (_resulaterExpanded)
+    {
+        foreach (var sak in _arrangement.Saker)
+        {
+            <Resultatliste Sak="sak"></Resultatliste>
+        }
+    }
+    
 }

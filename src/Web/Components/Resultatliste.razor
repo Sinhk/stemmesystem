@@ -1,0 +1,10 @@
+﻿@using Stemmesystem.Data
+<h4>@Sak.Tittel</h4>
+@foreach(var votering in Sak.Voteringer){
+    <ResultatlisteElement Votering="votering"></ResultatlisteElement>
+}
+
+@code {
+    [Parameter]
+    public Sak Sak { get; set; }
+}

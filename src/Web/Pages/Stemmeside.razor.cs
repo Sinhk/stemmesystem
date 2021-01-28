@@ -22,6 +22,7 @@ namespace Stemmesystem.Web.Pages
         private Delegat? _delegat;
         private ICollection<Votering> _voteringer = new List<Votering>();
         private NotifierService? _notifier;
+        private bool _resulaterExpanded;
 
         protected override async Task OnInitializedAsync()
         {

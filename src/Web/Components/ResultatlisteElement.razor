@@ -1,0 +1,34 @@
+﻿@using Stemmesystem.Data
+
+<div class="card">
+    <div class="card-header" @onclick="@(_ => _visDetaljer = !_visDetaljer)">
+        @Votering.Tittel
+    </div>
+    <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
+        <div class="card-body">
+            <b>Stemmer totalt: @Votering.Stemmer.Count</b>
+            @foreach(var (navn, stemmer) in Resultater().OrderByDescending(r=> r.Value))
+            {
+                <div>@navn: @stemmer</div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Votering Votering { get; set; }
+
+    private bool _visDetaljer;
+
+    private Dictionary<string, int> Resultater()
+    {
+        var resultater = new Dictionary<string, int>(Votering.Valg.Count);
+        foreach(var valg in Votering.Valg)
+        {
+            resultater[valg.Navn] = Votering.Stemmer.Count(s => s.ValgId == valg.Id);
+        }
+
+        return resultater;
+    }
+}
