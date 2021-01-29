@@ -82,8 +82,8 @@ else
     
     private CustomValidator? customValidator;
 
-    private bool _delegaterExpanded = false;
-    private bool _sakerExpanded = true;
+    private bool _delegaterExpanded;
+    private bool _sakerExpanded;
     
     protected override async Task OnInitializedAsync(){
         if(ArrangementId != null){
