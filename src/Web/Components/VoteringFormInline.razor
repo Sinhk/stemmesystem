@@ -34,6 +34,9 @@ else
                             <label class="form-check-label" for="hemmeligCheck">Hemmelig</label>
                         </div>
                     </div>
+                    <div class="col-10">
+                        <InputText class="form-control" placeholder="Beskrivelse" @bind-Value="Votering.Beskrivelse"/>
+                    </div>
                     <button type="submit" class="btn btn-primary">Lagre</button>
                 </div>
             </div>
@@ -41,12 +44,7 @@ else
                 <h6>Valg</h6>
                 @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
                 {
-                    <div class="input-group">
-                        <InputText class="form-control col-6" placeholder="Navn" @bind-Value="valg.Navn"/>
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-danger" @onclick="@(e => TaVekkValg(valg.Id))" tabindex="-1"><i class="oi oi-x"></i></button>
-                        </div>
-                    </div>
+                    <ValgInline Valg="@valg" OnTaVekkValg="@TaVekkValg"></ValgInline>
                 }
                 <button type="button" class="btn btn-success btn-sm mt-1" @onclick=LeggTilValg>Legg til valg</button>
             </div>
@@ -67,6 +65,8 @@ else
         customValidator?.ClearErrors();
         var errors = new Dictionary<string, List<string>>();
 
+        Votering.Valg.RemoveAll(v => string.IsNullOrEmpty(v.Navn));
+        
         if (Votering.Id != default)
         {
             Votering = await SakService.OppdaterVotering(Votering);

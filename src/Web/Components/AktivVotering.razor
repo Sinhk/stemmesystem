@@ -10,6 +10,7 @@
         </div>
         <div class="card-body">
             <h5 class="card-title">@Votering.Tittel</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@Votering.Beskrivelse</h6>
             @if (HarStemmt && !Endre)
             {
                 <p>Du har stemt <b>@StemmerSomString()</b></p>
