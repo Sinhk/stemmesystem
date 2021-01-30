@@ -377,11 +377,21 @@ namespace Stemmesystem.Data.Migrations
                     b.Property<bool>("Aktiv")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Beskrivelse")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("Hemmelig")
                         .HasColumnType("boolean");
 
                     b.Property<int>("KanVelge")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("Lukket")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Publisert")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("SakId")
                         .HasColumnType("integer");

@@ -15,6 +15,7 @@ namespace Stemmesystem.Data
 
         public int Id { get; internal set; }
         public string Tittel { get; init; }
+        public string Beskrivelse { get; set; }
         public bool Hemmelig { get; set; }
         public bool Aktiv { get; set; } = false;
 
@@ -28,6 +29,9 @@ namespace Stemmesystem.Data
 
         public Sak Sak { get => sak ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Sak)); set => sak = value; }
         public int SakId { get; internal set; }
+        public bool Lukket { get; set; }
+        public bool Publisert { get; set; }
+
         public Votering(string tittel, bool hemmelig)
         {
             Tittel = tittel;
@@ -58,6 +62,8 @@ namespace Stemmesystem.Data
 
         public void StartVotering()
         {
+            if (Lukket)
+                throw new StemmeException("Votering lukket, kan ikke startes igjen");
             Aktiv = true;
             StartTid = DateTimeOffset.Now;
         }
@@ -124,9 +130,16 @@ namespace Stemmesystem.Data
             return (stemmer, key);
         }
 
-        public TEntity RegistrerStemme<TEntity>(IEnumerable<Guid> valgIder, Delegat delegat, string? gammelStemme, IKeyHasher keyHasher) where TEntity : class
+        public void LukkVotering()
         {
-            throw new NotImplementedException();
+            Lukket = true;
+        }
+        
+        public void PubliserVotering()
+        {
+            if (!Lukket)
+                throw new StemmeException("Votering må lukkes før den kan publiseres");
+            Publisert = true;
         }
     }
 }

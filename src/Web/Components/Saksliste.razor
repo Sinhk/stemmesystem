@@ -41,10 +41,21 @@
                     <td>Registrerte stemmer: @votering.Stemmer.Count</td>
                     @if(votering.Aktiv){
                         <td><button class="btn btn-danger" @onclick="@(async e => await StoppVotering(sak.ArrangementId, votering.Id))">Stopp</button></td>
-                    }else{
-                        <td><button class="btn btn-success" @onclick="@(async e => await StartVotering(sak.ArrangementId, votering.Id))">Start</button></td>
+                    }else if(!votering.Lukket){
+                        <td>
+                            <button class="btn btn-success" @onclick="@(async e => await StartVotering(sak.ArrangementId, votering.Id))">Start</button>
+                             @if (votering.SluttTid != null) {<button class="btn btn-primary" @onclick="@(async e => await LukkVotering(sak.ArrangementId, votering.Id))">Lukk</button>}
+                        </td>
                     }
-                    
+                    else if (!votering.Publisert)
+                    {
+                        <td><button class="btn btn-primary" @onclick="@(async e => await PubliserVotering(sak.ArrangementId, votering.Id))">Publiser</button></td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+
                 </tr>
                 @foreach (var valg in votering.Valg.OrderBy(v => v.SortId)){
                     <tr>
@@ -70,6 +81,8 @@
         Notifier = NotificationManager.ForArrangement(ArrangementId);
         Notifier.VoteringStartet += OnVoteringStartet;
         Notifier.VoteringStoppet += OnVoteringStoppet;
+        Notifier.VoteringLukket += OnVoteringLukket;
+        Notifier.VoteringPublisert += OnVoteringPublisert;
         Notifier.NyStemme += OnNyStemme;
         Notifier.StemmeFjernet += OnStemmeFjernet;
     }
@@ -143,13 +156,45 @@
             StateHasChanged();
         });
     }
+    
+    private void OnVoteringLukket(VoteringLukketEvent e)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == e.VoteringId);
+            if (votering != null)
+            {
+                votering.Lukket = true;
+            }
+            else
+            {
+                _saker = await SakService.HentSaker(ArrangementId);
+            }
+            StateHasChanged();
+        });
+    }
+    
+    private void OnVoteringPublisert(VoteringPublisertEvent e)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == e.VoteringId);
+            if (votering != null)
+            {
+                votering.Publisert = true;
+            }
+            else
+            {
+                _saker = await SakService.HentSaker(ArrangementId);
+            }
+            StateHasChanged();
+        });
+    }
 
-    public async Task StartVotering(int arrangementId, int voteringId){
-        await StemmeService.StartVotering(arrangementId, voteringId);
-    }
-    public async Task StoppVotering(int arrangementId, int voteringId){
-        await StemmeService.StoppVotering(arrangementId, voteringId);
-    }
+    public async Task StartVotering(int arrangementId, int voteringId) => await StemmeService.StartVotering(arrangementId, voteringId);
+    public async Task StoppVotering(int arrangementId, int voteringId) => await StemmeService.StoppVotering(arrangementId, voteringId);
+    public async Task LukkVotering(int arrangementId, int voteringId) => await StemmeService.LukkVotering(arrangementId, voteringId);
+    public async Task PubliserVotering(int arrangementId, int voteringId) => await StemmeService.PubliserVotering(arrangementId, voteringId);
 
     public void Dispose()
     {
@@ -158,6 +203,8 @@
         Notifier.VoteringStoppet -= OnVoteringStoppet;
         Notifier.NyStemme -= OnNyStemme;
         Notifier.StemmeFjernet -= OnStemmeFjernet;
+        Notifier.VoteringLukket -= OnVoteringLukket;
+        Notifier.VoteringPublisert -= OnVoteringPublisert;
     }
 
 }
