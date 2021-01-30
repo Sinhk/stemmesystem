@@ -1,8 +1,10 @@
 ﻿@using Stemmesystem.Web.Models
 @using Stemmesystem.Web.Data
+@using Microsoft.Extensions.Hosting
 @inject ISakService SakService
+@inject IHostEnvironment Environment
 
-@if (Votering.StartTid != null && Votering.StartTid != default(DateTimeOffset))
+@if (!Environment.IsDevelopment() && (Votering.StartTid != null && Votering.StartTid != default(DateTimeOffset)))
 {
     <div class="card">
         <div class="card-header">
