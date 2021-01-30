@@ -148,5 +148,42 @@ namespace Stemmesystem.Web.Data
                 .SelectMany(v => v.Stemmer)
                 .Where(s => s.Delegat!.Id == delegat.Id);
         }
+
+        public async Task LukkVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
+            if(arrangement == null)
+                return;
+            context.Attach(arrangement);
+            var votering = arrangement.FinnVotering(voteringId);
+            if (votering == null)
+                throw new StemmeException("Fant ikke valgt votering");
+            if (votering.Aktiv)
+            {
+                votering.AvsluttVotering();
+                _notificationManager.ForArrangement(arrangementId).OnVoteringStoppet(new VoteringStoppetEvent(votering.Id));
+            }
+            votering.LukkVotering();
+            await context.SaveChangesAsync(cancellationToken);
+            
+            _notificationManager.ForArrangement(arrangementId).OnVoteringLukket(new(votering.Id));
+        }
+        
+        public async Task PubliserVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
+            if(arrangement == null)
+                return;
+            context.Attach(arrangement);
+            var votering = arrangement.FinnVotering(voteringId);
+            if (votering == null)
+                throw new StemmeException("Fant ikke valgt votering");
+            votering.PubliserVotering();
+            await context.SaveChangesAsync(cancellationToken);
+            
+            _notificationManager.ForArrangement(arrangementId).OnVoteringPublisert(new(votering.Id){Votering = votering});
+        }
     }
 }

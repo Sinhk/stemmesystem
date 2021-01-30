@@ -31,13 +31,18 @@ namespace Stemmesystem.Data
         public void OnVoteringStoppet(VoteringStoppetEvent e) => VoteringStoppet?.Invoke(e);
         public void OnNyStemme(NyStemmeEvent e) => NyStemme?.Invoke(e);
         public void OnStemmeFjernet(StemmeFjernetEvent e) => StemmeFjernet?.Invoke(e);
-        
+
+        public void OnVoteringLukket(VoteringLukketEvent e) => VoteringLukket?.Invoke(e);
+        public void OnVoteringPublisert(VoteringPublisertEvent e) => VoteringPublisert?.Invoke(e);
         public event Action<VoteringStartetEvent>? VoteringStartet;
+
         public event Action<VoteringStoppetEvent>? VoteringStoppet;
+
         public event Action<NyStemmeEvent>? NyStemme;
+
         public event Action<StemmeFjernetEvent>? StemmeFjernet;
-
-
+        public event Action<VoteringLukketEvent>? VoteringLukket;
+        public event Action<VoteringPublisertEvent>? VoteringPublisert;
     }
     public record NyStemmeEvent(int VoteringId, Stemme Stemme)
     {
@@ -45,4 +50,9 @@ namespace Stemmesystem.Data
     public record StemmeFjernetEvent(int VoteringId, Guid StemmeId) { }
     public record VoteringStartetEvent(int VoteringId) { }
     public record VoteringStoppetEvent(int VoteringId) { }
+    public record VoteringLukketEvent(int VoteringId) { }
+    public record VoteringPublisertEvent(int VoteringId)
+    {
+        public Votering Votering { get; set; }
+    }
 }

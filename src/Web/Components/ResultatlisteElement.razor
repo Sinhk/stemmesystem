@@ -3,6 +3,7 @@
 <div class="card">
     <div class="card-header" @onclick="@(_ => _visDetaljer = !_visDetaljer)">
         @Votering.Tittel
+        <span class="ml-2 mt-1 oi float-right @(_visDetaljer ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
     </div>
     <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
         <div class="card-body">
