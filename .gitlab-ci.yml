@@ -34,7 +34,8 @@ production:
     GIT_STRATEGY: none
   script:
     - apk add --no-cache zip curl 
-    - zip -r stemme.zip stemme/*
+    - cd stemme
+    - zip -r stemme.zip .
     - curl -X POST -u "\$Stemmesystem:$AZURE_PASSWORD" --data-binary @"stemme.zip" https://stemmesystem.scm.azurewebsites.net/api/zipdeploy
   only:
     - master     
