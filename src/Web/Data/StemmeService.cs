@@ -167,7 +167,7 @@ namespace Stemmesystem.Web.Data
             votering.LukkVotering();
             await context.SaveChangesAsync(cancellationToken);
             
-            _notificationManager.ForArrangement(arrangementId).OnVoteringLukket(new(votering.Id));
+            _notificationManager.ForArrangement(arrangementId).OnVoteringLukket(new VoteringLukketEvent(votering.Id));
         }
         
         public async Task PubliserVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
@@ -183,7 +183,7 @@ namespace Stemmesystem.Web.Data
             votering.PubliserVotering();
             await context.SaveChangesAsync(cancellationToken);
             
-            _notificationManager.ForArrangement(arrangementId).OnVoteringPublisert(new(votering.Id){Votering = votering});
+            _notificationManager.ForArrangement(arrangementId).OnVoteringPublisert(new VoteringPublisertEvent(votering.Id, votering));
         }
     }
 }
