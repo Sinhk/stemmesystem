@@ -36,9 +36,9 @@ namespace Stemmesystem.Web
 
         private static async Task CreateAdminUsers(UserManager<IdentityUser> userManager)
         {
-            await userManager.CreateAsync(new IdentityUser("sindre.kroknes@gmail.com") {Email = " sindre.kroknes@gmail.com", EmailConfirmed = true});
-            await userManager.CreateAsync(new IdentityUser("patrickg@romnorkrets.no") {Email = " patrickg@romnorkrets.no", EmailConfirmed = true});
-            await userManager.CreateAsync(new IdentityUser("siljeth.kroknes@gmail.com") {Email = " siljeth.kroknes@gmail.com", EmailConfirmed = true});
+            await userManager.CreateAsync(new IdentityUser("sindre") {Email = "sindre.kroknes@gmail.com", EmailConfirmed = true});
+            await userManager.CreateAsync(new IdentityUser("patrick") {Email = "patrick.gule@gmail.com", EmailConfirmed = true});
+            await userManager.CreateAsync(new IdentityUser("silje") {Email = "siljeth.kroknes@gmail.com", EmailConfirmed = true});
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
