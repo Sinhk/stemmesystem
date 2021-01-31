@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Stemmesystem.Data.Migrations
+namespace PostgresMigrations
 {
     public partial class SakNummerToString : Migration
     {

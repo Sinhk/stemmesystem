@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stemmesystem.Data;
 
-namespace Stemmesystem.Data.Migrations
+namespace PostgresMigrations
 {
     [DbContext(typeof(StemmesystemContext))]
-    [Migration("20210111225136_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20210112231240_ChangedCasing")]
+    partial class ChangedCasing
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -69,7 +69,7 @@ namespace Stemmesystem.Data.Migrations
                     b.Property<int>("ArrangementId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("DelegatKode")
+                    b.Property<string>("Delegatkode")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -86,6 +86,9 @@ namespace Stemmesystem.Data.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Delegatkode")
+                        .IsUnique();
 
                     b.HasIndex("ArrangementId", "Delegatnummer")
                         .IsUnique();
@@ -208,11 +211,13 @@ namespace Stemmesystem.Data.Migrations
 
             modelBuilder.Entity("Stemmesystem.Data.Sak", b =>
                 {
-                    b.HasOne("Stemmesystem.Data.Arrangement", null)
+                    b.HasOne("Stemmesystem.Data.Arrangement", "Arrangement")
                         .WithMany("Saker")
                         .HasForeignKey("ArrangementId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Arrangement");
                 });
 
             modelBuilder.Entity("Stemmesystem.Data.Stemme", b =>

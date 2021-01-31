@@ -44,15 +44,12 @@ namespace Stemmesystem.Data
         public event Action<VoteringLukketEvent>? VoteringLukket;
         public event Action<VoteringPublisertEvent>? VoteringPublisert;
     }
-    public record NyStemmeEvent(int VoteringId, Stemme Stemme)
-    {
-    }
-    public record StemmeFjernetEvent(int VoteringId, Guid StemmeId) { }
-    public record VoteringStartetEvent(int VoteringId) { }
-    public record VoteringStoppetEvent(int VoteringId) { }
-    public record VoteringLukketEvent(int VoteringId) { }
-    public record VoteringPublisertEvent(int VoteringId)
-    {
-        public Votering Votering { get; set; }
-    }
+
+
+    public record NyStemmeEvent(int VoteringId, Stemme Stemme);
+    public record StemmeFjernetEvent(int VoteringId, Guid StemmeId);
+    public record VoteringStartetEvent(int VoteringId);
+    public record VoteringStoppetEvent(int VoteringId);
+    public record VoteringLukketEvent(int VoteringId);
+    public record VoteringPublisertEvent(int VoteringId, Votering Votering);
 }
