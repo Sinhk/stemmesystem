@@ -15,7 +15,7 @@ namespace Stemmesystem.Data
 
         public int Id { get; internal set; }
         public string Tittel { get; init; }
-        public string Beskrivelse { get; set; }
+        public string? Beskrivelse { get; set; }
         public bool Hemmelig { get; set; }
         public bool Aktiv { get; set; } = false;
 

@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stemmesystem.Data;
 
-namespace Stemmesystem.Data.Migrations
+namespace PostgresMigrations
 {
     [DbContext(typeof(StemmesystemContext))]
-    [Migration("20210123133528_Identity")]
-    partial class Identity
+    [Migration("20210127234323_NullableStartEndOnVotering")]
+    partial class NullableStartEndOnVotering
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -266,6 +266,12 @@ namespace Stemmesystem.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("Sluttdato")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("Startdato")
+                        .HasColumnType("date");
+
                     b.HasKey("Id");
 
                     b.ToTable("Arrangement");
@@ -382,10 +388,10 @@ namespace Stemmesystem.Data.Migrations
                     b.Property<int>("SakId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset>("SluttTid")
+                    b.Property<DateTimeOffset?>("SluttTid")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset>("StartTid")
+                    b.Property<DateTimeOffset?>("StartTid")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Tittel")

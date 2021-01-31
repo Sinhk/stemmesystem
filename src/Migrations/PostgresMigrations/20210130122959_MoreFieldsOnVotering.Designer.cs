@@ -2,16 +2,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stemmesystem.Data;
 
-namespace Stemmesystem.Data.Migrations
+namespace PostgresMigrations
 {
     [DbContext(typeof(StemmesystemContext))]
-    partial class StemmesystemContextModelSnapshot : ModelSnapshot
+    [Migration("20210130122959_MoreFieldsOnVotering")]
+    partial class MoreFieldsOnVotering
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

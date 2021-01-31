@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stemmesystem.Data;
 
-namespace Stemmesystem.Data.Migrations
+namespace PostgresMigrations
 {
     [DbContext(typeof(StemmesystemContext))]
-    [Migration("20210130122959_MoreFieldsOnVotering")]
-    partial class MoreFieldsOnVotering
+    [Migration("20210124134336_DateOnArrangement")]
+    partial class DateOnArrangement
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -379,29 +379,19 @@ namespace Stemmesystem.Data.Migrations
                     b.Property<bool>("Aktiv")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Beskrivelse")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<bool>("Hemmelig")
                         .HasColumnType("boolean");
 
                     b.Property<int>("KanVelge")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("Lukket")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Publisert")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("SakId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("SluttTid")
+                    b.Property<DateTimeOffset>("SluttTid")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset?>("StartTid")
+                    b.Property<DateTimeOffset>("StartTid")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Tittel")

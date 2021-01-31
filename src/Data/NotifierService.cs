@@ -51,8 +51,5 @@ namespace Stemmesystem.Data
     public record VoteringStartetEvent(int VoteringId) { }
     public record VoteringStoppetEvent(int VoteringId) { }
     public record VoteringLukketEvent(int VoteringId) { }
-    public record VoteringPublisertEvent(int VoteringId)
-    {
-        public Votering Votering { get; set; }
-    }
+    public record VoteringPublisertEvent(int VoteringId, Votering Votering);
 }

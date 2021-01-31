@@ -2,18 +2,16 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stemmesystem.Data;
 
-namespace Stemmesystem.Data.Migrations
+namespace PostgresMigrations
 {
     [DbContext(typeof(StemmesystemContext))]
-    [Migration("20210127234323_NullableStartEndOnVotering")]
-    partial class NullableStartEndOnVotering
+    partial class StemmesystemContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -379,11 +377,20 @@ namespace Stemmesystem.Data.Migrations
                     b.Property<bool>("Aktiv")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("text");
+
                     b.Property<bool>("Hemmelig")
                         .HasColumnType("boolean");
 
                     b.Property<int>("KanVelge")
                         .HasColumnType("integer");
+
+                    b.Property<bool>("Lukket")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Publisert")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("SakId")
                         .HasColumnType("integer");
@@ -410,7 +417,7 @@ namespace Stemmesystem.Data.Migrations
                     b.HasOne("Stemmesystem.Data.Delegat", null)
                         .WithMany()
                         .HasForeignKey("AvgitStemmeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
                     b.HasOne("Stemmesystem.Data.Votering", null)
