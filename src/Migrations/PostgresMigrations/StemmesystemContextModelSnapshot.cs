@@ -295,6 +295,9 @@ namespace PostgresMigrations
                     b.Property<string>("Epost")
                         .HasColumnType("text");
 
+                    b.Property<string>("Gruppe")
+                        .HasColumnType("text");
+
                     b.Property<string>("Navn")
                         .HasColumnType("text");
 
