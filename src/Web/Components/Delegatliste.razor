@@ -11,10 +11,7 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Delegatnummer</th>
-                <th>Navn</th>
-                <th>Epost</th>
-                <th>Telefon</th>
+                <th>Delegat</th>
                 <th>Pin</th>
                 <th>Send PIN</th>
             </tr>
@@ -29,14 +26,17 @@
             @foreach (var delegat in _delegater.OrderBy(s => s.Delegatnummer))
             {
                 <tr>
-                    <td>@delegat.Delegatnummer</td>
-                    <td>@delegat.Navn</td>
-                    <td>@delegat.Epost</td>
-                    <td>@delegat.Telefon</td>
+                    <td>@delegat.Delegatnummer: @delegat.Navn</td>
                     <td>@delegat.Delegatkode</td>
                     <td>
-                        <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Sms))">SMS</button>
-                        <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Epost))">e-post</button>
+                        @if (!string.IsNullOrEmpty(delegat.Telefon))
+                        {
+                            <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Sms))">SMS</button>    
+                        }
+                        @if (!string.IsNullOrEmpty(delegat.Epost))
+                        {
+                            <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Epost))">e-post</button>    
+                        }
                     </td>
                 </tr>
             }
