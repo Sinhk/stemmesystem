@@ -131,6 +131,7 @@
             if (votering != null)
             {
                 votering.Aktiv = false;
+                votering.SluttTid = DateTimeOffset.Now;
             }
             else
             {
@@ -148,6 +149,7 @@
             if (votering != null)
             {
                 votering.Aktiv = true;
+                votering.StartTid = DateTimeOffset.Now;
             }
             else
             {
