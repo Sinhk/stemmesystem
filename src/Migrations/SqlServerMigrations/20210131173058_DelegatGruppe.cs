@@ -6,15 +6,12 @@ namespace SqlServerMigrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
+            migrationBuilder.AddColumn<string>(
+                name: "Gruppe",
                 schema: "stemme",
-                table: "Votering",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "int")
-                .Annotation("SqlServer:Identity", "1, 1");
+                table: "Delegat",
+                type: "nvarchar(max)",
+                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
