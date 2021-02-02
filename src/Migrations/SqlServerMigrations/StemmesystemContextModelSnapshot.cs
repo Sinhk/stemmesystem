@@ -351,7 +351,7 @@ namespace SqlServerMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DelegatId")
+                    b.Property<int?>("DelegatId")
                         .HasColumnType("int");
 
                     b.Property<string>("RevoteKey")
@@ -509,9 +509,7 @@ namespace SqlServerMigrations
                 {
                     b.HasOne("Stemmesystem.Data.Delegat", "Delegat")
                         .WithMany()
-                        .HasForeignKey("DelegatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DelegatId");
 
                     b.HasOne("Stemmesystem.Data.Votering", null)
                         .WithMany("Stemmer")

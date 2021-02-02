@@ -349,7 +349,7 @@ namespace PostgresMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("DelegatId")
+                    b.Property<int?>("DelegatId")
                         .HasColumnType("integer");
 
                     b.Property<string>("RevoteKey")
@@ -507,9 +507,7 @@ namespace PostgresMigrations
                 {
                     b.HasOne("Stemmesystem.Data.Delegat", "Delegat")
                         .WithMany()
-                        .HasForeignKey("DelegatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DelegatId");
 
                     b.HasOne("Stemmesystem.Data.Votering", null)
                         .WithMany("Stemmer")
