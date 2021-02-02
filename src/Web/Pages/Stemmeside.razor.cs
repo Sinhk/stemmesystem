@@ -60,6 +60,10 @@ namespace Stemmesystem.Web.Pages
             _notifier.VoteringStartet += VoteringStartet;
             _notifier.VoteringStoppet += VoteringStoppet;
             _voteringer = _arrangement.AktiveVoteringer().ToList();
+            if (_delegat != null)
+            {
+                Tracker.RegisterActive(_arrangement.Id,_delegat.Id);
+            }
         }
 
         private async Task SetDelegat(Delegat delegat)
@@ -74,11 +78,16 @@ namespace Stemmesystem.Web.Pages
 
         public void Dispose()
         {
-            if (_notifier == null) return;
-                
-            _notifier.VoteringStartet -= VoteringStartet;
-            _notifier.VoteringStoppet -= VoteringStoppet;
-            
+            if (_notifier != null)
+            {
+                _notifier.VoteringStartet -= VoteringStartet;
+                _notifier.VoteringStoppet -= VoteringStoppet;
+            }
+
+            if (_delegat != null)
+            {
+                Tracker.RegisterInactive(_arrangement.Id,_delegat.Id);
+            }
         }
 
         public void VoteringStartet(VoteringStartetEvent e)

@@ -112,6 +112,7 @@ namespace Stemmesystem.Web
             services.AddScoped<StemmeService>();
             services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
             services.AddSingleton<IKeyHasher, KeyHasher>();
+            services.AddSingleton<ActiveTracker>();
 
             services.AddHttpClient<ISmsSender, SveveSmsSender>();
             services.AddOptions<SveveOptions>()

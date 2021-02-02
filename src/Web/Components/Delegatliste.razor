@@ -7,14 +7,22 @@
 @inject IPinSender PinSender
 @inject NavigationManager Navigation
 
-<h4>Delegater</h4>
+<div class="row" @onclick=@(_ => _expanded=!_expanded)>
+    <h4>Delegater</h4>
+    <span class="ml-2 mt-1 oi @(_expanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+</div>
+@if (_expanded)
+{
     <table class="table">
         <thead>
-            <tr>
-                <th>Delegat</th>
-                <th>Pin</th>
-                <th>Send PIN</th>
-            </tr>
+        <tr>
+            <th @ondblclick=@(_ => _showPin=!_showPin)>Delegat</th>
+            @if (_showPin)
+            {
+                <th>Pin</th>    
+            }
+            <th>Send PIN</th>
+        </tr>
         </thead>
         @if(_delegater == null || !_delegater.Any())
         {
@@ -22,12 +30,15 @@
         }
         else
         {
-        <tbody>
+            <tbody>
             @foreach (var delegat in _delegater.OrderBy(s => s.Delegatnummer))
             {
                 <tr>
                     <td>@delegat.Delegatnummer: @delegat.Navn</td>
-                    <td>@delegat.Delegatkode</td>
+                    @if (_showPin)
+                    {
+                        <td>@delegat.Delegatkode</td>
+                    }
                     <td>
                         @if (!string.IsNullOrEmpty(delegat.Telefon))
                         {
@@ -40,15 +51,21 @@
                     </td>
                 </tr>
             }
-        </tbody>
+            </tbody>
         }
     </table>
+}
 @code {
+
     [Parameter]
     public int ArrangementId { get; set; }
 
+    private bool _expanded;
+    private bool _showPin;
+
     private ICollection<Delegat> _delegater = null!;
-    
+
+
     protected override async Task OnInitializedAsync()
     {
         _delegater = await DelegatService.HentDelegater(ArrangementId);
