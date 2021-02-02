@@ -4,7 +4,7 @@
 @using Stemmesystem.Web.Data
 @inject IDelegatService DelegatService
 
-@if (isLoaded)
+@if (_isLoaded)
 {
     <CascadingValue Value="@this">
         @ChildContent
@@ -16,17 +16,15 @@ else
 }
 
 @code {
-    private static readonly string delegatKey = "delegatkode";
-    private static readonly string revoteKey = "revotekeys";
-    private bool isLoaded;
-    private bool isLoadedDelegat;
-    private string? delegatkode;
+    private static readonly string DelegatKey = "delegatkode";
+    private bool _isLoaded;
+    private bool _isLoadedDelegat;
+    private string? _delegatkode;
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    public string? Delegatkode { get => delegatkode; set { delegatkode = value; _delegat = null; isLoadedDelegat = false; RevoteKeys.Clear(); } }
-    public IDictionary<int, string> RevoteKeys { get; set; } = new Dictionary<int, string>();
+    public string? Delegatkode { get => _delegatkode; set { _delegatkode = value; _delegat = null; _isLoadedDelegat = false; } }
 
     private Delegat? _delegat;
 
@@ -36,9 +34,9 @@ else
     public async ValueTask<Delegat?> GetDelegat()
     {
         if (Delegatkode == null) return null;
-        if (isLoadedDelegat) return _delegat;
+        if (_isLoadedDelegat) return _delegat;
         _delegat = await DelegatService.ValiderKode(Delegatkode);
-        isLoadedDelegat = true;
+        _isLoadedDelegat = true;
         return _delegat;
     }
 
@@ -53,22 +51,15 @@ else
 
     private async Task LoadStateAsync()
     {
-        var result = await ProtectedSessionStore.GetAsync<string>(delegatKey);
+        var result = await ProtectedSessionStore.GetAsync<string>(DelegatKey);
         Delegatkode = result.Success ? result.Value : null;
-        
-        var keysResult = await ProtectedSessionStore.GetAsync<Dictionary<int, string>>(revoteKey);
-        if (keysResult.Success)
-            RevoteKeys = keysResult.Value ?? new Dictionary<int, string>();
-        
-        isLoaded = true;
+        _isLoaded = true;
     }
 
     public async Task SaveChangesAsync()
     {
         if (!string.IsNullOrEmpty(Delegatkode))
-            await ProtectedSessionStore.SetAsync(delegatKey, Delegatkode);
-        if (RevoteKeys.Any())
-            await ProtectedSessionStore.SetAsync(revoteKey, RevoteKeys);
+            await ProtectedSessionStore.SetAsync(DelegatKey, Delegatkode);
         OnChange?.Invoke();
         if (OnChangeAsync != null)
         {

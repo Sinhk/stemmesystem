@@ -36,7 +36,6 @@ namespace Stemmesystem.Data
             modelBuilder.Entity<Stemme>(e =>
             {
                 e.HasKey(s => s.Id);
-                e.Property(s => s.RevoteKey);
             });
 
             modelBuilder.Entity<Delegat>(e =>

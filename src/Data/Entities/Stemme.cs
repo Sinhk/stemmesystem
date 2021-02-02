@@ -17,6 +17,7 @@ namespace Stemmesystem.Data
         public Delegat? Delegat { get; internal set; }
         public int? DelegatId { get; internal set; }
 
-        internal string? RevoteKey { get; set; }
+        public string? StemmeHash { get; set; }
+        
     }
 }

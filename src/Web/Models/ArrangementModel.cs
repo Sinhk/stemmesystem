@@ -15,7 +15,7 @@ namespace Stemmesystem.Web.Models
         
         public DateTime? Startdato { get; set; }
         public DateTime? Sluttdato { get; set; }
-        public IList<DelegatModel> Delegater { get; set; }
-        public IList<SakInputModel> Saker { get; set; }
+        public IList<DelegatModel>? Delegater { get; set; }
+        public IList<SakInputModel>? Saker { get; set; }
     }
 }

@@ -342,7 +342,7 @@ namespace SqliteMigrations
                     b.Property<int?>("DelegatId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("RevoteKey")
+                    b.Property<string>("StemmeHash")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("ValgId")

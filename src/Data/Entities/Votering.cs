@@ -74,7 +74,7 @@ namespace Stemmesystem.Data
             SluttTid = DateTimeOffset.Now;
         }
 
-        public (List<Stemme> stemmer, string key) RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat, string? revoteKey, IKeyHasher keyHasher, NotificationManager notificationManager)
+        public List<Stemme> RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat, string delegatkode, IKeyHasher keyHasher, NotificationManager notificationManager)
         {
             List<Guid> idList = valgIder.ToList();
             if(idList.Count > 1 && idList.Contains(Konstanter.BlankStemme))
@@ -85,32 +85,12 @@ namespace Stemmesystem.Data
 
             if (_avgitStemme.Any(d => d.Id == delegat.Id))
             {
-                List<Stemme> fjernes;
-                if (Hemmelig)
-                {
-                    
-                    if (revoteKey != null)
-                    {
-                        fjernes = _stemmer.Where(s => keyHasher.VerifyHash(s.RevoteKey, revoteKey)).ToList();
-                    }
-                    else
-                    {
-                        throw new StemmeException("Delegat har allerede stemmt");    
-                    }
-                }
-                else
-                {
-                    fjernes = _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
-                }
+                List<Stemme> fjernes = Hemmelig ? _stemmer.Where(s => keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
 
-                //if (!fjernes.Any())
-                    //throw new StemmeException("Det er registrert at delegaten har stemmt, men ingen stemmer ble funnnet. Noe er galt");
-                
                 _stemmer.RemoveAll(s=>  fjernes.Contains(s));
                 fjernes.ForEach(s=> notificationManager.ForArrangement(Sak.ArrangementId).OnStemmeFjernet(new StemmeFjernetEvent(Id,s.Id)));
             }
 
-            var key = RngKeyGenerator.GenerateKey(20, KeyType.FullAlphanumeric);
             List<Stemme> stemmer = new(); 
             foreach (var valgId in idList)
             {
@@ -119,7 +99,7 @@ namespace Stemmesystem.Data
                 Stemme stemme = new(valgId);
                 if (!Hemmelig)
                     stemme.DelegatId = delegat.Id;
-                stemme.RevoteKey = keyHasher.CreateHash(key);
+                stemme.StemmeHash = keyHasher.CreateHash(delegatkode);
                 stemmer.Add(stemme);
             }
 
@@ -127,7 +107,7 @@ namespace Stemmesystem.Data
             _avgitStemme.Add(delegat);
 
             stemmer.ForEach(s=> notificationManager.ForArrangement(Sak.ArrangementId).OnNyStemme(new NyStemmeEvent(Id,s)));
-            return (stemmer, key);
+            return stemmer;
         }
 
         public void LukkVotering()

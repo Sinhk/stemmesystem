@@ -354,7 +354,7 @@ namespace SqlServerMigrations
                     b.Property<int?>("DelegatId")
                         .HasColumnType("int");
 
-                    b.Property<string>("RevoteKey")
+                    b.Property<string>("StemmeHash")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("ValgId")
