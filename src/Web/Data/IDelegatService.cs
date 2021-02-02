@@ -102,6 +102,7 @@ namespace Stemmesystem.Web.Data
 
         public async Task<Delegat?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default)
         {
+            delegatKode = delegatKode.ToUpper();
             await using var context = _contextFactory.CreateDbContext();
             var delegat = await context.Delegat
                 .Include(d => d.Arrangement)
