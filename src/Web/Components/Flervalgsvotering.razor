@@ -17,8 +17,6 @@
     <button class="btn col-4 @(Base.Stemmer.Any() && Base.Stemmer.All(s => s.ValgId != Konstanter.BlankStemme) ? "btn-success" : "btn-outline-success")" @onclick="@(async e => await Base.RegistrerStemme(_valg))">Stem</button>
 </div>
 
-
-
 @code {
     [CascadingParameter]
     public AktivVotering Base { get; set; }

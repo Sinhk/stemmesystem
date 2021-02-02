@@ -1,8 +1,8 @@
-﻿@using Stemmesystem.Data
+@using Stemmesystem.Data
 @using Stemmesystem.Web.Data
 @inject StemmeService StemmeService
 
-<div class="col btn-group btn-group-toggle" data-toggle="buttons">
+<div class="col btn-group@(Base.Votering.Valg.Count > 2 ? "-vertical":"") btn-group-toggle" data-toggle="buttons">
 @foreach(var valg in Base.Votering.Valg.OrderBy(v=> v.SortId)){
     <label class="btn @(Base.Stemmer.Any(s=> s.ValgId == valg.Id) ? "btn-primary" :"btn-outline-primary") btn-lg">
         <input type="radio" name="options" id="@valg.Id" autocomplete="off" @onclick="@(async e => await Base.RegistrerStemme(valg.Id))">@valg.Navn

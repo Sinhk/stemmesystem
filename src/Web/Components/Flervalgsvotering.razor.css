@@ -1,0 +1,5 @@
+﻿@media (hover: none) {
+    .btn {
+        pointer-events: none;
+    }
+}
