@@ -21,7 +21,7 @@ namespace Stemmesystem.Web
             CreateMap<Delegat, DelegatModel>()
                 .ReverseMap();
 
-            CreateMap<Sak, SakInputModel>()
+            CreateMap<Sak, SakModel>()
                 .ReverseMap();
 
             CreateMap<Votering, VoteringModel>()
