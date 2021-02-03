@@ -4,6 +4,7 @@
 @using Stemmesystem.Web.Data
 @inject ArrangementService ArrangementService
 @inject NavigationManager Navigation
+
 @attribute [Authorize]
 
 <div class="row">
@@ -45,6 +46,7 @@ else
     </div>
     if (_delegaterExpanded)
     {
+        <DelegatImport ArrangementId="@_arrangement.Id.Value"/>
         <div class="row">
             @foreach (var delegat in _arrangement.Delegater)
             {

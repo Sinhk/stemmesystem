@@ -11,6 +11,7 @@ namespace Stemmesystem.Web.Models
         [Required(ErrorMessage = "Navn er påkrevd")]
         [StringLength(100)]
         public string? Navn { get; set; }
+        public string? Gruppe { get; set; }
 
         [EmailAddress(ErrorMessage = "Ikke gyldig epost")]
         public string? Epost { get; set; }
