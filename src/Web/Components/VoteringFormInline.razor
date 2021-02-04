@@ -90,7 +90,7 @@ else
 
     private void LeggTilValg()
     {
-        Votering.Valg.Add(new ValgModel {SortId = Votering.Valg.Count});
+        Votering.Valg.Add(new ValgModel {Id = Guid.NewGuid(),SortId = Votering.Valg.Count});
     }
 
     private void TaVekkValg(Guid valgId)
