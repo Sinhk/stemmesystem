@@ -1,0 +1,26 @@
+﻿@inherits SendPinBaseComponent
+
+<button class="btn btn-primary" @onclick="@(_ => SendPin())">e-post</button>    
+
+@code {
+    
+    [Parameter]
+    public int DelegatId { get; set; }
+    
+
+    protected override async Task<bool> DoSend()
+    {
+        try
+        {
+            await PinSender.SendEmail(DelegatId, Navigation.BaseUri);
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+        
+    }
+
+}

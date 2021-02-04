@@ -42,11 +42,11 @@
                     <td>
                         @if (!string.IsNullOrEmpty(delegat.Telefon))
                         {
-                            <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Sms))">SMS</button>    
+                            <SendPinSmsComponent DelegatId="delegat.Id"/>  
                         }
                         @if (!string.IsNullOrEmpty(delegat.Epost))
                         {
-                            <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Epost))">e-post</button>    
+                            <SendPinEmailComponent DelegatId="delegat.Id"/>
                         }
                     </td>
                 </tr>
