@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.0" />
+    <PackageReference Include="CsvHelper" Version="22.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="5.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="5.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.2" />

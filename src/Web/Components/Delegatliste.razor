@@ -1,7 +1,9 @@
 ﻿@using Stemmesystem.Data
+@using Stemmesystem.Tools
 @using Stemmesystem.Web.Data
 @using Stemmesystem.Web.Models
 @using Stemmesystem.Web.Services
+@using System.IO
 
 @inject IDelegatService DelegatService
 @inject IPinSender PinSender
@@ -105,6 +107,4 @@
             delegat.SendtEmail = DateTimeOffset.Now;
         }
     }
-    
-
 }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Stemmesystem.Web.Models
 {
-    public class SakInputModel
+    public class SakModel
     {
         public int? Id { get; internal set; }
 

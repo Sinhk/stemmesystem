@@ -17,6 +17,7 @@ using Stemmesystem.Tools;
 using Stemmesystem.Web.Areas.Identity;
 using Stemmesystem.Web.Data;
 using Stemmesystem.Web.Services;
+using Stemmesystem.Web.Services.CSV;
 
 namespace Stemmesystem.Web
 {
@@ -112,6 +113,7 @@ namespace Stemmesystem.Web
             services.AddScoped<StemmeService>();
             services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
             services.AddSingleton<IKeyHasher, KeyHasher>();
+            services.AddTransient<CsvImport>();
             services.AddSingleton<ActiveTracker>();
 
             services.AddHttpClient<ISmsSender, SveveSmsSender>();
