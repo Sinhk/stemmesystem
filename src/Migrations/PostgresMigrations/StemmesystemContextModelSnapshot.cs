@@ -301,6 +301,12 @@ namespace PostgresMigrations
                     b.Property<string>("Navn")
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset?>("SendtEmail")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("SendtSms")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Telefon")
                         .HasColumnType("text");
 

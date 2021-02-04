@@ -303,6 +303,12 @@ namespace SqlServerMigrations
                     b.Property<string>("Navn")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTimeOffset?>("SendtEmail")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("SendtSms")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<string>("Telefon")
                         .HasColumnType("nvarchar(max)");
 

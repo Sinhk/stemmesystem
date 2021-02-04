@@ -58,7 +58,13 @@ namespace Stemmesystem.Web.Services
             
             var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {baseUri} for å avgi din stemme i de sakene der du har stemmerett. Du kan også bruke lenken: {baseUri}pin/{delegat.Delegatkode}";
 
-            return await _smsSender.SendSms(delegat.Telefon, msg);
+            var success = await _smsSender.SendSms(delegat.Telefon, msg);
+            if (success)
+            {
+                delegat.SendtSms = DateTimeOffset.Now;
+                await context.SaveChangesAsync();
+            }
+            return success;
         }
     }
 }
