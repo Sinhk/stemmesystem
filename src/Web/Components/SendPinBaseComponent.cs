@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
@@ -8,15 +9,15 @@ namespace Stemmesystem.Web.Components
 {
     public abstract class SendPinBaseComponent : ComponentBase
     {
-        [Inject]
-        public NavigationManager Navigation { get; set; }
+        [Inject] protected NavigationManager Navigation { get; set; }
         
-        [Inject]
-        public IPinSender PinSender { get; set; }
+        [Inject] protected IPinSender PinSender { get; set; }
         protected SendState State = SendState.NotSent;
         private CancellationTokenSource? _cancelation;
         
-
+        [Parameter]
+        public EventCallback OnSendt { get; set; }
+        
         protected async Task SendPin()
         {
             _cancelation?.Cancel();
@@ -26,6 +27,8 @@ namespace Stemmesystem.Web.Components
             State = success 
                 ? SendState.Sent 
                 : SendState.Failed;
+            if (success)
+                await OnSendt.InvokeAsync();
 
             StateHasChanged();
             _cancelation = new CancellationTokenSource();

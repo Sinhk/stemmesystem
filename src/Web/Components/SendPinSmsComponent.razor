@@ -22,12 +22,8 @@
     [Parameter]
     public int DelegatId { get; set; }
 
-    protected override async Task<bool> DoSend()
+    protected override Task<bool> DoSend()
     {
-        await Task.Delay(1000);
-        return Random.Next(0, 2) == 1;
-    //return PinSender.SendSms(DelegatId, Navigation.BaseUri);
+        return PinSender.SendSms(DelegatId, Navigation.BaseUri);
     }
-
-    private readonly Random Random = new();
 }
