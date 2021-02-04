@@ -1,4 +1,6 @@
-﻿namespace Stemmesystem.Web.Services.CSV
+﻿using CsvHelper.Configuration;
+
+namespace Stemmesystem.Web.Services.CSV
 {
     public record CsvDelegat
     {
@@ -9,4 +11,6 @@
         public string Telefon { get; set; }
         
     }
+
+
 }

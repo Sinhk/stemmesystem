@@ -4,7 +4,7 @@
 @inject ISakService SakService
 @inject NavigationManager Nav
 
-<EditForm Model="@Sak" OnValidSubmit="@HandleValidSubmit">
+<EditForm EditContext="EditContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <CustomValidator @ref="customValidator" />
     <ValidationSummary />
@@ -21,10 +21,10 @@
         
         <div class="col-auto">
             <button type="submit" class="btn btn-primary" disabled="@(Sak.Id != null && !context.IsModified())">Lagre</button>
-            <button class="btn btn-secondary" disabled="@(Sak.Id == null)" @onclick:preventDefault @onclick="@(_ => _voteringExpanded = !_voteringExpanded)"><i class="oi @(_voteringExpanded ? "oi-chevron-top":"oi-chevron-bottom")"></i></button>
+            <button class="btn btn-secondary" disabled="@(Sak.Id == null && Sak.Voteringer?.Any() == false)" @onclick:preventDefault @onclick="@(_ => _voteringExpanded = !_voteringExpanded)"><i class="oi @(_voteringExpanded ? "oi-chevron-top":"oi-chevron-bottom")"></i></button>
         </div>
     </div>
-    @if (Sak.Id != null && _voteringExpanded)
+    @if (_voteringExpanded)
     {
         <h5>Voteringer</h5>
         foreach (var votering in Sak.Voteringer!)
@@ -41,17 +41,23 @@
     [Parameter]
     public SakModel Sak {get;set;}
 
+    public EditContext EditContext { get; set; }
     private CustomValidator? customValidator;
     private FocusableInputText firstInput;
     private bool _voteringExpanded;
-    
+
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(Sak);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
             await firstInput.FocusAsync();
     }
-    
-    private async Task HandleValidSubmit(EditContext context){
+
+    internal async Task<bool> HandleValidSubmit(EditContext context){
         customValidator?.ClearErrors();
         var errors = new Dictionary<string, List<string>>();
 
@@ -66,11 +72,13 @@
             if (errors.Count > 0)
             {
                 customValidator?.DisplayErrors(errors);
-                return;
+                context.MarkAsUnmodified();
+                return false;
             }
             Sak = await SakService.LagreNySak(ArrangementId, Sak);
         }
         context.MarkAsUnmodified();
+        return true;
     }
 
 }

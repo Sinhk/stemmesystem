@@ -64,6 +64,7 @@ else
     </div>
     if (_sakerExpanded)
     {
+        <SakImport ArrangementId="@_arrangement.Id.Value"/>
         <div class="row">
             @foreach (var sak in _arrangement.Saker)
             {
