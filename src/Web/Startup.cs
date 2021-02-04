@@ -126,6 +126,11 @@ namespace Stemmesystem.Web
             services.AddOptions<SendMailOptions>()
                 .BindConfiguration("SendGrid")
                 .ValidateDataAnnotations();
+            
+            services.AddHttpClient<MinSpeidingService>();
+            services.AddOptions<MinSpeidingOptions>()
+                .BindConfiguration("MinSpeiding")
+                .ValidateDataAnnotations();
 
             services.AddTransient<IPinSender, PinSender>();
 
