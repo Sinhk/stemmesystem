@@ -13,10 +13,10 @@ namespace Stemmesystem.Web.Data
 {
     public interface ISakService
     {
-        Task<SakInputModel?> HentSak(int sakId, CancellationToken cancellationToken = default);
+        Task<SakModel?> HentSak(int sakId, CancellationToken cancellationToken = default);
         Task<bool> ErNummerBrukt(int arrangementId, string? nummer);
-        Task<SakInputModel> LagreNySak(int arrangementId, SakInputModel sak);
-        Task<SakInputModel> OppdaterSak(int arrangementId, SakInputModel sak);
+        Task<SakModel> LagreNySak(int arrangementId, SakModel sak);
+        Task<SakModel> OppdaterSak(int arrangementId, SakModel sak);
         Task<VoteringModel?> HentVotering(int sakId, int voteringId, CancellationToken cancellationToken = default);
         Task<VoteringModel> LagreNyVotering(int sakId, VoteringModel votering);
         Task<VoteringModel> OppdaterVotering(VoteringModel votering);
@@ -33,13 +33,13 @@ namespace Stemmesystem.Web.Data
             _dbContextFactory = dbContextFactory;
             _mapper = mapper;
         }
-        public async Task<SakInputModel?> HentSak(int sakId, CancellationToken cancellationToken = default)
+        public async Task<SakModel?> HentSak(int sakId, CancellationToken cancellationToken = default)
         {
             await using var db = _dbContextFactory.CreateDbContext();
             var sak = await db.Arrangement
                 .SelectMany(a => a.Saker)
                 .Where(s => s.Id == sakId)
-                .ProjectTo<SakInputModel>(_mapper.ConfigurationProvider)
+                .ProjectTo<SakModel>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken);
             return sak;
         }
@@ -65,7 +65,7 @@ namespace Stemmesystem.Web.Data
                 .AnyAsync(s => s.Nummer == nummer);
         }
 
-        public async Task<SakInputModel> LagreNySak(int arrangementId, SakInputModel model)
+        public async Task<SakModel> LagreNySak(int arrangementId, SakModel model)
         {
             await using var db = _dbContextFactory.CreateDbContext();
             var arrangement = await db.Arrangement
@@ -75,10 +75,10 @@ namespace Stemmesystem.Web.Data
             var sak = _mapper.Map<Sak>(model);
             arrangement.LeggTil(sak);
             await db.SaveChangesAsync();
-            return _mapper.Map<SakInputModel>(sak);
+            return _mapper.Map<SakModel>(sak);
         }
 
-        public async Task<SakInputModel> OppdaterSak(int arrangementId, SakInputModel model)
+        public async Task<SakModel> OppdaterSak(int arrangementId, SakModel model)
         {
             await using var db = _dbContextFactory.CreateDbContext();
             var sak = await db.Arrangement
@@ -92,7 +92,7 @@ namespace Stemmesystem.Web.Data
             sak.Beskrivelse = model.Beskrivelse;
 
             await db.SaveChangesAsync();
-            return _mapper.Map<SakInputModel>(sak);
+            return _mapper.Map<SakModel>(sak);
         }
 
         public async Task<VoteringModel> LagreNyVotering(int sakId, VoteringModel model)

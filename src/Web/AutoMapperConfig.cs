@@ -2,6 +2,7 @@ using AutoMapper;
 using Stemmesystem.Data;
 using Stemmesystem.Web.Models;
 using System.Linq;
+using Stemmesystem.Web.Services.CSV;
 
 namespace Stemmesystem.Web
 {
@@ -20,7 +21,7 @@ namespace Stemmesystem.Web
             CreateMap<Delegat, DelegatModel>()
                 .ReverseMap();
 
-            CreateMap<Sak, SakInputModel>()
+            CreateMap<Sak, SakModel>()
                 .ReverseMap();
 
             CreateMap<Votering, VoteringModel>()
@@ -28,6 +29,9 @@ namespace Stemmesystem.Web
             
             CreateMap<Valg, ValgModel>()
                 .ReverseMap();
+
+            CreateMap<CsvDelegat, DelegatModel>()
+                .ForMember(d=> d.Id, o=> o.Ignore());
 
         }
     }
