@@ -17,15 +17,26 @@ using Stemmesystem.Api;
 using StemmeSystem.Data;
 using StemmeSystem.Data.Models;
 using StemmeSystem.Data.Repositories;
-using Stemmesystem.Server;
+using Stemmesystem.Server;using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Server.Data.Repositories;
 using Stemmesystem.Server.Hubs;
 using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
 using Stemmesystem.Shared;
-using Stemmesystem.Shared.Tools;
+using Stemmesystem.Shared.Tools;using Stemmesystem.Web;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 using Secret = Duende.IdentityServer.Models.Secret;
+
+var apiOptions = new MinSpeidingApiOptions
+{
+    ArrangementId = 3803,
+    ApiKey = "f494be5c3cbc1a0ccb2ffd7d88a9852118980061"
+};
+
+using var httpClient = new HttpClient();
+var speidingService = new MinSpeidingService(httpClient);
+var members = await speidingService.GetArrangementParticipants(apiOptions);
+
 
 var builder = WebApplication.CreateBuilder(args);
 

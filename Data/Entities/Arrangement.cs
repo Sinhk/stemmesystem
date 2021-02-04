@@ -27,6 +27,8 @@ namespace Stemmesystem.Server.Data.Entities
 
         public IList<Delegat> Delegater { get; set; } = new List<Delegat>();
         
+        public MinSpeidingApiOptions? MinSpeidingApiOptions { get; set; }
+        
 
         public Arrangement(string navn)
         {
@@ -60,5 +62,11 @@ namespace Stemmesystem.Server.Data.Entities
             Delegater.Add(delegat);
             return delegat;
         }
+    }
+
+    public record MinSpeidingApiOptions
+    {
+        public int ArrangementId { get; init; }
+        public string? ApiKey { get; init; }
     }
 }
