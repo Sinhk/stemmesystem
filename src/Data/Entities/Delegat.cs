@@ -21,6 +21,9 @@ namespace Stemmesystem.Data
         public Arrangement Arrangement { get => arrangement ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Arrangement)); set => arrangement = value; }
 
         public IEnumerable<Votering> HarStemmtI => harStemmtI;
+        public DateTimeOffset? SendtSms { get; set; }
+        public DateTimeOffset? SendtEmail { get; set; }
+
         internal Delegat(int delegatnummer, string? navn, string? delegatkode = null)
         {
             Delegatnummer = delegatnummer;

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
@@ -9,7 +10,7 @@ namespace Stemmesystem.Web.Services
     public interface IPinSender
     {
         Task SendEmail(int delegatId, string baseUri);
-        Task SendSms(int delegatId, string baseUri);
+        Task<bool> SendSms(int delegatId, string baseUri);
     }
     
     public class PinSender : IPinSender
@@ -40,9 +41,11 @@ namespace Stemmesystem.Web.Services
             //var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {baseUri} for å avgi din stemme i de sakene der du har stemmerett. Du kan også bruke lenken: {baseUri}/pin/{delegat.Delegatkode}";
             //await _emailSender.SendEmailAsync(delegat.Epost,$"PIN-kode til {delegat.Arrangement.Navn}",msg);
             await _emailSender.SendEmailTemplateAsync(delegat.Epost, delegat.Navn, "d-c4f5f9ba460546779394bce9d3ab97b8", new {navn = delegat.Navn,arrangement = delegat.Arrangement.Navn, pin = delegat.Delegatkode, url = baseUri });
+            delegat.SendtEmail = DateTimeOffset.Now;
+            await context.SaveChangesAsync();
         }
 
-        public async Task SendSms(int delegatId, string baseUri)
+        public async Task<bool> SendSms(int delegatId, string baseUri)
         {
             await using var context = _contextFactory.CreateDbContext();
             var delegat = await context.Delegat
@@ -55,7 +58,13 @@ namespace Stemmesystem.Web.Services
             
             var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {baseUri} for å avgi din stemme i de sakene der du har stemmerett. Du kan også bruke lenken: {baseUri}pin/{delegat.Delegatkode}";
 
-            await _smsSender.SendSms(delegat.Telefon, msg);
+            var success = await _smsSender.SendSms(delegat.Telefon, msg);
+            if (success)
+            {
+                delegat.SendtSms = DateTimeOffset.Now;
+                await context.SaveChangesAsync();
+            }
+            return success;
         }
     }
 }
