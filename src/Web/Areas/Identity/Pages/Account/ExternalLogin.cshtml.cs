@@ -66,7 +66,7 @@ namespace Stemmesystem.Web.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
             if (remoteError != null)
             {
                 ErrorMessage = $"Error from external provider: {remoteError}";
@@ -110,6 +110,7 @@ namespace Stemmesystem.Web.Areas.Identity.Pages.Account
 
                 _logger.LogInformation("Added {LoginProvider} provider login for user {Name}.", info.LoginProvider, user.UserName);
                 await _userManager.AddLoginAsync(user, info);
+                await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor : true);
                 return LocalRedirect(returnUrl);
 
                 /*

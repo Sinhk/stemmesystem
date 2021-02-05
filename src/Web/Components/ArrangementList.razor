@@ -13,30 +13,31 @@ else
 {
     <table class="table">
         <thead>
-            <tr>
-                <th>Navn</th>
-                <th>Beskrivelse</th>
-                <th>Saker</th>
-                <th>Delegater</th>
-                <th></th>
-            </tr>
+        <tr>
+            <th>Navn</th>
+            <th>Beskrivelse</th>
+            <th>Saker</th>
+            <th>Delegater</th>
+            <th></th>
+        </tr>
         </thead>
         <tbody>
-            @foreach (var arrangement in _arrangementer)
-            {
-                <tr>
-                    <td>@arrangement.Navn</td>
-                    <td>@arrangement.Beskrivelse</td>
-                    <td>@arrangement.Saker.Count (@arrangement.Saker.Sum(s => s.Voteringer.Count) voteringer) </td>
-                    <td>@arrangement.Delegater.Count</td>
-                    <td>
-                        <button class="btn btn-secondary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}"))">Rediger</button>
-                        <button class="btn btn-primary" @onclick="@(_ => Navigation.NavigateTo($"arrangement/{arrangement.Id}"))">Gå til</button>
-                    </td>
-                </tr>
-            }
+        @foreach (var arrangement in _arrangementer)
+        {
+            <tr>
+                <td>@arrangement.Navn</td>
+                <td>@arrangement.Beskrivelse</td>
+                <td>@arrangement.Saker.Count (@arrangement.Saker.Sum(s => s.Voteringer.Count) voteringer) </td>
+                <td>@arrangement.Delegater.Count</td>
+                <td>
+                    <button class="btn btn-secondary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}"))">Rediger</button>
+                    <button class="btn btn-primary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}/dashboard"))">Gå til</button>
+                </td>
+            </tr>
+        }
         </tbody>
     </table>
+    <button class="btn btn-success" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/nytt-arrangement"))">Legg til</button>
 }
 
 @code {

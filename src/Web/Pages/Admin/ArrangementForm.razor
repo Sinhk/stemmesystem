@@ -5,22 +5,26 @@
 @inject ArrangementService ArrangementService
 @inject NavigationManager Navigation
 
+@attribute [Authorize]
+
+<div class="row">
 @if (_arrangement.Id == null)
 {
-    <h3>Ny delegat</h3>
+    <h3>Nytt arrangement</h3>
 }
 else
 {
     <h3>Rediger arrangement <b>@_arrangement.Navn</b></h3>    
-}
+}    
+</div>
+
+<div class="row">
 <EditForm Model="@_arrangement" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <CustomValidator @ref="customValidator" />
     <ValidationSummary />
     <div class="form-group">
         <label>Navn<InputText class="form-control" placeholder="Navn" @bind-Value="_arrangement.Navn" disabled="@(_arrangement.Id != null)"/></label>
-    </div>
-    <div class="form-group">
         <label>Beskrivelse<InputText class="form-control" placeholder="Beskrivelse" @bind-Value="_arrangement.Beskrivelse"/></label>
     </div>
     <div class="form-row">
@@ -31,21 +35,58 @@ else
             <label>Sluttdato<InputDate class="form-control" @bind-Value="_arrangement.Sluttdato"/></label>
         </div>
     </div>
-    
     <button type="submit" class="btn btn-primary" disabled="@(_arrangement.Id != null && !context.IsModified())">Lagre</button>
 </EditForm>
+</div>
 
 @if(_arrangement.Id != null){
-    <Saksliste ArrangementId="_arrangement.Id.Value" />
-    <Delegatliste ArrangementId="_arrangement.Id.Value" />
+    <div class="row mt-2" @onclick=@(_ => _delegaterExpanded=!_delegaterExpanded)>
+        <h4>Delegater</h4>
+        <span class="ml-2 mt-1 oi @(_delegaterExpanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+    </div>
+    if (_delegaterExpanded)
+    {
+        <DelegatImport ArrangementId="@_arrangement.Id.Value"/>
+        <div class="row">
+            @foreach (var delegat in _arrangement.Delegater)
+            {
+                <DelegatFormInline Delegat="@delegat" ArrangementId="@_arrangement.Id.Value"/>
+            }
+        </div>
+        <div class="row">
+            <button class="btn btn-success" @onclick="@(e => _arrangement.Delegater.Add(new DelegatModel()))">Legg til</button>
+        </div>
+    }
+    
+    <div class="row mt-2" @onclick=@(_ => _sakerExpanded=!_sakerExpanded)>
+        <h4>Saker</h4>
+        <span class="ml-2 mt-1 oi @(_sakerExpanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+    </div>
+    if (_sakerExpanded)
+    {
+        <SakImport ArrangementId="@_arrangement.Id.Value"/>
+        <div class="row">
+            @foreach (var sak in _arrangement.Saker)
+            {
+                <SakFormInline Sak="@sak" ArrangementId="@_arrangement.Id.Value"/>
+            }
+        </div>
+        <div class="row">
+            <button class="btn btn-success" @onclick="@(e => _arrangement.Saker.Add(new SakModel()))">Legg til</button>
+        </div>
+    }
+    
 }
 
 @code {
     [Parameter]
     public int? ArrangementId {get;set;}
+    private ArrangementModel _arrangement = new();
+    
     private CustomValidator? customValidator;
 
-    private ArrangementModel _arrangement = new();
+    private bool _delegaterExpanded;
+    private bool _sakerExpanded;
     
     protected override async Task OnInitializedAsync(){
         if(ArrangementId != null){
@@ -89,4 +130,5 @@ else
             Navigation.NavigateTo($"admin/arrangement/{_arrangement.Id}");
         }
     }
+
 }

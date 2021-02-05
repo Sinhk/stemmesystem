@@ -9,12 +9,14 @@ namespace Stemmesystem.Web.Models
         public int? Id { get; internal set; }
         [Required]
         public string? Tittel { get; set; }
+        public string? Beskrivelse { get; set; }
         public bool Hemmelig { get; set; }
         [Required, Range(1,int.MaxValue,ErrorMessage = "\"Kan velge\" må være mer 1 eller mer") ]
         public int KanVelge { get; set; } =1;
 
         public List<ValgModel> Valg { get; set; } = new();
 
+        public DateTimeOffset? StartTid { get; private set; }
     }
     
     public class ValgModel

@@ -13,6 +13,7 @@ namespace Stemmesystem.Data
         public string Delegatkode { get; set; }
         public int Delegatnummer { get; set; }
         public string? Navn { get; set; }
+        public string? Gruppe { get; set; }
         public string? Epost { get; set; }
         public string? Telefon { get; set; }
 
@@ -20,13 +21,16 @@ namespace Stemmesystem.Data
         public Arrangement Arrangement { get => arrangement ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Arrangement)); set => arrangement = value; }
 
         public IEnumerable<Votering> HarStemmtI => harStemmtI;
+        public DateTimeOffset? SendtSms { get; set; }
+        public DateTimeOffset? SendtEmail { get; set; }
+
         internal Delegat(int delegatnummer, string? navn, string? delegatkode = null)
         {
             Delegatnummer = delegatnummer;
             Navn = navn;
 
             delegatkode ??= RngKeyGenerator.GenerateKey(4);
-            Delegatkode = delegatkode.ToString();
+            Delegatkode = delegatkode;
         }
     }
 }

@@ -8,11 +8,14 @@ namespace Stemmesystem.Data
         private Arrangement? arrangement;
 
         public int Id { get; internal set; }
-        public string Nummer { get; private set; }
-        public string Tittel { get; private set; }
+        public string Nummer { get; set; }
+        public string Tittel { get; set; }
 
-        public Arrangement Arrangement { get => arrangement ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Arrangement)); internal set => arrangement = value; }
+        public string? Beskrivelse { get; set; }
         public int ArrangementId { get; internal set; }
+        public Arrangement Arrangement { get => arrangement ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Arrangement)); internal set => arrangement = value; }
+        public IList<Votering> Voteringer { get; set; } = new List<Votering>();
+
 
         public void LeggTil(params Votering[] voteringer)
         {
@@ -27,13 +30,9 @@ namespace Stemmesystem.Data
             Nummer = nummer;
             Tittel = tittel;
         }
+
         public Sak(int nummer, string tittel) : this(nummer.ToString(), tittel)
         {
         }
-
-        public string? Beskrivelse { get; set; }
-
-        public IList<Votering> Voteringer { get; set; } = new List<Votering>();
-
     }
 }

@@ -17,11 +17,10 @@
     <button class="btn col-4 @(Base.Stemmer.Any() && Base.Stemmer.All(s => s.ValgId != Konstanter.BlankStemme) ? "btn-success" : "btn-outline-success")" @onclick="@(async e => await Base.RegistrerStemme(_valg))">Stem</button>
 </div>
 
-
-
 @code {
+
     [CascadingParameter]
-    public AktivVotering Base { get; set; }
+    public AktivVotering Base { get; set; } = null!;
     
     [Parameter]
     public string Error { get; set; }
@@ -30,7 +29,7 @@
 
     private HashSet<Guid> _valg = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         foreach (var stemme in Base.Stemmer)
         {
@@ -40,7 +39,7 @@
 
     private void VoteChanged(Guid valgId)
     {
-
+        _valg.RemoveWhere(v => v == Konstanter.BlankStemme);
         if (_valg.Contains(valgId))
         {
             _valg.Remove(valgId);

@@ -1,5 +1,5 @@
-﻿@page "/arrangement/{arrangementId:int}/sak/ny-sak"
-@page "/arrangement/{arrangementId:int}/sak/{sakId:int}"
+﻿@page "/admin/arrangement/{arrangementId:int}/sak/ny-sak"
+@page "/admin/arrangement/{arrangementId:int}/sak/{sakId:int}"
 
 @using Models
 @using Stemmesystem.Web.Data
@@ -7,7 +7,17 @@
 @inject ISakService SakService
 @inject NavigationManager Navigation
 
-<h3>Ny sak</h3>
+@attribute [Authorize]
+
+@if (_sak.Id != null)
+{
+    <h3>Redigerer sak <b>@_sak.Tittel</b></h3>
+}
+else
+{
+    <h3>Ny sak</h3>    
+}
+
 <EditForm Model="@_sak" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <CustomValidator @ref="customValidator" />
@@ -33,7 +43,7 @@
 
     private CustomValidator? customValidator;
 
-    private SakInputModel _sak = new();
+    private SakModel _sak = new();
 
     protected override async Task OnInitializedAsync(){
         if(SakId != null){
@@ -49,7 +59,7 @@
 
         if (_sak.Id != default)
         {
-            _sak = await SakService.OppdaterSak(ArrangementId,_sak);
+            _sak = await SakService.OppdaterSak(ArrangementId, _sak);
         }
         else
         {
@@ -61,7 +71,7 @@
                 return;
             }
             _sak = await SakService.LagreNySak(ArrangementId, _sak);
-            Navigation.NavigateTo($"/arrangement/{ArrangementId}/sak/{_sak.Id}");
+            Navigation.NavigateTo($"/admin/arrangement/{ArrangementId}/sak/{_sak.Id}");
         }
     }
 

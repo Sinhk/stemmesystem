@@ -1,23 +1,31 @@
 ﻿@using Stemmesystem.Data
+@using Stemmesystem.Tools
 @using Stemmesystem.Web.Data
 @using Stemmesystem.Web.Models
 @using Stemmesystem.Web.Services
+@using System.IO
 
 @inject IDelegatService DelegatService
 @inject IPinSender PinSender
 @inject NavigationManager Navigation
 
-<h4>Delegater</h4>
+<div class="row" @onclick=@(_ => _expanded=!_expanded)>
+    <h4>Delegater</h4>
+    <span class="ml-2 mt-1 oi @(_expanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+</div>
+@if (_expanded)
+{
     <table class="table">
         <thead>
-            <tr>
-                <th>Delegatnummer</th>
-                <th>Navn</th>
-                <th>Epost</th>
-                <th>Telefon</th>
-                <th>Pin</th>
-                <th>Send PIN</th>
-            </tr>
+        <tr>
+            <th @ondblclick=@(_ => _showPin=!_showPin)>Delegat</th>
+            @if (_showPin)
+            {
+                <th>Pin</th>    
+            }
+            <th>Send PIN</th>
+            <th>PIN sendt</th>
+        </tr>
         </thead>
         @if(_delegater == null || !_delegater.Any())
         {
@@ -25,52 +33,78 @@
         }
         else
         {
-        <tbody>
+            <tbody>
             @foreach (var delegat in _delegater.OrderBy(s => s.Delegatnummer))
             {
                 <tr>
-                    <td>@delegat.Delegatnummer</td>
-                    <td>@delegat.Navn</td>
-                    <td>@delegat.Epost</td>
-                    <td>@delegat.Telefon</td>
-                    <td>@delegat.Delegatkode</td>
+                    <td>@delegat.Delegatnummer: @delegat.Navn</td>
+                    @if (_showPin)
+                    {
+                        <td>@delegat.Delegatkode</td>
+                    }
                     <td>
-                        <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Sms))">SMS</button>
-                        <button class="btn btn-primary" @onclick="@(_ => SendPin(delegat.Id, MeldingsType.Epost))">e-post</button>
+                        @if (!string.IsNullOrEmpty(delegat.Telefon))
+                        {
+                            <SendPinSmsComponent DelegatId="delegat.Id" OnSendt="@(()=>  SmsSendt(delegat.Id))"/>  
+                        }
+                        @if (!string.IsNullOrEmpty(delegat.Epost))
+                        {
+                            <SendPinEmailComponent DelegatId="delegat.Id" OnSendt="@(()=>  EpostSendt(delegat.Id))"/>
+                        }
+                    </td>
+                    <td>
+                        <ul class="list-unstyled">
+                            @if (delegat.SendtEmail != null)
+                            {
+                                <li>Epost sendt @delegat.SendtEmail.Value.ToString("g")</li>
+                            }
+                            @if (delegat.SendtSms != null)
+                            {
+                                <li>SMS sendt @delegat.SendtSms.Value.ToString("g")</li>
+                            }
+                            @if (delegat.SendtEmail == null && delegat.SendtSms == null)
+                            {
+                                <li class="text-danger">Nei</li>
+                            }
+                        </ul>
+                        
                     </td>
                 </tr>
             }
-        </tbody>
+            </tbody>
         }
     </table>
+}
 @code {
+
     [Parameter]
     public int ArrangementId { get; set; }
 
+    private bool _expanded;
+    private bool _showPin;
+
     private ICollection<Delegat> _delegater = null!;
-    
+
+
     protected override async Task OnInitializedAsync()
     {
         _delegater = await DelegatService.HentDelegater(ArrangementId);
     }
 
-    private Task SendPin(int delegatId, MeldingsType type)
+    private void SmsSendt(int delegatId)
     {
-        switch (type)
+        var delegat = _delegater.FirstOrDefault(d => d.Id == delegatId);
+        if (delegat != null)
         {
-            case MeldingsType.Sms:
-                return PinSender.SendSms(delegatId, Navigation.BaseUri);
-            case MeldingsType.Epost:
-                return PinSender.SendEmail(delegatId, Navigation.BaseUri);
-            default:
-                return Task.CompletedTask;
+            delegat.SendtSms = DateTimeOffset.Now;
         }
     }
-
-    private enum MeldingsType
+    private void EpostSendt(int delegatId)
     {
-        Sms,
-        Epost
+        var delegat = _delegater.FirstOrDefault(d => d.Id == delegatId);
+        if (delegat != null)
+        {
+            delegat.SendtEmail = DateTimeOffset.Now;
+        }
     }
-
 }

@@ -9,8 +9,9 @@ namespace Stemmesystem.Web.Models
         public int? Delegatnummer { get; set; }
 
         [Required(ErrorMessage = "Navn er påkrevd")]
-        [StringLength(20)]
+        [StringLength(100)]
         public string? Navn { get; set; }
+        public string? Gruppe { get; set; }
 
         [EmailAddress(ErrorMessage = "Ikke gyldig epost")]
         public string? Epost { get; set; }

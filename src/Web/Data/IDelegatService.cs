@@ -57,6 +57,7 @@ namespace Stemmesystem.Web.Data
                 throw new StemmeException($"Fant ingen delegat med id {model.Id} å oppdatere");
 
             delegat.Navn = model.Navn;
+            delegat.Gruppe = model.Gruppe;
             delegat.Epost = model.Epost;
             delegat.Telefon = model.Telefon;
             
@@ -88,6 +89,7 @@ namespace Stemmesystem.Web.Data
                 throw new StemmeException($"Delegatnummer {model.Nummer} allerede registrert");
 
             return arrangement.NyDelegat(model, delegatkode);
+            //TODO: Notify
         }
 
         public async Task<DelegatModel> RegistrerNyDelegat(int arrangementId, DelegatModel model)
@@ -102,6 +104,7 @@ namespace Stemmesystem.Web.Data
 
         public async Task<Delegat?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default)
         {
+            delegatKode = delegatKode.ToUpper();
             await using var context = _contextFactory.CreateDbContext();
             var delegat = await context.Delegat
                 .Include(d => d.Arrangement)

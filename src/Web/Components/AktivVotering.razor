@@ -3,40 +3,41 @@
 @inject StemmeService StemmeService
 
 <div class="col-xl-4 col-md-6">
-    <h3>@Votering.Sak.Tittel</h3>
-    <h4>@Votering.Sak.Beskrivelse</h4>
-    <h5>@Votering.Tittel</h5>    
-    
-    @if (HarStemmt && !Endre)
-    {
-        <p>Du har stemt <b>@StemmerSomString()</b></p>
-        if (KanEndre())
-        {
-            <button class="btn btn-secondary" @onclick="@(e => Endre = true)">Endre</button>
-        }
-        
-    }
-    else
-    {
-        @if (!string.IsNullOrEmpty(_error))
-        {
-            <div class="alert alert-danger" role="alert">
-                @_error
-            </div>
-        }
-        <CascadingValue Value=this>
-            @if(Votering.KanVelge > 1)
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">@Votering.Sak.Tittel</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@Votering.Sak.Beskrivelse</h6>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">@Votering.Tittel</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@Votering.Beskrivelse</h6>
+            @if (_harStemmt && !Endre)
             {
-                <Flervalgsvotering @bind-Error="_error"/>
+                <p>Du har stemt <b>@StemmerSomString()</b></p>
+                <button class="btn btn-secondary" @onclick="@(e => Endre = true)">Endre</button>
             }
             else
             {
-                <Enkelvotering @bind-Error="_error"/>
+                @if (!string.IsNullOrEmpty(_error))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @_error
+                    </div>
+                }
+                <CascadingValue Value=this>
+                    @if (Votering.KanVelge > 1)
+                    {
+                        <Flervalgsvotering @bind-Error="_error"/>
+                    }
+                    else
+                    {
+                        <Enkelvotering @bind-Error="_error"/>
+                    }
+                </CascadingValue>
             }
-        </CascadingValue>
-    }
+        </div>
+    </div>
 </div>
-
 
 @code {
     [Parameter]
@@ -46,8 +47,7 @@
     private DelegatStateProvider? DelegatStateProvider {get;set;}
 
     internal List<Stemme> Stemmer = new();
-    private string? _revoteKey;
-    protected bool HarStemmt;
+    private bool _harStemmt;
     private bool Endre { get; set; } = false;
 
     private string? _error;
@@ -70,12 +70,9 @@
         }
         try
         {
-            var (stemmer, revoteKey) = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, valg, _revoteKey);
+            var stemmer = await StemmeService.AvgiStemmeAsync(Votering.Id, DelegatStateProvider.Delegatkode, valg);
             Stemmer = stemmer;
-            DelegatStateProvider.RevoteKeys[Votering.Id] = revoteKey;
-            await DelegatStateProvider.SaveChangesAsync();
-            _revoteKey = revoteKey;
-            HarStemmt = true;
+            _harStemmt = true;
             Endre = false;
 
             StateHasChanged();
@@ -89,16 +86,8 @@
     protected override async Task OnInitializedAsync(){
         if (DelegatStateProvider?.Delegatkode != null)
         {
-            HarStemmt = await StemmeService.HarStemmt(Votering.Id, DelegatStateProvider.Delegatkode);
-
-            if (HarStemmt && !Votering.Hemmelig)
-            {
-                Stemmer = await StemmeService.FinnStemmer(Votering.Id, DelegatStateProvider.Delegatkode);
-            }
-        }
-        if (DelegatStateProvider?.RevoteKeys != null && DelegatStateProvider.RevoteKeys.TryGetValue(Votering.Id, out var key))
-        {
-            _revoteKey = key;
+            _harStemmt = await StemmeService.HarStemmt(Votering.Id, DelegatStateProvider.Delegatkode);
+            Stemmer = await StemmeService.FinnStemmer(Votering.Id, DelegatStateProvider.Delegatkode);
         }
     }
 
@@ -113,10 +102,4 @@
 
         return $"{string.Join(", ", navn.SkipLast(1))} og {navn.Last()}";
     }
-
-    private bool KanEndre()
-    {
-        return !Votering.Hemmelig || _revoteKey != null;
-    }
-
 }

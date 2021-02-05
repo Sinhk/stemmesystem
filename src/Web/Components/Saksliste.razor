@@ -7,7 +7,12 @@
 @inject NotificationManager NotificationManager
 @implements IDisposable
 
-<h4>Saker</h4>
+<div class="row" @onclick=@(_ => _expanded=!_expanded)>
+    <h4>Saker</h4>
+    <span class="ml-2 mt-1 oi @(_expanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+</div>
+@if (_expanded)
+{
 <table class="table table-bordered">
     <col width="120em">
     <col width="340em">
@@ -41,10 +46,21 @@
                     <td>Registrerte stemmer: @votering.Stemmer.Count</td>
                     @if(votering.Aktiv){
                         <td><button class="btn btn-danger" @onclick="@(async e => await StoppVotering(sak.ArrangementId, votering.Id))">Stopp</button></td>
-                    }else{
-                        <td><button class="btn btn-success" @onclick="@(async e => await StartVotering(sak.ArrangementId, votering.Id))">Start</button></td>
+                    }else if(!votering.Lukket){
+                        <td>
+                            <button class="btn btn-success" @onclick="@(async e => await StartVotering(sak.ArrangementId, votering.Id))">Start</button>
+                             @if (votering.SluttTid != null) {<button class="btn btn-primary" @onclick="@(async e => await LukkVotering(sak.ArrangementId, votering.Id))">Lukk</button>}
+                        </td>
                     }
-                    
+                    else if (!votering.Publisert)
+                    {
+                        <td><button class="btn btn-primary" @onclick="@(async e => await PubliserVotering(sak.ArrangementId, votering.Id))">Publiser</button></td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+
                 </tr>
                 @foreach (var valg in votering.Valg.OrderBy(v => v.SortId)){
                     <tr>
@@ -57,12 +73,16 @@
      }
     </tbody>
 </table>
+    
+}
 
 @code {
     [Parameter]
     public int ArrangementId {get;set;}
     private NotifierService? Notifier { get; set; }
     private ICollection<Sak> _saker = null!;
+    private bool _expanded;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,6 +90,8 @@
         Notifier = NotificationManager.ForArrangement(ArrangementId);
         Notifier.VoteringStartet += OnVoteringStartet;
         Notifier.VoteringStoppet += OnVoteringStoppet;
+        Notifier.VoteringLukket += OnVoteringLukket;
+        Notifier.VoteringPublisert += OnVoteringPublisert;
         Notifier.NyStemme += OnNyStemme;
         Notifier.StemmeFjernet += OnStemmeFjernet;
     }
@@ -90,7 +112,7 @@
             StateHasChanged();
         });
     }
-    
+
     public void OnStemmeFjernet(StemmeFjernetEvent e)
     {
         _ = InvokeAsync(async () =>
@@ -118,6 +140,7 @@
             if (votering != null)
             {
                 votering.Aktiv = false;
+                votering.SluttTid = DateTimeOffset.Now;
             }
             else
             {
@@ -135,6 +158,7 @@
             if (votering != null)
             {
                 votering.Aktiv = true;
+                votering.StartTid = DateTimeOffset.Now;
             }
             else
             {
@@ -144,12 +168,45 @@
         });
     }
 
-    public async Task StartVotering(int arrangementId, int voteringId){
-        await StemmeService.StartVotering(arrangementId, voteringId);
+    private void OnVoteringLukket(VoteringLukketEvent e)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == e.VoteringId);
+            if (votering != null)
+            {
+                votering.Lukket = true;
+            }
+            else
+            {
+                _saker = await SakService.HentSaker(ArrangementId);
+            }
+            StateHasChanged();
+        });
     }
-    public async Task StoppVotering(int arrangementId, int voteringId){
-        await StemmeService.StoppVotering(arrangementId, voteringId);
+
+    private void OnVoteringPublisert(VoteringPublisertEvent e)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == e.VoteringId);
+            if (votering != null)
+            {
+                votering.Publisert = true;
+            }
+            else
+            {
+                _saker = await SakService.HentSaker(ArrangementId);
+            }
+            StateHasChanged();
+        });
     }
+
+    public async Task StartVotering(int arrangementId, int voteringId) => await StemmeService.StartVotering(arrangementId, voteringId);
+    public async Task StoppVotering(int arrangementId, int voteringId) => await StemmeService.StoppVotering(arrangementId, voteringId);
+    public async Task LukkVotering(int arrangementId, int voteringId) => await StemmeService.LukkVotering(arrangementId, voteringId);
+    public async Task PubliserVotering(int arrangementId, int voteringId) => await StemmeService.PubliserVotering(arrangementId, voteringId);
+
 
     public void Dispose()
     {
@@ -158,6 +215,8 @@
         Notifier.VoteringStoppet -= OnVoteringStoppet;
         Notifier.NyStemme -= OnNyStemme;
         Notifier.StemmeFjernet -= OnStemmeFjernet;
+        Notifier.VoteringLukket -= OnVoteringLukket;
+        Notifier.VoteringPublisert -= OnVoteringPublisert;
     }
 
 }

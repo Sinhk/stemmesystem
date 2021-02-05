@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Stemmesystem.Data;
-using Stemmesystem.Web.Data;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,37 +24,21 @@ namespace Stemmesystem.Web
                 
                 await db.Database.MigrateAsync();
                 
-                if (!db.Arrangement.Any())
+                if (!db.Users.Any())
                 {
-                    var delegatService = scope.ServiceProvider.GetRequiredService<IDelegatService>();
                     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-                    await SeedData(db, delegatService, userManager);
+                    await CreateAdminUsers(userManager);
                 }
             }
 
             await host.RunAsync();
         }
 
-        private static async Task SeedData(StemmesystemContext db, IDelegatService delegatService, UserManager<IdentityUser> userManager)
+        private static async Task CreateAdminUsers(UserManager<IdentityUser> userManager)
         {
-            Arrangement arrangement = new("Testarrangement") { Beskrivelse = "Bare en test" };
-            Sak sak = new(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
-            var votering1 = new Votering("Skal vi ha kretsting?", false, "Ja", "Nai", "Kanskje");
-            var votering2 = new Votering("Beste farge", true, 2, new[] { "Rød", "Gul", "Grønn", "Blå" });
-            var votering3 = new Votering("Valg av person", false, 2, "Patrick","Elin","Torbjørn","Annette", "Kjetil", "May Britt", "Odd Kjetil", "Ole", "Silje", "Synnøve","Åge");
-            sak.LeggTil(votering1, votering2, votering3);
-            arrangement.LeggTil(sak);
-            delegatService.RegistrerNyDelegat(arrangement, new(1) { Navn = "Sindre", Epost = "sindre.kroknes@gmail.com", Telefon = "99150713" });
-            delegatService.RegistrerNyDelegat(arrangement, new(2) { Navn = "Silje", Epost = "siljeth.kroknes@gmail.com"});
-            delegatService.RegistrerNyDelegat(arrangement, new(3) { Navn = "Patrick", Epost = "patrick.gule@gmail.com" });
-
-            db.Arrangement.Add(arrangement);
-
-            await db.SaveChangesAsync();
-            
-            await userManager.CreateAsync(new IdentityUser("sindre.kroknes@gmail.com") {Email = " sindre.kroknes@gmail.com", EmailConfirmed = true});
-            await userManager.CreateAsync(new IdentityUser("patrickg@romnorkrets.no") {Email = " patrickg@romnorkrets.no", EmailConfirmed = true});
-            await userManager.CreateAsync(new IdentityUser("siljeth.kroknes@gmail.com") {Email = " siljeth.kroknes@gmail.com", EmailConfirmed = true});
+            await userManager.CreateAsync(new IdentityUser("sindre") {Email = "sindre.kroknes@gmail.com", EmailConfirmed = true});
+            await userManager.CreateAsync(new IdentityUser("patrick") {Email = "patrick.gule@gmail.com", EmailConfirmed = true});
+            await userManager.CreateAsync(new IdentityUser("silje") {Email = "siljeth.kroknes@gmail.com", EmailConfirmed = true});
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

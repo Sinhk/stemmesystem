@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Stemmesystem.Web.Models
@@ -13,5 +15,7 @@ namespace Stemmesystem.Web.Models
         
         public DateTime? Startdato { get; set; }
         public DateTime? Sluttdato { get; set; }
+        public IList<DelegatModel>? Delegater { get; set; }
+        public IList<SakModel>? Saker { get; set; }
     }
 }

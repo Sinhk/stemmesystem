@@ -1,11 +1,13 @@
-﻿@page "/arrangement/{arrangementId:int}/sak/{sakId:int}/votering/ny-votering"
-@page "/arrangement/{arrangementId:int}/sak/{sakId:int}/votering/{voteringId:int}"
+﻿@page "/admin/arrangement/{arrangementId:int}/sak/{sakId:int}/votering/ny-votering"
+@page "/admin/arrangement/{arrangementId:int}/sak/{sakId:int}/votering/{voteringId:int}"
 
 @using Models
 @using Stemmesystem.Web.Data
 @inject ArrangementService ArrangementService
 @inject ISakService SakService
 @inject NavigationManager Navigation
+
+@attribute [Authorize]
 
 @if (_votering.Id == null)
 {
@@ -88,7 +90,7 @@ else
                 return;
             }
             _votering = await SakService.LagreNyVotering(SakId, _votering);
-            Navigation.NavigateTo($"/arrangement/{ArrangementId}/sak/{SakId}/votering/{_votering.Id}");
+            Navigation.NavigateTo($"/admin/arrangement/{ArrangementId}/sak/{SakId}/votering/{_votering.Id}");
         }
     }
 

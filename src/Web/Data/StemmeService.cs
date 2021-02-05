@@ -27,16 +27,15 @@ namespace Stemmesystem.Web.Data
             _notificationManager = notificationManager;
         }
 
-        public async Task<(Stemme stemme, string RevoteKey)> AvgiStemmeAsync(int voteringId, string delegatkode, Guid valgId, string? revoteKey = null, CancellationToken cancellationToken = default)
+        public async Task<Stemme> AvgiStemmeAsync(int voteringId, string delegatkode, Guid valgId, CancellationToken cancellationToken = default)
         {
-            var (stemmer, key) = await AvgiStemmeAsync(voteringId, delegatkode, new[] {valgId}, revoteKey, cancellationToken);
+            var stemmer = await AvgiStemmeAsync(voteringId, delegatkode, new[] {valgId}, cancellationToken);
             if (stemmer.Count > 1)
                 throw new StemmeException("Noe gikk galt.");
-            return (stemmer.First(), key);
+            return stemmer.First();
         }
 
-        //TODO: Ditch the revoteKey thing and just use delegatkode
-        public async Task<(List<Stemme> stemmer, string RevoteKey)> AvgiStemmeAsync(int voteringId, string delegatkode, IEnumerable<Guid> valgIder, string? revoteKey = null, CancellationToken cancellationToken = default)
+        public async Task<List<Stemme>> AvgiStemmeAsync(int voteringId, string delegatkode, IEnumerable<Guid> valgIder, CancellationToken cancellationToken = default)
         {
             var delegat = await _delegatService.ValiderKode(delegatkode, cancellationToken);
             if (delegat == null)
@@ -49,7 +48,7 @@ namespace Stemmesystem.Web.Data
                 .Include(v=> v.Stemmer)
                 .Include(v => v.AvgitStemme)
                 .Include(v=> v.Sak)
-                .SingleOrDefaultAsync(v => v.Id == voteringId, cancellationToken: cancellationToken);
+                .SingleOrDefaultAsync(v => v.Id == voteringId, cancellationToken);
 
             if (votering == null)
             {
@@ -58,13 +57,13 @@ namespace Stemmesystem.Web.Data
             
             if (votering.Aktiv == false)
             {
-                throw new StemmeException($"Votering er ferdig eller har ikke startet enda");
+                throw new StemmeException("Votering er ferdig eller har ikke startet enda");
             }
 
-            var (stemmer, newKey) = votering.RegistrerStemme(valgIder, delegat, revoteKey, _keyHasher, _notificationManager);
+            var stemmer = votering.RegistrerStemme(valgIder, delegat, delegatkode, _keyHasher, _notificationManager);
             
             await context.SaveChangesAsync(cancellationToken);
-            return (stemmer, newKey);
+            return stemmer;
         }
 
         public async Task StartVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
@@ -117,36 +116,62 @@ namespace Stemmesystem.Web.Data
         public async Task<List<Stemme>> FinnStemmer(int voteringId, string delegatKode, CancellationToken cancellationToken = default)
         {
             await using var context = _contextFactory.CreateDbContext();
-            var q = await GetFinnStemmeQuery(context, voteringId, delegatKode, cancellationToken);
-            if (q == null) return new List<Stemme>();
-            return await q.ToListAsync(cancellationToken);
+            return await GetFinnStemmeQuery(context, voteringId, delegatKode, cancellationToken);
         }
-        public async Task<Stemme?> FinnStemme(int voteringId, string delegatKode, CancellationToken cancellationToken = default)
+
+        private async Task<List<Stemme>> GetFinnStemmeQuery(StemmesystemContext context, int voteringId, string delegatkode, CancellationToken cancellationToken = default)
+        {
+            var delegat = await _delegatService.ValiderKode(delegatkode, cancellationToken);
+            if (delegat == null)
+                throw new StemmeException($"Ugyldig delegat {delegatkode}");
+            
+            var votering = await context.Votering
+                .Where(v => v.Id == voteringId)
+                .Include(v=> v.Stemmer)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var stemmer = votering.Hemmelig
+                ? votering.Stemmer.Where(s => _keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList()
+                : votering.Stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
+
+            return stemmer;
+        }
+
+        public async Task LukkVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
         {
             await using var context = _contextFactory.CreateDbContext();
-            var q = await GetFinnStemmeQuery(context, voteringId, delegatKode, cancellationToken);
-            if (q == null) return null;
-            return await q.FirstOrDefaultAsync(cancellationToken);
+            var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
+            if(arrangement == null)
+                return;
+            context.Attach(arrangement);
+            var votering = arrangement.FinnVotering(voteringId);
+            if (votering == null)
+                throw new StemmeException("Fant ikke valgt votering");
+            if (votering.Aktiv)
+            {
+                votering.AvsluttVotering();
+                _notificationManager.ForArrangement(arrangementId).OnVoteringStoppet(new VoteringStoppetEvent(votering.Id));
+            }
+            votering.LukkVotering();
+            await context.SaveChangesAsync(cancellationToken);
+            
+            _notificationManager.ForArrangement(arrangementId).OnVoteringLukket(new VoteringLukketEvent(votering.Id));
         }
-
-        private async Task<IQueryable<Stemme>?> GetFinnStemmeQuery(StemmesystemContext context, int voteringId, string delegatKode, CancellationToken cancellationToken = default)
+        
+        public async Task PubliserVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
         {
-            var hemmelig = await context.Votering
-                .Where(v => v.Id == voteringId)
-                .Select(v => v.Hemmelig)
-                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
-
-            if (hemmelig == true)
-                return null;
-
-            var delegat = await _delegatService.ValiderKode(delegatKode, cancellationToken);
-            if (delegat == null)
-                throw new StemmeException($"Ugyldig delegat {delegatKode}");
-
-            return context.Votering
-                .Where(v => v.Id == voteringId)
-                .SelectMany(v => v.Stemmer)
-                .Where(s => s.Delegat!.Id == delegat.Id);
+            await using var context = _contextFactory.CreateDbContext();
+            var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
+            if(arrangement == null)
+                return;
+            context.Attach(arrangement);
+            var votering = arrangement.FinnVotering(voteringId);
+            if (votering == null)
+                throw new StemmeException("Fant ikke valgt votering");
+            votering.PubliserVotering();
+            await context.SaveChangesAsync(cancellationToken);
+            
+            _notificationManager.ForArrangement(arrangementId).OnVoteringPublisert(new VoteringPublisertEvent(votering.Id, votering));
         }
     }
 }

@@ -1,8 +1,5 @@
-using System;
 using System.Linq;
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -11,19 +8,16 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.VisualStudio.Web.CodeGeneration.Utils.Messaging;
-using Npgsql;
 using Stemmesystem.Data;
 using Stemmesystem.Tools;
 using Stemmesystem.Web.Areas.Identity;
 using Stemmesystem.Web.Data;
 using Stemmesystem.Web.Services;
+using Stemmesystem.Web.Services.CSV;
 
 namespace Stemmesystem.Web
 {
@@ -59,15 +53,12 @@ namespace Stemmesystem.Web
             {
                 if (Environment.IsDevelopment())
                 {
-                    options.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+                    options.UseSqlite(Configuration.GetConnectionString("DefaultConnection"), x=> x.MigrationsAssembly("SqliteMigrations"));
                     options.EnableSensitiveDataLogging();
                 }
                 else
                 {
-                    string connectionString = ParseHerokuPostgresString();
-
-                    options.UseNpgsql(connectionString);
-                    //options.UseSqlServer(Configuration.GetConnectionString("StemmesystemDb"));
+                    options.UseSqlServer(Configuration.GetConnectionString("StemmeDb"),x=> x.MigrationsAssembly("SqlServerMigrations"));
                 }
             });
             services.AddScoped(p => p.GetRequiredService<IDbContextFactory<StemmesystemContext>>().CreateDbContext());
@@ -122,6 +113,8 @@ namespace Stemmesystem.Web
             services.AddScoped<StemmeService>();
             services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
             services.AddSingleton<IKeyHasher, KeyHasher>();
+            services.AddTransient<CsvImport>();
+            services.AddSingleton<ActiveTracker>();
 
             services.AddHttpClient<ISmsSender, SveveSmsSender>();
             services.AddOptions<SveveOptions>()
@@ -141,6 +134,7 @@ namespace Stemmesystem.Web
             services.AddAutoMapper(typeof(AutoMapperConfig));
         }
 
+        /*
         private static string ParseHerokuPostgresString()
         {
             var databaseUrl = System.Environment.GetEnvironmentVariable("DATABASE_URL");
@@ -161,6 +155,7 @@ namespace Stemmesystem.Web
             var connectionString = builder.ToString();
             return connectionString;
         }
+        */
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMapper mapper)

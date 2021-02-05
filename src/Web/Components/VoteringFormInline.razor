@@ -1,0 +1,100 @@
+﻿@using Stemmesystem.Web.Models
+@using Stemmesystem.Web.Data
+@using Microsoft.Extensions.Hosting
+@inject ISakService SakService
+@inject IHostEnvironment Environment
+
+@if (!Environment.IsDevelopment() && (Votering.StartTid != null && Votering.StartTid != default(DateTimeOffset)))
+{
+    <div class="card">
+        <div class="card-header">
+            @Votering.Tittel
+        </div>
+        <div class="card-body">
+            <em>Votering har startet og kan ikke endres</em>
+        </div>
+    </div>
+}
+else
+{
+    <EditForm class="mb-2" Model="@Votering" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <CustomValidator @ref="customValidator" />
+        <ValidationSummary />
+        <div class="card">
+            <div class="card-header">
+                <div class="form-row">
+                    <div class="col-6">
+                        <InputText class="form-control" placeholder="Tittel" @bind-Value="Votering.Tittel"/>
+                    </div>
+                    <div class="col-2">
+                        <InputNumber class="form-control" placeholder="Kan velge" @bind-Value="Votering.KanVelge"/>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check col-3 mt-2">
+                            <InputCheckbox class="form-check-input" placeholder="Hemmelig" @bind-Value="Votering.Hemmelig" id="hemmeligCheck"/>
+                            <label class="form-check-label" for="hemmeligCheck">Hemmelig</label>
+                        </div>
+                    </div>
+                    <div class="col-10">
+                        <InputText class="form-control" placeholder="Beskrivelse" @bind-Value="Votering.Beskrivelse"/>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lagre</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <h6>Valg</h6>
+                @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
+                {
+                    <ValgInline Valg="@valg" OnTaVekkValg="@TaVekkValg"></ValgInline>
+                }
+                <button type="button" class="btn btn-success btn-sm mt-1" @onclick=LeggTilValg>Legg til valg</button>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public VoteringModel Votering { get; set; }
+    
+    [Parameter]
+    public int SakId { get; set; }
+    
+    private CustomValidator? customValidator;
+    
+    private async Task HandleValidSubmit(){
+        customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+
+        Votering.Valg.RemoveAll(v => string.IsNullOrEmpty(v.Navn));
+        
+        if (Votering.Id != default)
+        {
+            Votering = await SakService.OppdaterVotering(Votering);
+        }
+        else
+        {
+            /*
+             if(await SakService.ErNummerBrukt(ArrangementId, _votering.Nummer))
+                errors.Add(nameof(_votering.Nummer), new List<string>{"Saknummer er allerede brukt"});
+            */
+            if (errors.Count > 0)
+            {
+                customValidator?.DisplayErrors(errors);
+                return;
+            }
+            Votering = await SakService.LagreNyVotering(SakId, Votering);
+        }
+    }
+
+    private void LeggTilValg()
+    {
+        Votering.Valg.Add(new ValgModel {Id = Guid.NewGuid(),SortId = Votering.Valg.Count});
+    }
+
+    private void TaVekkValg(Guid valgId)
+    {
+        Votering.Valg.RemoveAll(v => v.Id == valgId);
+    }
+}

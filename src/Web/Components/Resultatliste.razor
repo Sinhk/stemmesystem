@@ -1,0 +1,46 @@
+﻿@using Stemmesystem.Data
+@using Stemmesystem.Web.Models
+@inject NotificationManager NotificationManager
+@implements IDisposable
+@if (_voteringer.Any())
+{
+    <h4>@Sak.Tittel</h4>
+    foreach(var votering in _voteringer){
+        <ResultatlisteElement Votering="votering"></ResultatlisteElement>
+    }
+    
+}
+
+@code {
+    [Parameter]
+    public Sak Sak { get; set; }
+
+    private List<Votering> _voteringer = new();
+
+    private NotifierService Notifier { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _voteringer.AddRange(Sak.Voteringer.Where(v=> v.Publisert));
+        
+        Notifier = NotificationManager.ForArrangement(Sak.ArrangementId);
+        Notifier.VoteringPublisert += OnVoteringPublisert;
+    }
+
+    private void OnVoteringPublisert(VoteringPublisertEvent e)
+    {
+        _ = InvokeAsync(() =>
+        {
+            if (e.Votering.SakId != Sak.Id) return;
+            
+            _voteringer.Add(e.Votering);
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        Notifier.VoteringPublisert -= OnVoteringPublisert;
+    }
+
+}
