@@ -10,9 +10,16 @@
     <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
         <div class="card-body">
             <b>Stemmer totalt: @Votering.Stemmer.Count</b>
-            @foreach(var (id, stemmer) in _resultater.OrderByDescending(r=> r.Value))
+            @if (_total == 0)
             {
-                <div>@_valg[id]: @stemmer (@(100 * stemmer/_total)%)</div>
+                <tr><td class="text-danger">Ingen stemmer</td></tr>
+            }
+            else
+            {
+                foreach(var (id, stemmer) in _resultater.OrderByDescending(r=> r.Value))
+                {
+                    <div>@_valg[id]: @stemmer (@(100 * stemmer/_total)%)</div>
+                }
             }
             <div>@(_blankt == 1 ? "1 blank stemme": $"{_blankt} blanke stemmer")</div>
         </div>

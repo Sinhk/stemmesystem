@@ -25,6 +25,11 @@ namespace Stemmesystem.Web
                 .ReverseMap();
 
             CreateMap<Votering, VoteringModel>()
+                .ForMember(v=> v.Id,opt =>
+                {
+                    opt.MapFrom(s => s.Id);
+                    opt.Condition(v => v.Id != default);
+                })
                 .ReverseMap();
             
             CreateMap<Valg, ValgModel>()

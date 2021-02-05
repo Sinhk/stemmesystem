@@ -27,11 +27,13 @@ namespace Stemmesystem.Web.Data
     {
         private readonly IDbContextFactory<StemmesystemContext> _dbContextFactory;
         private readonly IMapper _mapper;
+        private readonly NotificationManager _notificationManager;
 
-        public SakService(IDbContextFactory<StemmesystemContext> dbContextFactory,  IMapper mapper)
+        public SakService(IDbContextFactory<StemmesystemContext> dbContextFactory,  IMapper mapper, NotificationManager notificationManager)
         {
             _dbContextFactory = dbContextFactory;
             _mapper = mapper;
+            _notificationManager = notificationManager;
         }
         public async Task<SakModel?> HentSak(int sakId, CancellationToken cancellationToken = default)
         {
@@ -105,6 +107,7 @@ namespace Stemmesystem.Web.Data
             var votering = _mapper.Map<Votering>(model);
             sak.LeggTil(votering);
             await db.SaveChangesAsync();
+            _notificationManager.ForArrangement(sak.ArrangementId).OnNyVotering(new NyVoteringEvent(votering));
             return _mapper.Map<VoteringModel>(votering);
         }
 
@@ -124,9 +127,12 @@ namespace Stemmesystem.Web.Data
             await using var db = _dbContextFactory.CreateDbContext();
             return await db.Arrangement
                 .Where(a => a.Id == arrangementId)
+                .AsSingleQuery()
                 .SelectMany(a => a.Saker)
                 .Include(s => s.Voteringer)
                 .ThenInclude(v=> v.Stemmer)
+                .Include(s => s.Voteringer)
+                .ThenInclude(v=> v.AvgitStemme)
                 //.ProjectTo<SakModel>(_mapper.ConfigurationProvider)
                 .ToListAsync();
         }

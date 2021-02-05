@@ -61,6 +61,9 @@ else
     [Parameter]
     public int SakId { get; set; }
     
+    [Parameter]
+    public EventCallback OnSuccess { get; set; }
+
     private CustomValidator? customValidator;
     
     private async Task HandleValidSubmit(){
@@ -85,6 +88,10 @@ else
                 return;
             }
             Votering = await SakService.LagreNyVotering(SakId, Votering);
+            if(Votering != null)
+            {
+                await OnSuccess.InvokeAsync();    
+            }
         }
     }
 

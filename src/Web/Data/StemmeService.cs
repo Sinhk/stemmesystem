@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
 using Stemmesystem.Tools;
 using System;
@@ -7,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
+using Stemmesystem.Web.Models;
 
 namespace Stemmesystem.Web.Data
 {
@@ -17,14 +18,16 @@ namespace Stemmesystem.Web.Data
         private readonly IKeyHasher _keyHasher;
         private readonly ArrangementService _arrangementService;
         private readonly NotificationManager _notificationManager;
+        private readonly IMapper _mapper;
 
-        public StemmeService(IDelegatService delegatService, ArrangementService arrangementService, IDbContextFactory<StemmesystemContext> contextFactory, IKeyGenerator keyGenerator, IKeyHasher keyHasher, NotificationManager notificationManager)
+        public StemmeService(IDelegatService delegatService, ArrangementService arrangementService, IDbContextFactory<StemmesystemContext> contextFactory, IKeyHasher keyHasher, NotificationManager notificationManager, IMapper mapper)
         {
             _delegatService = delegatService;
             _arrangementService = arrangementService;
             _contextFactory = contextFactory;
             _keyHasher = keyHasher;
             _notificationManager = notificationManager;
+            _mapper = mapper;
         }
 
         public async Task<Stemme> AvgiStemmeAsync(int voteringId, string delegatkode, Guid valgId, CancellationToken cancellationToken = default)
@@ -172,6 +175,21 @@ namespace Stemmesystem.Web.Data
             await context.SaveChangesAsync(cancellationToken);
             
             _notificationManager.ForArrangement(arrangementId).OnVoteringPublisert(new VoteringPublisertEvent(votering.Id, votering));
+        }
+
+        public async Task<VoteringModel> KopierVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            var arrangement = await _arrangementService.HentArrangementAsync(arrangementId, cancellationToken);
+            if(arrangement == null)
+                throw new StemmeException("Fant ikke valgt arrangement");
+            context.Attach(arrangement);
+            var votering = arrangement.FinnVotering(voteringId);
+            if (votering == null)
+                throw new StemmeException("Fant ikke valgt votering");
+            
+            var kopi = votering.Kopier();
+            return _mapper.Map<VoteringModel>(kopi);
         }
     }
 }

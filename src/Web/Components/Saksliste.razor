@@ -13,67 +13,19 @@
 </div>
 @if (_expanded)
 {
-<table class="table table-bordered">
-    <col width="120em">
-    <col width="340em">
-    <col>
-    <col>
-    <thead>
-        <tr>
-            <th>Saknummer</th>
-            <th>Tittel</th>
-            <th colspan="2">Beskrivelse</th>
-        </tr>
-    </thead>
-    <tbody>
-    @if(_saker == null || !_saker.Any())
+    if(_saker == null || !_saker.Any())
     {
         <tr><td class="text-danger">Ingen saker</td></tr>
     }
-    else
-    {
-        @foreach (var sak in _saker.OrderBy(s => s.Nummer))
-        {
-            <tr>
-                <th rowspan=@(sak.Voteringer.Sum(v=> v.Valg.Count +1)+1) scope="row">@sak.Nummer</th>
-                <td>@sak.Tittel</td>
-                <td colspan="2">@sak.Beskrivelse</td>
-            </tr>
-            
-            @foreach (var votering in sak.Voteringer){
-                <tr>
-                    <td rowspan="@(votering.Valg.Count+1)">@votering.Tittel</td>
-                    <td>Registrerte stemmer: @votering.Stemmer.Count</td>
-                    @if(votering.Aktiv){
-                        <td><button class="btn btn-danger" @onclick="@(async e => await StoppVotering(sak.ArrangementId, votering.Id))">Stopp</button></td>
-                    }else if(!votering.Lukket){
-                        <td>
-                            <button class="btn btn-success" @onclick="@(async e => await StartVotering(sak.ArrangementId, votering.Id))">Start</button>
-                             @if (votering.SluttTid != null) {<button class="btn btn-primary" @onclick="@(async e => await LukkVotering(sak.ArrangementId, votering.Id))">Lukk</button>}
-                        </td>
-                    }
-                    else if (!votering.Publisert)
-                    {
-                        <td><button class="btn btn-primary" @onclick="@(async e => await PubliserVotering(sak.ArrangementId, votering.Id))">Publiser</button></td>
-                    }
-                    else
-                    {
-                        <td></td>
-                    }
 
-                </tr>
-                @foreach (var valg in votering.Valg.OrderBy(v => v.SortId)){
-                    <tr>
-                        <th scope="row">@valg.Navn</th>
-                        <td>@votering.Stemmer.Count(s=> s.ValgId == valg.Id)</td>
-                    </tr>
-                }
-            }
+    foreach (var sak in _saker.OrderBy(s => s.Nummer))
+    {
+        <h5>@sak.Nummer - @sak.Tittel</h5>
+        <p><small>@sak.Beskrivelse</small></p>
+        foreach (var votering in sak.Voteringer){
+            <SakslisteLinje Votering="@votering" ArrangementId="@ArrangementId" SakId="@sak.Id"></SakslisteLinje>
         }
-     }
-    </tbody>
-</table>
-    
+    }
 }
 
 @code {
@@ -83,7 +35,6 @@
     private ICollection<Sak> _saker = null!;
     private bool _expanded;
 
-
     protected override async Task OnInitializedAsync()
     {
         _saker = await SakService.HentSaker(ArrangementId);
@@ -92,6 +43,7 @@
         Notifier.VoteringStoppet += OnVoteringStoppet;
         Notifier.VoteringLukket += OnVoteringLukket;
         Notifier.VoteringPublisert += OnVoteringPublisert;
+        Notifier.NyVotering += NyVotering;
         Notifier.NyStemme += OnNyStemme;
         Notifier.StemmeFjernet += OnStemmeFjernet;
     }
@@ -202,10 +154,22 @@
         });
     }
 
-    public async Task StartVotering(int arrangementId, int voteringId) => await StemmeService.StartVotering(arrangementId, voteringId);
-    public async Task StoppVotering(int arrangementId, int voteringId) => await StemmeService.StoppVotering(arrangementId, voteringId);
-    public async Task LukkVotering(int arrangementId, int voteringId) => await StemmeService.LukkVotering(arrangementId, voteringId);
-    public async Task PubliserVotering(int arrangementId, int voteringId) => await StemmeService.PubliserVotering(arrangementId, voteringId);
+    private void NyVotering(NyVoteringEvent e)
+    {
+        _ = InvokeAsync(async () =>
+        {
+            var sak = _saker.FirstOrDefault(s => s.Id == e.Votering.SakId);
+            if (sak != null)
+            {
+                sak.Voteringer.Add(e.Votering);
+            }
+            else
+            {
+                _saker = await SakService.HentSaker(ArrangementId);
+            }
+            StateHasChanged();
+        });
+    }
 
 
     public void Dispose()
@@ -217,6 +181,7 @@
         Notifier.StemmeFjernet -= OnStemmeFjernet;
         Notifier.VoteringLukket -= OnVoteringLukket;
         Notifier.VoteringPublisert -= OnVoteringPublisert;
+        Notifier.NyVotering -= NyVotering;
     }
 
 }

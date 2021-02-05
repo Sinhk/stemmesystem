@@ -14,7 +14,7 @@ namespace Stemmesystem.Data
         private Sak? sak;
 
         public int Id { get; internal set; }
-        public string Tittel { get; init; }
+        public string Tittel { get; set; }
         public string? Beskrivelse { get; set; }
         public bool Hemmelig { get; set; }
         public bool Aktiv { get; set; } = false;
@@ -83,12 +83,13 @@ namespace Stemmesystem.Data
             if(idList.Count > KanVelge)
                 throw new StemmeException($"For mange valg {idList.Count}, bare {KanVelge} er lov per delegat");
 
+            var notifier = notificationManager.ForArrangement(Sak.ArrangementId);
             if (_avgitStemme.Any(d => d.Id == delegat.Id))
             {
                 List<Stemme> fjernes = Hemmelig ? _stemmer.Where(s => keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
 
                 _stemmer.RemoveAll(s=>  fjernes.Contains(s));
-                fjernes.ForEach(s=> notificationManager.ForArrangement(Sak.ArrangementId).OnStemmeFjernet(new StemmeFjernetEvent(Id,s.Id)));
+                fjernes.ForEach(s=> notifier.OnStemmeFjernet(new StemmeFjernetEvent(Id,s.Id)));
             }
 
             List<Stemme> stemmer = new(); 
@@ -106,7 +107,8 @@ namespace Stemmesystem.Data
             _stemmer.AddRange(stemmer);
             _avgitStemme.Add(delegat);
 
-            stemmer.ForEach(s=> notificationManager.ForArrangement(Sak.ArrangementId).OnNyStemme(new NyStemmeEvent(Id,s)));
+            stemmer.ForEach(s=> notifier.OnNyStemme(new NyStemmeEvent(Id,s)));
+            notifier.OnHarStemt(new HarStemtEvent(delegat.Id));
             return stemmer;
         }
 
@@ -121,5 +123,15 @@ namespace Stemmesystem.Data
                 throw new StemmeException("Votering må lukkes før den kan publiseres");
             Publisert = true;
         }
+
+        public Votering Kopier() =>
+            new(Tittel, Hemmelig)
+            {
+                Aktiv = true
+                , Beskrivelse = Beskrivelse
+                , KanVelge = KanVelge
+                , SakId = SakId
+                , _valg = new List<Valg>(_valg.Select(v => new Valg(v.Navn, v.SortId){Id = Guid.NewGuid()}))
+            };
     }
 }

@@ -8,7 +8,7 @@ namespace Stemmesystem.Data
     public class Valg
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; private set; }
+        public Guid Id { get; internal set; }
         public string Navn { get; init; }
         public int? SortId { get; set; }
 

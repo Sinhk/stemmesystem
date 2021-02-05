@@ -16,9 +16,12 @@
     <div class="col">Delegater: @_arrangement.Delegater?.Count</div>
     <div class="col">Aktive delegater: @_aktiveDelegater</div>
 </div>
-
-<Saksliste ArrangementId="ArrangementId" />
-<Delegatliste ArrangementId="ArrangementId" />
+<CascadingValue Name="Delegater" Value="_arrangement.Delegater.Count">
+<CascadingValue Name="AktiveDelegater" Value="_aktiveDelegater">
+    <Saksliste ArrangementId="ArrangementId" />
+    <Delegatliste ArrangementId="ArrangementId" />
+</CascadingValue>
+</CascadingValue>
 
 @code {
     [Parameter]

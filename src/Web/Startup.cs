@@ -119,13 +119,15 @@ namespace Stemmesystem.Web
             services.AddHttpClient<ISmsSender, SveveSmsSender>();
             services.AddOptions<SveveOptions>()
                 .BindConfiguration("Sveve")
-                .ValidateDataAnnotations();
+                //.ValidateDataAnnotations()
+                ;
 
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IEpostSender, EmailSender>();
             services.AddOptions<SendMailOptions>()
                 .BindConfiguration("SendGrid")
-                .ValidateDataAnnotations();
+                //.ValidateDataAnnotations()
+                ;
 
             services.AddTransient<IPinSender, PinSender>();
 
