@@ -7,7 +7,6 @@ namespace Stemmesystem.Web.Models
     public class VoteringModel
     {
         public int? Id { get; internal set; }
-        [Required]
         public string? Tittel { get; set; }
         public string? Beskrivelse { get; set; }
         public bool Hemmelig { get; set; }
