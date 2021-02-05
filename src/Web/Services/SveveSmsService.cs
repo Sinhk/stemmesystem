@@ -9,6 +9,7 @@ using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Stemmesystem.Web
 {
@@ -22,17 +23,19 @@ namespace Stemmesystem.Web
         private readonly HttpClient _httpClient;
         private readonly IOptionsMonitor<SveveOptions> _optionsMonitor;
         private readonly string _baseUrl = "https://sveve.no/SMS/SendMessage";
+        private readonly ILogger<SveveSmsSender> _logger;
 
-        public SveveSmsSender(HttpClient httpClient, IOptionsMonitor<SveveOptions> options)
+        public SveveSmsSender(HttpClient httpClient, IOptionsMonitor<SveveOptions> options, ILogger<SveveSmsSender> logger)
         {
             _httpClient = httpClient;
             _optionsMonitor = options;
+            _logger = logger;
         }
 
         private string PrepeareRequest()
         {
             var options = _optionsMonitor.CurrentValue;
-            var param = new Dictionary<string, string?>()
+            var param = new Dictionary<string, string?>
             {
                 {"user", options.User }, 
                 {"passwd",options.Password }, 
@@ -52,13 +55,33 @@ namespace Stemmesystem.Web
 
             var httpResponse = await _httpClient.GetAsync(url);
             if (!httpResponse.IsSuccessStatusCode)
+            {
+                _logger.LogError($"Got response code {httpResponse.StatusCode} from sveve.");
+                try
+                {
+                    _logger.LogError(await httpResponse.Content.ReadAsStringAsync());
+                }
+                catch (Exception e)
+                {
+                    // ignored
+                }
+
                 return false;
-            
+            }
+
             var responseContainer = await httpResponse.Content.ReadFromJsonAsync<SveveResponseContainer>();
             var response = responseContainer?.Response;
             if (response == null)
                 return false;
 
+            if(!string.IsNullOrEmpty(response.FatalError))
+                _logger.LogError(response.FatalError);
+            if(response.Errors != null)
+                foreach (var error in response.Errors)
+                {
+                    _logger.LogError($"{error.Number}: {error.Message}");    
+                }
+            
             //TODO: Error handling and more detailed response 
             return string.IsNullOrEmpty(response.FatalError) && (!response.Errors?.Any() ?? true);
         }
