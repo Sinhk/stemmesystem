@@ -31,14 +31,13 @@
     private int _aktiveDelegater;
 
 
-    protected override async Task OnInitializedAsync(){
-        if(ArrangementId != null){
-            var arrangement = await ArrangementService.HentArrangementModelAsync(ArrangementId);
-            if(arrangement != null)
-                _arrangement = arrangement;
-            Tracker.CountChanged += ActiveCountChanged;
-            _aktiveDelegater = Tracker.ActiveCount(ArrangementId);
-        }
+    protected override async Task OnInitializedAsync()
+    {
+        var arrangement = await ArrangementService.HentArrangementModelAsync(ArrangementId);
+        if(arrangement != null)
+            _arrangement = arrangement;
+        Tracker.CountChanged += ActiveCountChanged;
+        _aktiveDelegater = Tracker.ActiveCount(ArrangementId);
     }
 
     private void ActiveCountChanged(ActiveTrackerEvent e)
