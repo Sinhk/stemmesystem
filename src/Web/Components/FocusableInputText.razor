@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Formatters
 @using Microsoft.AspNetCore.Mvc.Razor
 @inherits InputBase<string>
-<input @ref="input" @bind="CurrentValue" class="@CssClass" />
+<input @ref="input" @attributes="AdditionalAttributes" @bind="CurrentValue" class="@CssClass" />
 
 @code {
     private ElementReference input;
