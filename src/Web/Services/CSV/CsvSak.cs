@@ -14,6 +14,7 @@ namespace Stemmesystem.Web.Services.CSV
         public string? VoteringBeskrivelse { get; set; }
         public bool? HemmeligVotering { get; set; }
         public List<string> Valg { get; set; }
+        public int? KanVelge { get; set; }
     }
     
     public sealed class CsvSakMap : ClassMap<CsvSak>

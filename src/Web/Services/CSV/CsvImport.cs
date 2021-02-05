@@ -59,6 +59,7 @@ namespace Stemmesystem.Web.Services.CSV
                             Tittel = sak.Votering
                             , Beskrivelse = sak.VoteringBeskrivelse
                             , Hemmelig = sak.HemmeligVotering.GetValueOrDefault()
+                            , KanVelge = (sak.KanVelge ?? 1)
                             , Valg = new List<ValgModel>(sak.Valg.Select(v => new ValgModel()
                             {
                                 Id = new Guid()
@@ -90,7 +91,8 @@ namespace Stemmesystem.Web.Services.CSV
                     Nummer = "1.2.3",
                     Votering = "kun 1 votering",
                     VoteringBeskrivelse = "med beskrivelse",
-                    Valg = new List<string>{"en,eller,flere"}
+                    Valg = new List<string>{"en,eller,flere"},
+                    KanVelge = 1
                 });
                 csv.Flush();
                 return writer.ToString();
