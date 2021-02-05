@@ -26,14 +26,12 @@
     <h5>Votering</h5>
     @{var votering = Sak.Voteringer?.FirstOrDefault();}
     <h6>@votering?.Tittel</h6>
-    <br>
     <span><small>@votering?.Beskrivelse</small></span>
-    <br>
     <span>Hemmelig: @votering?.Hemmelig</span>
     <br>
     <span>Kan velge: @votering?.KanVelge</span>
     <br>
-    <span>Valg: @string.Join(", ",@votering?.Valg.Select(v=> v.Navn)??Enumerable.Empty<string>())</span>
+    <span>Valg: @string.Join(", ", votering?.Valg.Select(v => v.Navn) ?? Enumerable.Empty<string>())</span>
     <hr/>
 </EditForm>
 @code {

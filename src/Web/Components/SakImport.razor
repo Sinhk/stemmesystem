@@ -16,12 +16,14 @@
     <p class="text-danger col-12">@_error</p>
     @if (_importSaker.Any())
     {
-        <button class="btn btn-primary ml-3" @onclick="@(e => LagreImport())">Lagre alle</button>
         for (var i = 0; i < _importSaker.Count; i++)
         {
             var index = i;
             <SakImportForm @ref="_SakForms[index]" Sak="@_importSaker[index]" ArrangementId="ArrangementId"/>
         }
+        <div class="col-auto">
+            <button class="btn btn-primary ml-3" @onclick="@(e => LagreImport())">Lagre alle</button>
+        </div>
     }
 </div>
 <hr/>
