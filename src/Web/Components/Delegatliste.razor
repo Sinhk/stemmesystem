@@ -8,6 +8,7 @@
 @inject IDelegatService DelegatService
 @inject IPinSender PinSender
 @inject NavigationManager Navigation
+@inject ActiveTracker Tracker
 
 <div class="row" @onclick=@(_ => _expanded=!_expanded)>
     <h4>Delegater</h4>
@@ -23,6 +24,7 @@
             {
                 <th>Pin</th>    
             }
+            <th>Active</th>
             <th>Send PIN</th>
             <th>PIN sendt</th>
         </tr>
@@ -43,13 +45,24 @@
                         <td>@delegat.Delegatkode</td>
                     }
                     <td>
+                        @if (Tracker.IsActive(ArrangementId,delegat.Id))
+                        {
+                            <span class="oi oi-check text-success"></span>
+                        }
+                        else
+                        {
+                            <span class="oi oi-x text-danger"></span>
+                        }
+                    </td>
+                    <td>
+                        
                         @if (!string.IsNullOrEmpty(delegat.Telefon))
                         {
-                            <SendPinSmsComponent DelegatId="delegat.Id" OnSendt="@(()=>  SmsSendt(delegat.Id))"/>  
+                            <SendPinSmsComponent DelegatId="delegat.Id" OnSendt="@(() => SmsSendt(delegat.Id))"/>
                         }
                         @if (!string.IsNullOrEmpty(delegat.Epost))
                         {
-                            <SendPinEmailComponent DelegatId="delegat.Id" OnSendt="@(()=>  EpostSendt(delegat.Id))"/>
+                            <SendPinEmailComponent DelegatId="delegat.Id" OnSendt="@(() => EpostSendt(delegat.Id))"/>
                         }
                     </td>
                     <td>
@@ -89,6 +102,15 @@
     protected override async Task OnInitializedAsync()
     {
         _delegater = await DelegatService.HentDelegater(ArrangementId);
+        Tracker.CountChanged += NewCount;
+    }
+
+    private void NewCount(ActiveTrackerEvent e)
+    {
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
     }
 
     private void SmsSendt(int delegatId)

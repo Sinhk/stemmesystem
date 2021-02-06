@@ -44,6 +44,12 @@ namespace Stemmesystem.Web.Services
             var delegater = _arrangement.GetOrAdd(arrangementId, i => new List<ActiveDelegat>());
             return delegater.Distinct().Count();
         }
+
+        public bool IsActive(int arrangementId, int delgat)
+        {
+            var delegater = _arrangement.GetOrAdd(arrangementId, i => new List<ActiveDelegat>());
+            return delegater.Any(d=> d.DelegatId == delgat);
+        }
     }
 
     internal record ActiveDelegat(int DelegatId);
