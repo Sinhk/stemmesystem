@@ -22,7 +22,7 @@
 }
 else
 {
-    @if (_delegat != null)
+    if (_delegat != null)
     {
         <h3>Delegat: @_delegat.Delegatnummer (@_delegat.Navn) <span class="oi oi-pencil" data-toggle="modal" data-target="#delegatModal"></span></h3>
         <EndreDelegatDialog Delegat=@_delegat/>

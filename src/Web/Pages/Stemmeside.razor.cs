@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace Stemmesystem.Web.Pages
         private ICollection<Votering> _voteringer = new List<Votering>();
         private NotifierService? _notifier;
         private bool _resulaterExpanded;
+        private Guid? _activeKey;
 
         protected override async Task OnInitializedAsync()
         {
@@ -62,13 +64,14 @@ namespace Stemmesystem.Web.Pages
             _voteringer = _arrangement.AktiveVoteringer().ToList();
             if (_delegat != null)
             {
-                _ = Tracker.RegisterActive(_arrangement.Id,_delegat.Id);
+                StateHasChanged();
+                _activeKey = await Tracker.RegisterActive(_arrangement.Id,_delegat.Id);
             }
         }
 
         private async Task SetDelegat(Delegat delegat)
         {
-            this._delegat = delegat;
+            _delegat = delegat;
             if (DelegatStateProvider != null)
             {
                 DelegatStateProvider.Delegatkode = delegat.Delegatkode;
@@ -84,9 +87,9 @@ namespace Stemmesystem.Web.Pages
                 _notifier.VoteringStoppet -= VoteringStoppet;
             }
 
-            if (Tracker != null && _delegat?.Id != null && _arrangement?.Id != null)
+            if (Tracker != null && _activeKey != null)
             {
-                _ = Tracker.RegisterInactive(_arrangement.Id,_delegat.Id);
+                _ = Tracker.RegisterInactive(_arrangement.Id,_activeKey.Value);
             }
         }
 

@@ -19,28 +19,30 @@ namespace Stemmesystem.Web.Services
         
         public event Action<ActiveTrackerEvent>? CountChanged;
 
-        public async Task RegisterActive(int arrangement, int delegat)
+        public async Task<Guid> RegisterActive(int arrangement, int delegatId)
         {
             var delegater = _arrangement.GetOrAdd(arrangement, i => new ActiveArrangement(arrangement));
 
             await delegater.Lock.WaitAsync();
             try
             {
-                delegater.Delegater.Add(new ActiveDelegat(delegat));    
+                var delegat = new ActiveDelegat(delegatId);
+                delegater.Delegater.Add(delegat);    
                 CountChanged?.Invoke(new ActiveTrackerEvent(arrangement, delegater.Delegater.Distinct().Count()));
+                return delegat.ActiveKey;
             }
             finally
             {
                 delegater.Lock.Release();
             }
         }
-        public async Task RegisterInactive(int arrangement, int delegat)
+        public async Task RegisterInactive(int arrangement, Guid key)
         {
             var delegater = _arrangement.GetOrAdd(arrangement, i => new ActiveArrangement(arrangement));
             await delegater.Lock.WaitAsync();
             try
             {
-                delegater.Delegater.Remove(new ActiveDelegat(delegat)); //Works because it's a record, with one property
+                delegater.Delegater.RemoveAll(d => d.ActiveKey == key);
                 CountChanged?.Invoke(new ActiveTrackerEvent(arrangement, delegater.Delegater.Distinct().Count()));
             }
             finally
@@ -55,7 +57,7 @@ namespace Stemmesystem.Web.Services
             await delegater.Lock.WaitAsync();
             try
             {
-                return delegater.Delegater.Distinct().Count();
+                return delegater.Delegater.Select(d=> d.DelegatId).Distinct().Count();
             }
             finally
             {
@@ -92,7 +94,10 @@ namespace Stemmesystem.Web.Services
         }
     }
 
-    public record ActiveDelegat(int DelegatId);
+    public record ActiveDelegat(int DelegatId)
+    {
+        public Guid ActiveKey { get; init; } = Guid.NewGuid();
+    }
 
     internal class ActiveArrangement
     {
