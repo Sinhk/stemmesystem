@@ -19,22 +19,31 @@ namespace Stemmesystem.Web.Services
         
         public event Action<ActiveTrackerEvent>? CountChanged;
 
-        public async Task<Guid> RegisterActive(int arrangement, int delegatId)
+        public async Task<Guid?> RegisterActive(int arrangement, int delegatId)
         {
             var delegater = _arrangement.GetOrAdd(arrangement, i => new ActiveArrangement(arrangement));
 
-            await delegater.Lock.WaitAsync();
             try
             {
-                var delegat = new ActiveDelegat(delegatId);
-                delegater.Delegater.Add(delegat);    
-                CountChanged?.Invoke(new ActiveTrackerEvent(arrangement, delegater.Delegater.Distinct().Count()));
-                return delegat.ActiveKey;
+                await delegater.Lock.WaitAsync(2000);
+                try
+                {
+                    var delegat = new ActiveDelegat(delegatId);
+                    delegater.Delegater.Add(delegat);    
+                    CountChanged?.Invoke(new ActiveTrackerEvent(arrangement, delegater.Delegater.Distinct().Count()));
+                    return delegat.ActiveKey;
+                }
+                finally
+                {
+                    delegater.Lock.Release();
+                }
             }
-            finally
+            catch (Exception e)
             {
-                delegater.Lock.Release();
+                Console.WriteLine(e);
             }
+
+            return null;
         }
         public async Task RegisterInactive(int arrangement, Guid key)
         {

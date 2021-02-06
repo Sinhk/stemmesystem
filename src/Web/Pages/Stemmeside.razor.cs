@@ -64,7 +64,6 @@ namespace Stemmesystem.Web.Pages
             _voteringer = _arrangement.AktiveVoteringer().ToList();
             if (_delegat != null)
             {
-                StateHasChanged();
                 _activeKey = await Tracker.RegisterActive(_arrangement.Id,_delegat.Id);
             }
         }
