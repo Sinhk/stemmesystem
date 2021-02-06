@@ -37,7 +37,7 @@
         if(arrangement != null)
             _arrangement = arrangement;
         Tracker.CountChanged += ActiveCountChanged;
-        _aktiveDelegater = Tracker.ActiveCount(ArrangementId);
+        _aktiveDelegater = await Tracker.ActiveCount(ArrangementId);
     }
 
     private void ActiveCountChanged(ActiveTrackerEvent e)

@@ -62,7 +62,7 @@ namespace Stemmesystem.Web.Pages
             _voteringer = _arrangement.AktiveVoteringer().ToList();
             if (_delegat != null)
             {
-                Tracker.RegisterActive(_arrangement.Id,_delegat.Id);
+                _ = Tracker.RegisterActive(_arrangement.Id,_delegat.Id);
             }
         }
 
@@ -86,7 +86,7 @@ namespace Stemmesystem.Web.Pages
 
             if (_delegat != null)
             {
-                Tracker.RegisterInactive(_arrangement.Id,_delegat.Id);
+                _ = Tracker.RegisterInactive(_arrangement.Id,_delegat.Id);
             }
         }
 

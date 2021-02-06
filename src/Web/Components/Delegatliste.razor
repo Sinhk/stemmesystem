@@ -4,6 +4,7 @@
 @using Stemmesystem.Web.Models
 @using Stemmesystem.Web.Services
 @using System.IO
+@using System.Collections.ObjectModel
 
 @inject IDelegatService DelegatService
 @inject IPinSender PinSender
@@ -45,7 +46,7 @@
                         <td>@delegat.Delegatkode</td>
                     }
                     <td>
-                        @if (Tracker.IsActive(ArrangementId,delegat.Id))
+                        @if (_tracker.Any(d=> d.DelegatId == delegat.Id))
                         {
                             <span class="oi oi-check text-success"></span>
                         }
@@ -97,18 +98,21 @@
     private bool _showPin;
 
     private ICollection<Delegat> _delegater = null!;
+    private ICollection<ActiveDelegat> _tracker = new List<ActiveDelegat>();
 
 
     protected override async Task OnInitializedAsync()
     {
         _delegater = await DelegatService.HentDelegater(ArrangementId);
         Tracker.CountChanged += NewCount;
+        _tracker = await Tracker.GetList(ArrangementId);
     }
 
     private void NewCount(ActiveTrackerEvent e)
     {
-        InvokeAsync(() =>
+        InvokeAsync(async () =>
         {
+            _tracker = await Tracker.GetList(ArrangementId);
             StateHasChanged();
         });
     }
