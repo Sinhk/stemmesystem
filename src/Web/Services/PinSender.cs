@@ -56,7 +56,7 @@ namespace Stemmesystem.Web.Services
             if (string.IsNullOrEmpty(delegat.Telefon))
                 throw new StemmeException($"Delegat {delegat.Delegatnummer} ({delegat.Navn}) har ikke telefonnummer");
             
-            var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {baseUri} for å avgi din stemme i de sakene der du har stemmerett. Du kan også bruke lenken: {baseUri}pin/{delegat.Delegatkode}";
+            var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {baseUri} for å avgi din stemme. Du kan også bruke lenken: {baseUri}pin/{delegat.Delegatkode}";
 
             var success = await _smsSender.SendSms(delegat.Telefon, msg);
             if (success)
