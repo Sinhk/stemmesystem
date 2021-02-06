@@ -7,21 +7,23 @@ using IO.ClickSend.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Stemmesystem.Web
+namespace Stemmesystem.Web.Services
 {
-    internal class ClickSendSender : ISmsSender
+    public class ClickSendSender : ISmsSender
     {
-        private readonly ClickSendOptions _options;
+        private readonly IOptionsMonitor<ClickSendOptions> _optionsMonitor;
         private readonly ILogger<ClickSendSender> _logger;
 
-        public ClickSendSender(IOptions<ClickSendOptions> options, ILogger<ClickSendSender> logger)
+        public ClickSendSender(IOptionsMonitor<ClickSendOptions> optionsMonitor, ILogger<ClickSendSender> logger)
         {
+            _optionsMonitor = optionsMonitor;
             _logger = logger;
-            _options = options.Value;
         }
+
         public async Task<bool> SendSms(string to, string message)
         {
-            var configuration = new Configuration {Username = _options.User,Password = _options.Password};
+            var options = _optionsMonitor.CurrentValue;
+            var configuration = new Configuration {Username = options.User,Password = options.Password};
             var api = new SMSApi(configuration);
 
             SmsMessageCollection messages = new(new List<SmsMessage> {new("RomNorKrets",message,to,country:"NO")});
@@ -31,8 +33,8 @@ namespace Stemmesystem.Web
             return response.StatusCode == 200;
         }
     }
-    
-    internal class ClickSendOptions
+
+    public class ClickSendOptions
     {
         [Required]
         public string? User { get; set; }
