@@ -84,7 +84,7 @@ namespace Stemmesystem.Web.Pages
                 _notifier.VoteringStoppet -= VoteringStoppet;
             }
 
-            if (_delegat != null)
+            if (Tracker != null && _delegat?.Id != null && _arrangement?.Id != null)
             {
                 _ = Tracker.RegisterInactive(_arrangement.Id,_delegat.Id);
             }
