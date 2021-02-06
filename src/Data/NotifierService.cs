@@ -68,5 +68,5 @@ namespace Stemmesystem.Data
 
     public record NyVoteringEvent(Votering Votering);
 
-    public record HarStemtEvent(int DelegatId);
+    public record HarStemtEvent(int VoteringId, int DelegatId);
 }

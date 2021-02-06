@@ -108,7 +108,7 @@ namespace Stemmesystem.Data
             _avgitStemme.Add(delegat);
 
             stemmer.ForEach(s=> notifier.OnNyStemme(new NyStemmeEvent(Id,s)));
-            notifier.OnHarStemt(new HarStemtEvent(delegat.Id));
+            notifier.OnHarStemt(new HarStemtEvent(Id,delegat.Id));
             return stemmer;
         }
 

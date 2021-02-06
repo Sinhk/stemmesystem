@@ -112,8 +112,11 @@
     {
         InvokeAsync(() => 
         {
-            _harStemt.Add(e.DelegatId);
-            StateHasChanged();
+            if (e.VoteringId == Votering.Id)
+            {
+                _harStemt.Add(e.DelegatId);
+                StateHasChanged();
+            }
         });
     }
 
