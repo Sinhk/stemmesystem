@@ -83,7 +83,7 @@ namespace Stemmesystem.Web.Data
 
             await context.SaveChangesAsync(cancellationToken);
             
-            _notificationManager.ForArrangement(arrangementId).OnVoteringStartet(new(votering.Id));
+            _notificationManager.ForArrangement(arrangementId).OnVoteringStartet(new VoteringStartetEvent(votering.Id, votering));
         }
 
         public async Task StoppVotering(int arrangementId, int voteringId, CancellationToken cancellationToken = default)

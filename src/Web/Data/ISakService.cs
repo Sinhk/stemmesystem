@@ -127,12 +127,25 @@ namespace Stemmesystem.Web.Data
             await using var db = _dbContextFactory.CreateDbContext();
             return await db.Arrangement
                 .Where(a => a.Id == arrangementId)
-                .AsSingleQuery()
+                .AsSplitQuery()
                 .SelectMany(a => a.Saker)
                 .Include(s => s.Voteringer)
                 .ThenInclude(v=> v.Stemmer)
                 .Include(s => s.Voteringer)
                 .ThenInclude(v=> v.AvgitStemme)
+                //.ProjectTo<SakModel>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
+        
+        public async Task<ICollection<Sak>> HentSakerLite(int arrangementId)
+        {
+            await using var db = _dbContextFactory.CreateDbContext();
+            return await db.Arrangement
+                .Where(a => a.Id == arrangementId)
+                .AsSplitQuery()
+                .SelectMany(a => a.Saker)
+                .Include(s => s.Voteringer)
+                .ThenInclude(v=> v.Stemmer)
                 //.ProjectTo<SakModel>(_mapper.ConfigurationProvider)
                 .ToListAsync();
         }

@@ -1,5 +1,4 @@
 ﻿@page "/arrangement/{id:int}"
-@page "/arrangement/{navn}"
 
 
 @using Stemmesystem.Web.Data
@@ -7,6 +6,7 @@
 @using Stemmesystem.Web.Services
 
 @inject ArrangementService ArrangementService
+@inject SakService SakService
 @inject IDelegatService DelegatService
 @inject NavigationManager NavigationManager
 @inject NotificationManager Notifications
@@ -54,7 +54,7 @@ else
     </div>
     if (_resulaterExpanded)
     {
-        foreach (var sak in _arrangement.Saker)
+        foreach (var sak in _saker)
         {
             <Resultatliste Sak="sak"></Resultatliste>
         }

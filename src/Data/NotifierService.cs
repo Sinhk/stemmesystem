@@ -58,7 +58,7 @@ namespace Stemmesystem.Data
 
     public record StemmeFjernetEvent(int VoteringId, Guid StemmeId);
 
-    public record VoteringStartetEvent(int VoteringId);
+    public record VoteringStartetEvent(int VoteringId, Votering Votering);
 
     public record VoteringStoppetEvent(int VoteringId);
 

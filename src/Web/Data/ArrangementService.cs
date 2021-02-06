@@ -82,9 +82,9 @@ namespace Stemmesystem.Web.Data
                 await using var context = _contextFactory.CreateDbContext();
                 var arrangement = await GetSingleQuery(context)
                     .Where(a => a.Id == id)
-                    .FirstOrDefaultAsync(cancellationToken);
+                    .FirstOrDefaultAsync();
                 return arrangement;
-            }, DateTimeOffset.Now.AddSeconds(15));
+            },  DateTimeOffset.Now.AddSeconds(15));
 
         }
         
@@ -123,5 +123,22 @@ namespace Stemmesystem.Web.Data
                 .Where(v => v.Aktiv)
                 .ToListAsync();
         }
+
+        public async Task<ArrangementInfo?> HentArrangementInfoAsync(int arrangementId)
+        {
+            return await _cache.GetOrAddAsync($"ArrangementInof({arrangementId})", async () =>
+            {
+                await using var context = _contextFactory.CreateDbContext();
+                return await context.Arrangement
+                    .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
+                    .FirstOrDefaultAsync();
+            },  DateTimeOffset.Now.AddSeconds(60));
+        }
+    }
+
+    public record ArrangementInfo
+    {
+        public int Id { get; init; }
+        public string Navn { get; init; } = null!;
     }
 }

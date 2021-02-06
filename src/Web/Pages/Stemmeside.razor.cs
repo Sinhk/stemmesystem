@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Stemmesystem.Web.Components;
 using Stemmesystem.Data;
+using Stemmesystem.Web.Data;
 
 namespace Stemmesystem.Web.Pages
 {
@@ -13,18 +14,18 @@ namespace Stemmesystem.Web.Pages
         [CascadingParameter]
         private DelegatStateProvider? DelegatStateProvider {get;set;}
 
-        [Parameter]
         public string? Navn{get; set;}
 
         [Parameter]
         public int? Id{ get; set; }
 
-        private Arrangement _arrangement = null!;
+        private ArrangementInfo _arrangement = null!;
         private Delegat? _delegat;
         private ICollection<Votering> _voteringer = new List<Votering>();
         private NotifierService? _notifier;
         private bool _resulaterExpanded;
         private Guid? _activeKey;
+        private ICollection<Sak> _saker = new List<Sak>();
 
         protected override async Task OnInitializedAsync()
         {
@@ -33,16 +34,11 @@ namespace Stemmesystem.Web.Pages
                 _delegat = await DelegatStateProvider.GetDelegat();
             }
 
-            Arrangement? arrangement;
+            ArrangementInfo? arrangement;
             if(Id != null)
             {
-                arrangement = await ArrangementService.HentArrangementAsync(Id.Value);
+                arrangement = await ArrangementService.HentArrangementInfoAsync(Id.Value);
                 Navn = _arrangement?.Navn;
-            }
-            else if(Navn != null)
-            {
-                arrangement = await ArrangementService.HentArrangementAsync(Navn);
-                Id = _arrangement?.Id;
             }
             else
             {
@@ -61,7 +57,8 @@ namespace Stemmesystem.Web.Pages
             _notifier = Notifications.ForArrangement(_arrangement.Id);
             _notifier.VoteringStartet += VoteringStartet;
             _notifier.VoteringStoppet += VoteringStoppet;
-            _voteringer = _arrangement.AktiveVoteringer().ToList();
+            _voteringer = await ArrangementService.FinnAktiveVoteringer(_arrangement.Id);
+            _saker = await SakService.HentSakerLite(arrangement.Id);
             if (_delegat != null)
             {
                 _activeKey = await Tracker.RegisterActive(_arrangement.Id,_delegat.Id);
@@ -96,13 +93,7 @@ namespace Stemmesystem.Web.Pages
         {
             _ = InvokeAsync(async () =>
             {
-                var votering = _arrangement!.FinnVotering(e.VoteringId);
-                if(votering != null)
-                    _voteringer.Add(votering);
-                else
-                {
-                    _voteringer = await ArrangementService.FinnAktiveVoteringer(_arrangement.Id);
-                }
+                _voteringer.Add(e.Votering);
                 StateHasChanged();
             });
         }
@@ -111,7 +102,7 @@ namespace Stemmesystem.Web.Pages
         {
             _ = InvokeAsync(async () =>
             {
-                var votering = _arrangement!.FinnVotering(e.VoteringId);
+                var votering = _voteringer.FirstOrDefault(v => v.Id == e.VoteringId);
                 if(votering != null)
                     _voteringer.Remove(votering);
                 else
