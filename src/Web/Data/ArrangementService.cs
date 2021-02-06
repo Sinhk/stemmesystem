@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper.QueryableExtensions;
+using LazyCache;
 
 namespace Stemmesystem.Web.Data
 {
@@ -15,11 +16,13 @@ namespace Stemmesystem.Web.Data
     {
         private readonly IDbContextFactory<StemmesystemContext> _contextFactory;
         private readonly IMapper _mapper;
+        private readonly IAppCache _cache;
 
-        public ArrangementService(IDbContextFactory<StemmesystemContext> contextFactory, IMapper mapper)
+        public ArrangementService(IDbContextFactory<StemmesystemContext> contextFactory, IMapper mapper, IAppCache cache)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
+            _cache = cache;
         }
         public async Task<Arrangement?> HentArrangementAsync(string navn, CancellationToken cancellationToken = default)
         {
@@ -72,12 +75,17 @@ namespace Stemmesystem.Web.Data
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<Arrangement?> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
+        public Task<Arrangement?> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
         {
-            await using var context = _contextFactory.CreateDbContext();
-            return await GetSingleQuery(context)
-                .Where(a => a.Id == id)
-                .FirstOrDefaultAsync(cancellationToken);
+            return _cache.GetOrAddAsync($"Arrangement({id})", async () =>
+            {
+                await using var context = _contextFactory.CreateDbContext();
+                var arrangement = await GetSingleQuery(context)
+                    .Where(a => a.Id == id)
+                    .FirstOrDefaultAsync(cancellationToken);
+                return arrangement;
+            }, DateTimeOffset.Now.AddSeconds(15));
+
         }
         
         public async Task<ArrangementModel?> HentArrangementModelAsync(int id, CancellationToken cancellationToken = default)

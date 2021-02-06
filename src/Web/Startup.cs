@@ -92,6 +92,7 @@ namespace Stemmesystem.Web
             services.AddServerSideBlazor();
             
             services.AddDatabaseDeveloperPageExceptionFilter();
+            services.AddLazyCache();
 
             services.AddSignalR();
             services.AddResponseCompression(opts =>
