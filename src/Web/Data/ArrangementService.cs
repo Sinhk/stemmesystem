@@ -130,8 +130,9 @@ namespace Stemmesystem.Web.Data
             {
                 await using var context = _contextFactory.CreateDbContext();
                 return await context.Arrangement
+                    .Where(a=> a.Id == arrangementId)
                     .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
-                    .FirstOrDefaultAsync();
+                    .SingleOrDefaultAsync();
             },  DateTimeOffset.Now.AddSeconds(60));
         }
     }

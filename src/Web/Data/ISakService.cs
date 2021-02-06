@@ -21,6 +21,7 @@ namespace Stemmesystem.Web.Data
         Task<VoteringModel> LagreNyVotering(int sakId, VoteringModel votering);
         Task<VoteringModel> OppdaterVotering(VoteringModel votering);
         Task<ICollection<Sak>> HentSaker(int arrangementId);
+        Task<ICollection<Sak>> HentSakerLite(int arrangementId);
     }
 
     public class SakService : ISakService

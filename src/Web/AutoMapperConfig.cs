@@ -2,6 +2,7 @@ using AutoMapper;
 using Stemmesystem.Data;
 using Stemmesystem.Web.Models;
 using System.Linq;
+using Stemmesystem.Web.Data;
 using Stemmesystem.Web.Services.CSV;
 
 namespace Stemmesystem.Web
@@ -18,6 +19,8 @@ namespace Stemmesystem.Web
             .ReverseMap()
             ;
 
+            CreateMap<Arrangement, ArrangementInfo>();
+            
             CreateMap<Delegat, DelegatModel>()
                 .ReverseMap();
 
