@@ -22,9 +22,9 @@ namespace Stemmesystem.Web.Services.CSV
         public CsvSakMap()
         {
             AutoMap(CultureInfo.InvariantCulture);
-            Map(s => s.Valg).Convert(row =>
+            Map(s => s.Valg).Convert(args =>
             {
-                if (row.TryGetField<string>("valg", out var valg))
+                if (args.Row.TryGetField<string>("valg", out var valg))
                     return valg.Split(',').ToList();
                 return new List<string>();
             });

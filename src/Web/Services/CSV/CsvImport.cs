@@ -22,7 +22,7 @@ namespace Stemmesystem.Web.Services.CSV
         
         private readonly CsvConfiguration _csvConfiguration = new(CultureInfo.InvariantCulture)
         {
-            PrepareHeaderForMatch = (header, index) => header.ToLower(),
+            PrepareHeaderForMatch = args => args.Header.ToLower(),
             HeaderValidated = null,
             MissingFieldFound = null
         };
