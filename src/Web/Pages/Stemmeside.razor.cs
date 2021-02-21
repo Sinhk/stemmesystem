@@ -91,7 +91,7 @@ namespace Stemmesystem.Web.Pages
 
         public void VoteringStartet(VoteringStartetEvent e)
         {
-            _ = InvokeAsync(async () =>
+            _ = InvokeAsync( () =>
             {
                 _voteringer.Add(e.Votering);
                 StateHasChanged();

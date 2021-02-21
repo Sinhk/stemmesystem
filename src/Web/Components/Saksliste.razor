@@ -17,13 +17,15 @@
     {
         <tr><td class="text-danger">Ingen saker</td></tr>
     }
-
-    foreach (var sak in _saker.OrderBy(s => s.Nummer))
+    else
     {
-        <h5>@sak.Nummer - @sak.Tittel</h5>
-        <p><small>@sak.Beskrivelse</small></p>
-        foreach (var votering in sak.Voteringer){
-            <SakslisteLinje Votering="@votering" ArrangementId="@ArrangementId" SakId="@sak.Id"></SakslisteLinje>
+        foreach (var sak in _saker.OrderBy(s => s.Nummer))
+        {
+            <h5>@sak.Nummer - @sak.Tittel</h5>
+            <p><small>@sak.Beskrivelse</small></p>
+            foreach (var votering in sak.Voteringer){
+                <SakslisteLinje Votering="@votering" ArrangementId="@ArrangementId" SakId="@sak.Id"></SakslisteLinje>
+            }
         }
     }
 }

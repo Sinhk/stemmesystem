@@ -75,9 +75,9 @@ namespace Stemmesystem.Web.Data
                 .ToListAsync(cancellationToken);
         }
 
-        public Task<Arrangement?> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Arrangement?> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
         {
-            return _cache.GetOrAddAsync($"Arrangement({id})", async () =>
+            var arr = await _cache.GetOrAddAsync($"Arrangement({id})", async () =>
             {
                 await using var context = _contextFactory.CreateDbContext();
                 var arrangement = await GetSingleQuery(context)
@@ -85,7 +85,7 @@ namespace Stemmesystem.Web.Data
                     .FirstOrDefaultAsync();
                 return arrangement;
             },  DateTimeOffset.Now.AddSeconds(15));
-
+            return arr;
         }
         
         public async Task<ArrangementModel?> HentArrangementModelAsync(int id, CancellationToken cancellationToken = default)

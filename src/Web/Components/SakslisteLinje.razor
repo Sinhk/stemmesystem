@@ -76,7 +76,7 @@
 @code {
 
     [Parameter]
-    public Votering Votering { get; set; }
+    public Votering Votering { get; set; } = null!;
 
     [Parameter]
     public int ArrangementId { get; set; }
@@ -90,8 +90,8 @@
     [CascadingParameter(Name = "Delegater")]
     public int Delegater { get; set; }
 
-    public NotifierService Notifier { get; set; }
-    private VoteringModel _nyRunde;
+    private NotifierService? Notifier { get; set; }
+    private VoteringModel? _nyRunde;
     private bool _visDetaljer;
     private HashSet<int> _harStemt = new();
 
@@ -146,6 +146,7 @@
 
     public void Dispose()
     {
+        if(Notifier == null) return;
         Notifier.HarStemt -= OnHarStemt;
     }
 

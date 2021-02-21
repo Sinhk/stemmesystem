@@ -29,11 +29,11 @@
 @code {
 
     [Parameter]
-    public Votering Votering { get; set; }
+    public Votering Votering { get; set; } = null!;
 
 
-    private Dictionary<Guid, string> _valg;
-    private Dictionary<Guid, int> _resultater;
+    private Dictionary<Guid, string> _valg = new();
+    private Dictionary<Guid, int> _resultater = new();
     private bool _visDetaljer;
     private int _total;
     private int _blankt;

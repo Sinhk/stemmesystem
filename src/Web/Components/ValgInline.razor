@@ -9,12 +9,12 @@
 
 @code {
     [Parameter]
-    public ValgModel Valg { get; set; }
+    public ValgModel Valg { get; set; } = null!;
     
     [Parameter]
     public EventCallback<Guid> OnTaVekkValg { get; set; }
 
-    private FocusableInputText _input;
+    private FocusableInputText _input = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

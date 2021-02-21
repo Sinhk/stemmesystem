@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Formatters
 @using Microsoft.AspNetCore.Mvc.Razor
+@using System.Diagnostics.CodeAnalysis
 @inherits InputBase<string>
 <input @ref="input" @attributes="AdditionalAttributes" @bind="CurrentValue" class="@CssClass" />
 
@@ -8,11 +9,14 @@
 
     public async ValueTask FocusAsync() => await input.FocusAsync();
 
-    protected override bool TryParseValueFromString(string? value, out string result, out string validationErrorMessage)
+    protected override bool TryParseValueFromString(string? value,[MaybeNullWhen(false)] out string result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
         result = value;
         validationErrorMessage = null;
-        return true;
+        if(result != null)
+            return true;
+        validationErrorMessage = "result can't be null";
+        return false;
     }
 }
 

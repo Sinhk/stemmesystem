@@ -13,7 +13,7 @@ namespace Stemmesystem.Web.Services.CSV
         public string? Votering { get; set; }
         public string? VoteringBeskrivelse { get; set; }
         public bool? HemmeligVotering { get; set; }
-        public List<string> Valg { get; set; }
+        public List<string>? Valg { get; set; }
         public int? KanVelge { get; set; }
     }
     

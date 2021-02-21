@@ -79,11 +79,11 @@ namespace Stemmesystem.Web.Services
     public record ClickSendSmsResponse
     {
         [JsonPropertyName("http_code")]
-        public string HttpCode { get; set; }
+        public string? HttpCode { get; init; }
         [JsonPropertyName("response_code")]
-        public string ResponseCode { get; set; }
+        public string? ResponseCode { get; init; }
         [JsonPropertyName("response_msg")]
-        public string ResponseMessage { get; set; }
+        public string? ResponseMessage { get; init; }
     }
 
     public class ClickSendOptions

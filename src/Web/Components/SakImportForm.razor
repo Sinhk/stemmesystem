@@ -37,13 +37,13 @@
 @code {
     [Parameter]
     public int ArrangementId{get;set;}
-    [Parameter]
-    public SakModel Sak {get;set;}
 
-    public EditContext EditContext { get; set; }
+    [Parameter]
+    public SakModel Sak { get; set; } = null!;
+
+    public EditContext? EditContext { get; set; } 
     private CustomValidator? customValidator;
-    private FocusableInputText firstInput;
-    private bool _voteringExpanded;
+    private FocusableInputText? firstInput;
 
     protected override void OnInitialized()
     {
@@ -52,7 +52,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && firstInput != null)
             await firstInput.FocusAsync();
     }
 

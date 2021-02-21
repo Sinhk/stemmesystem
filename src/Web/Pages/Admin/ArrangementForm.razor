@@ -44,7 +44,7 @@ else
         <h4>Delegater</h4>
         <span class="ml-2 mt-1 oi @(_delegaterExpanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
     </div>
-    if (_delegaterExpanded)
+    if (_delegaterExpanded && _arrangement.Delegater != null)
     {
         <DelegatImport ArrangementId="@_arrangement.Id.Value"/>
         <div class="row">
@@ -62,7 +62,7 @@ else
         <h4>Saker</h4>
         <span class="ml-2 mt-1 oi @(_sakerExpanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
     </div>
-    if (_sakerExpanded)
+    if (_sakerExpanded && _arrangement.Saker != null)
     {
         <SakImport ArrangementId="@_arrangement.Id.Value"/>
         <div class="row">

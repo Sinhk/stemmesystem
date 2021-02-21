@@ -61,7 +61,7 @@ namespace Stemmesystem.Web
                 {
                     _logger.LogError(await httpResponse.Content.ReadAsStringAsync());
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // ignored
                 }

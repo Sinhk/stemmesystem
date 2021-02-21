@@ -13,7 +13,7 @@ namespace Stemmesystem.Web.Components
         
         [Inject] protected IPinSender PinSender { get; set; }
         protected SendState State = SendState.NotSent;
-        private CancellationTokenSource? _cancelation;
+        private CancellationTokenSource _cancelation;
         
         [Parameter]
         public EventCallback OnSendt { get; set; }

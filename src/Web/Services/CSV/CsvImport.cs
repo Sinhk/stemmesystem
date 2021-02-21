@@ -59,12 +59,12 @@ namespace Stemmesystem.Web.Services.CSV
                             Tittel = sak.Votering
                             , Beskrivelse = sak.VoteringBeskrivelse
                             , Hemmelig = sak.HemmeligVotering.GetValueOrDefault()
-                            , KanVelge = (sak.KanVelge ?? 1)
-                            , Valg = new List<ValgModel>(sak.Valg.Select(v => new ValgModel()
+                            , KanVelge = sak.KanVelge ?? 1
+                            , Valg = new List<ValgModel>(sak.Valg?.Select(v => new ValgModel
                             {
                                 Id = new Guid()
                                 , Navn = v
-                            }))
+                            }) ?? Enumerable.Empty<ValgModel>() )
                         }
                     }
                 });
