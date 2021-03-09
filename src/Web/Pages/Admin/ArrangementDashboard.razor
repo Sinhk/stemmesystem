@@ -4,10 +4,12 @@
 @using Stemmesystem.Web.Services
 @inject ArrangementService ArrangementService
 @inject ActiveTracker Tracker
+@inject IJSRuntime JSRuntime
 @implements IDisposable
 @attribute [Authorize]
 <div class="row">
     <h3><b>@_arrangement.Navn</b></h3>    
+    <button>Eksporter</button>
 </div>
 <div class="row">
     <div class="col">Saker: @_arrangement.Saker?.Count </div>
@@ -51,6 +53,12 @@
         
     }
 
+    private string EksporterArrangement()
+    {
+        JSRuntime.InvokeVoidAsync()
+        return ArrangementService.Eksporter(_arrangement.Id);
+    }
+    
     public void Dispose()
     {
         Tracker.CountChanged -= ActiveCountChanged;

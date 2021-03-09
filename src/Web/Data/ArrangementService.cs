@@ -4,7 +4,9 @@ using Stemmesystem.Data;
 using Stemmesystem.Web.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper.QueryableExtensions;
@@ -118,6 +120,7 @@ namespace Stemmesystem.Web.Data
         {
             await using var context = _contextFactory.CreateDbContext();
             return await context.Arrangement
+                .Where(a=> a.Id == arrangementId)
                 .SelectMany(a => a.Saker)
                 .SelectMany(s => s.Voteringer)
                 .Where(v => v.Aktiv)
@@ -134,6 +137,16 @@ namespace Stemmesystem.Web.Data
                     .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
                     .SingleOrDefaultAsync();
             },  DateTimeOffset.Now.AddSeconds(60));
+        }
+
+        public async Task Eksporter(int arrangementId, Stream outputStream)
+        {
+            await using var context = _contextFactory.CreateDbContext();
+            var arrangement = await GetSingleQuery(context)
+                .Where(a => a.Id == arrangementId)
+                .FirstOrDefaultAsync();
+
+            await JsonSerializer.SerializeAsync(outputStream, arrangement);
         }
     }
 
