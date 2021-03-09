@@ -117,7 +117,7 @@ namespace Stemmesystem.Web
             services.AddTransient<CsvImport>();
             services.AddSingleton<ActiveTracker>();
 
-            services.AddSingleton<ISmsSender, SveveSmsSender>();
+            services.AddHttpClient<ISmsSender, SveveSmsSender>();
             services.AddOptions<SveveOptions>()
                 .BindConfiguration("Sveve")
                 .ValidateDataAnnotations()
