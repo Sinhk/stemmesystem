@@ -36,6 +36,6 @@ production:
     - apk add --no-cache zip curl 
     - cd stemme
     - zip -r stemme.zip .
-    - curl -X POST -u "\$Stemmesystem:$AZURE_PASSWORD" --data-binary @"stemme.zip" https://stemmesystem.scm.azurewebsites.net/api/zipdeploy
+    - curl -X POST -u "\$stemme:$AZURE_PASSWORD" --data-binary @"stemme.zip" https://stemme.scm.azurewebsites.net/api/zipdeploy
   only:
     - master     
