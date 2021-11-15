@@ -132,6 +132,8 @@ namespace Stemmesystem.Web.Data
                 .Where(v => v.Id == voteringId)
                 .Include(v=> v.Stemmer)
                 .FirstOrDefaultAsync(cancellationToken);
+            if (votering == null)
+                throw new StemmeException($"Votering med id {voteringId} ble ikke funnet");
 
             var stemmer = votering.Hemmelig
                 ? votering.Stemmer.Where(s => _keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList()

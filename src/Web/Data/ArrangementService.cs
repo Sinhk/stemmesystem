@@ -82,7 +82,7 @@ namespace Stemmesystem.Web.Data
                 await using var context = _contextFactory.CreateDbContext();
                 var arrangement = await GetSingleQuery(context)
                     .Where(a => a.Id == id)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(cancellationToken);
                 return arrangement;
             },  DateTimeOffset.Now.AddSeconds(15));
             return arr;
@@ -118,15 +118,17 @@ namespace Stemmesystem.Web.Data
         {
             await using var context = _contextFactory.CreateDbContext();
             return await context.Arrangement
+                .Where(a=> a.Id == arrangementId)
                 .SelectMany(a => a.Saker)
                 .SelectMany(s => s.Voteringer)
+                .Include(v=> v.Sak)
                 .Where(v => v.Aktiv)
                 .ToListAsync();
         }
 
         public async Task<ArrangementInfo?> HentArrangementInfoAsync(int arrangementId)
         {
-            return await _cache.GetOrAddAsync($"ArrangementInof({arrangementId})", async () =>
+            return await _cache.GetOrAddAsync($"ArrangementInfo({arrangementId})", async () =>
             {
                 await using var context = _contextFactory.CreateDbContext();
                 return await context.Arrangement

@@ -14,14 +14,13 @@
 
 @implements IDisposable
 
-<h2>@Navn</h2>
-
 @if (_arrangement == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
+    <h2>@_arrangement.Navn</h2>
     if (_delegat != null)
     {
         <h3>Delegat: @_delegat.Delegatnummer (@_delegat.Navn) <span class="oi oi-pencil" data-toggle="modal" data-target="#delegatModal"></span></h3>

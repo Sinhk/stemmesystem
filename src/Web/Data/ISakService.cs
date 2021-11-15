@@ -75,6 +75,9 @@ namespace Stemmesystem.Web.Data
                 .Where(a => a.Id == arrangementId)
                 .Include(a => a.Saker)
                 .FirstOrDefaultAsync();
+            if (arrangement == null)
+                throw new StemmeException($"Arrangement med id {arrangementId} ble ikke funnet");
+            
             var sak = _mapper.Map<Sak>(model);
             arrangement.LeggTil(sak);
             await db.SaveChangesAsync();
@@ -105,6 +108,8 @@ namespace Stemmesystem.Web.Data
                 .Where(a => a.Id == sakId)
                 .Include(a => a.Voteringer)
                 .FirstOrDefaultAsync();
+            if (sak == null)
+                throw new StemmeException($"Sak med id {sakId} ble ikke funnet");
             var votering = _mapper.Map<Votering>(model);
             sak.LeggTil(votering);
             await db.SaveChangesAsync();

@@ -97,9 +97,6 @@
 
         var navn = Stemmer.Select(s => s.ValgId == Konstanter.BlankStemme ? "Blankt" : Votering.Valg.First(v => v.Id == s.ValgId).Navn).ToList();
         
-        if (navn.Count == 1)
-            return navn.First();
-
-        return $"{string.Join(", ", navn.SkipLast(1))} og {navn.Last()}";
+        return navn.Count == 1 ? navn.First() : $"{string.Join(", ", navn.SkipLast(1))} og {navn.Last()}";
     }
 }
