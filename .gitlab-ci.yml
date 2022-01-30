@@ -22,6 +22,7 @@ production:
   variables:
     DOCKER_DRIVER: overlay
   script:
+    - apk upgrade
     - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community npm
     - npm i -g heroku
     - heroku container:login
