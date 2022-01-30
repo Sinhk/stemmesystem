@@ -1,20 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using CsvHelper.Configuration;
 
-namespace Stemmesystem.Web.Services.CSV
+namespace Stemmesystem.Client.Services.CSV
 {
     public record CsvSak
     {
-        public CsvSak(string nummer, string tittel)
-        {
-            Nummer = nummer;
-            Tittel = tittel;
-        }
-
-        public string Nummer { get; set; }
-        public string Tittel { get; set; }
+        public string? Nummer { get; set; }
+        public string? Tittel { get; set; }
         public string? Beskrivelse { get; set; }
         public string? Votering { get; set; }
         public string? VoteringBeskrivelse { get; set; }

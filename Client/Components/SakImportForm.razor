@@ -1,0 +1,80 @@
+﻿@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Web.Components
+@using Microsoft.AspNetCore.Components
+@using Stemmesystem.Shared.Models
+@using AutoMapper
+@inject ISakService SakService
+@inject IMapper _mapper
+@inject NavigationManager Nav
+
+<EditForm EditContext="EditContext" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="customValidator" />
+    <ValidationSummary />
+    <div class="form-row">
+        <div class="col-2">
+            <FocusableInputText @ref="firstInput" class="form-control" placeholder="Saknummer" @bind-Value="Sak.Nummer"/>
+        </div>
+        <div class="col-8">
+            <InputText class="form-control" placeholder="Tittel" @bind-Value="Sak.Tittel"/>
+        </div>
+        <div class="col-8">
+            <InputText class="my-1 form-control" placeholder="Beskrivelse" @bind-Value="Sak.Beskrivelse"/>    
+        </div>
+        
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary" disabled="@(!context.IsModified())">Lagre</button>
+        </div>
+    </div>
+    <h5>Votering</h5>
+    @{var votering = Sak.Voteringer?.FirstOrDefault();}
+    <h6>@votering?.Tittel</h6>
+    <span><small>@votering?.Beskrivelse</small></span>
+    <span>Hemmelig: @votering?.Hemmelig</span>
+    <br>
+    <span>Kan velge: @votering?.KanVelge</span>
+    <br>
+    <span>Valg: @string.Join(", ", votering?.Valg.Select(v => v.Navn) ?? Enumerable.Empty<string>())</span>
+    <hr/>
+</EditForm>
+@code {
+    [Parameter]
+    public int ArrangementId{get;set;}
+
+    [Parameter]
+    public SakInputModel Sak { get; set; } = null!;
+
+    public EditContext? EditContext { get; set; } 
+    private CustomValidator? customValidator;
+    private FocusableInputText? firstInput;
+
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(Sak);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && firstInput != null)
+            await firstInput.FocusAsync();
+    }
+
+    internal async Task<bool> HandleValidSubmit(EditContext context){
+        customValidator?.ClearErrors();
+        var result = await SakService.LagreNySak(Sak);
+        
+        if (result.Success)
+        {
+            Sak = _mapper.Map<SakInputModel>(result.Value);    
+            context.MarkAsUnmodified();
+            return true;
+        }
+        if (result.Errors != null)
+        {
+            customValidator?.DisplayErrors(result.Errors);
+        }
+        context.MarkAsUnmodified();
+        return false;
+    }
+
+}

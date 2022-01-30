@@ -1,6 +1,4 @@
-﻿using CsvHelper.Configuration;
-
-namespace Stemmesystem.Web.Services.CSV
+﻿namespace Stemmesystem.Web.Services.CSV
 {
     public record CsvDelegat
     {

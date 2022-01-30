@@ -7,9 +7,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Stemmesystem.Client;
-using Stemmesystem.Shared;
+using Stemmesystem.Client.Services.CSV;
 using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Web;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -23,6 +22,7 @@ builder.Services.AddHttpClient(nameof(DelegatkodeAuthService), client => client.
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Stemmesystem.ServerAPI"));
 
 builder.Services.AddAutoMapper(typeof(WebAutoMapperProfile));
+builder.Services.AddSingleton<CsvImport>();
 
 #region Grpc
 

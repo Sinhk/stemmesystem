@@ -1,14 +1,18 @@
 using AutoMapper;
+using Stemmesystem.Client.Services.CSV;
 using Stemmesystem.Shared.Models;
 using Stemmesystem.Web.Services.CSV;
 
-namespace Stemmesystem.Web
+namespace Stemmesystem.Client
 {
     internal class WebAutoMapperProfile : Profile
     {
         public WebAutoMapperProfile()
         {
             CreateMap<CsvDelegat, DelegatInputModel>()
+                .ForMember(d=> d.Id, o=> o.Ignore());
+            
+            CreateMap<CsvSak, SakInputModel>()
                 .ForMember(d=> d.Id, o=> o.Ignore());
 
             CreateMap<DelegatDto, DelegatInputModel>()

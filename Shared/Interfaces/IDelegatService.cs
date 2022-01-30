@@ -10,7 +10,6 @@ public interface IDelegatService
     // Task<DelegatDto?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default);
     // Task<DelegatDto?> HentDelegat(int arrangementId, int delegatId);
     //
-    // Task<ICollection<DelegatDto>> HentDelegater(int arrangementId);
     Task<HentDelegatResult> HentDelegatInfo(CallContext context = default);
 }
 

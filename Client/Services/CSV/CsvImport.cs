@@ -3,8 +3,9 @@ using AutoMapper;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Stemmesystem.Shared.Models;
+using Stemmesystem.Web.Services.CSV;
 
-namespace Stemmesystem.Web.Services.CSV
+namespace Stemmesystem.Client.Services.CSV
 {
     public class CsvImport
     {
@@ -35,15 +36,17 @@ namespace Stemmesystem.Web.Services.CSV
             return _mapper.Map<List<DelegatInputModel>>(list);
         }
 
-        public async Task<IEnumerable<SakInputModel>> LesSaker(TextReader reader)
+        public async Task<IEnumerable<SakInputModel>> LesSaker(TextReader reader, int arrangementId)
         {
             using var csv = new CsvReader(reader, _csvConfiguration);
             csv.Context.RegisterClassMap<CsvSakMap>();
             var list = new List<SakInputModel>();
             await foreach (var sak in csv.GetRecordsAsync<CsvSak>())
             {
+                Console.WriteLine(sak);
                 list.Add(new SakInputModel
                 {
+                    ArrangementId = arrangementId,
                     Nummer = sak.Nummer,
                     Tittel = sak.Tittel,
                     Beskrivelse = sak.Beskrivelse
@@ -55,7 +58,7 @@ namespace Stemmesystem.Web.Services.CSV
                             , Beskrivelse = sak.VoteringBeskrivelse
                             , Hemmelig = sak.HemmeligVotering.GetValueOrDefault()
                             , KanVelge = sak.KanVelge ?? 1
-                            , Valg = new List<ValgDto>(sak.Valg?.Select(v => new ValgDto()
+                            , Valg = new List<ValgDto>(sak.Valg?.Select(v => new ValgDto
                             {
                                 Id = new Guid()
                                 , Navn = v
@@ -78,8 +81,10 @@ namespace Stemmesystem.Web.Services.CSV
                 csv.Context.RegisterClassMap<CsvSakMap>();
                 csv.WriteHeader<CsvSak>();
                 csv.NextRecord();
-                csv.WriteRecord(new CsvSak("Import sak","beskrivelse")
+                csv.WriteRecord(new CsvSak()
                 {
+                    Tittel = "Import sak",
+                    Beskrivelse = "beskrivelse",
                     HemmeligVotering = true,
                     Nummer = "1.2.3",
                     Votering = "kun 1 votering",

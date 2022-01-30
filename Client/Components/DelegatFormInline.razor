@@ -11,14 +11,14 @@
     <CustomValidator @ref="customValidator" />
     <ValidationSummary />
     
-    <input @ref="numInput" class="form-control" placeholder="Delegatnummer" @bind-value="DelegatInput.Delegatnummer"/>
-    <InputText class="form-control" placeholder="Navn" @bind-Value="DelegatInput.Navn"/>
-    <InputText class="form-control" placeholder="Gruppe" @bind-Value="DelegatInput.Gruppe"/>
-    <InputText class="form-control" placeholder="Epost" @bind-Value="DelegatInput.Epost"/>
-    <InputText class="form-control" placeholder="Telefon" @bind-Value="DelegatInput.Telefon"/>
+    <input @ref="numInput" class="form-control" placeholder="Delegatnummer" @bind-value="Delegat.Delegatnummer"/>
+    <InputText class="form-control" placeholder="Navn" @bind-Value="Delegat.Navn"/>
+    <InputText class="form-control" placeholder="Gruppe" @bind-Value="Delegat.Gruppe"/>
+    <InputText class="form-control" placeholder="Epost" @bind-Value="Delegat.Epost"/>
+    <InputText class="form-control" placeholder="Telefon" @bind-Value="Delegat.Telefon"/>
     @if (ArrangementId != null)
     {
-        <button type="submit" class="btn btn-primary" disabled="@(DelegatInput.Id != null && !context.IsModified())">Lagre</button>    
+        <button type="submit" class="btn btn-primary" disabled="@(Delegat.Id != null && !context.IsModified())">Lagre</button>    
     }
 </EditForm>
 
@@ -27,7 +27,7 @@
     private ElementReference numInput;
 
     [Parameter]
-    public DelegatInputModel DelegatInput { get; set; } = null!;
+    public DelegatInputModel Delegat { get; set; } = null!;
 
 
     [Parameter]
@@ -43,14 +43,14 @@
 
     protected override void OnInitialized()
     {
-        EditContext = new EditContext(DelegatInput);
+        EditContext = new EditContext(Delegat);
     }
 
     internal async Task<bool> HandleValidSubmit(EditContext context){
         if (ArrangementId == null) return false;
         customValidator?.ClearErrors();
         var errors = new Dictionary<string, List<string>>();
-        if (DelegatInput.Id == null)
+        if (Delegat.Id == null)
             await LeggTilDelegat(errors);
         else
             await OppdaterDelegat(errors);
@@ -69,9 +69,9 @@
         if(ArrangementId == null) return;
         if (errors.Count <= 0)
         {
-            DelegatInput.ArrangementId = ArrangementId.Value;
-            var delegat = await _delegatService.OppdaterDelegat(DelegatInput);
-            _mapper.Map(delegat, DelegatInput);
+            Delegat.ArrangementId = ArrangementId.Value;
+            var delegat = await _delegatService.OppdaterDelegat(Delegat);
+            _mapper.Map(delegat, Delegat);
         }
     }
 
@@ -80,9 +80,9 @@
         if(ArrangementId == null) return;
         if (errors.Count <= 0)
         {
-            DelegatInput.ArrangementId = ArrangementId.Value;
-            var delegat = await _delegatService.RegistrerNyDelegat(DelegatInput);
-            _mapper.Map(delegat, DelegatInput);
+            Delegat.ArrangementId = ArrangementId.Value;
+            var delegat = await _delegatService.RegistrerNyDelegat(Delegat);
+            _mapper.Map(delegat, Delegat);
         }
     }
 

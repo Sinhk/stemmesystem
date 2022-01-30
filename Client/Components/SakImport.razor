@@ -1,0 +1,74 @@
+﻿@using System.IO
+@using System.Linq
+@using Microsoft.Win32
+@using Stemmesystem.Client.Services.CSV
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@using Stemmesystem.Web.Services.CSV
+
+@inject CsvImport _import
+@inject ISakService _sakService
+
+<div class="row">
+    <p>Importer Saker:</p>
+    <InputFile OnChange="@OnSakFil"/>
+    <p style="white-space: pre-wrap"><small>Format: <br> @CsvImport.SakFormat</small></p>
+    <p class="text-danger col-12">@_error</p>
+    @if (_importSaker.Any())
+    {
+        for (var i = 0; i < _importSaker.Count; i++)
+        {
+            var index = i;
+            <SakImportForm @ref="_sakForms[index]" Sak="@_importSaker[index]" ArrangementId="ArrangementId"/>
+        }
+        <div class="col-auto">
+            <button class="btn btn-primary ml-3" @onclick="@(e => LagreImport())">Lagre alle</button>
+        </div>
+    }
+</div>
+<hr/>
+@code {
+    private string? _error;
+    private List<SakInputModel> _importSaker = new();
+    private IDictionary<int,SakImportForm> _sakForms = new Dictionary<int, SakImportForm>();
+
+
+    [Parameter]
+    public int ArrangementId { get; set; }
+
+    private async Task OnSakFil(InputFileChangeEventArgs e)
+    {
+        _error = null;
+        _importSaker.Clear();
+        try
+        {
+            await using var stream = e.File.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            var saker = await _import.LesSaker(reader, ArrangementId);
+            foreach (var sakInputModel in saker)
+            {
+                Console.WriteLine(sakInputModel);
+            }
+            _importSaker = new List<SakInputModel>(saker);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            _error = "Kunne ikke importere fil";
+        }
+    }
+
+    private async Task LagreImport()
+    {
+        _error = null;
+        foreach (var form in _sakForms.Values)
+        {
+            var Sak = form.Sak;
+            if (form.EditContext!.Validate() && await form.HandleValidSubmit(form.EditContext))
+            {
+                _importSaker.Remove(Sak);
+            }
+        }
+    }
+
+}

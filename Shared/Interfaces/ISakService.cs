@@ -1,4 +1,5 @@
-﻿using ProtoBuf;
+﻿using System.Diagnostics.CodeAnalysis;
+using ProtoBuf;
 using ProtoBuf.Grpc.Configuration;
 using Stemmesystem.Shared.Models;
 
@@ -54,6 +55,7 @@ public record LagreResult<T>
         Errors = errors;
     }
 
+    [MemberNotNullWhen(true,nameof(Value))]
     public bool Success => Value != null && Errors?.Any() == false ;
     [ProtoMember(1)]
     public T? Value { get; init; }
