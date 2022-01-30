@@ -19,11 +19,9 @@ production:
   image: docker:latest
   services:
     - docker:dind
-  variables:
-    DOCKER_DRIVER: overlay
   script:
     - apk upgrade
-    - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community npm
+    - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main/ npm
     - npm i -g heroku
     - heroku container:login
     - docker build . -f  -t web
