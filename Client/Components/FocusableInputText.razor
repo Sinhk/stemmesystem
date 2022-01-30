@@ -1,0 +1,20 @@
+﻿@using System.Diagnostics.CodeAnalysis
+@inherits InputBase<string>
+<input @ref="_input" @attributes="AdditionalAttributes" @bind="CurrentValue" class="@CssClass" />
+
+@code {
+    private ElementReference _input;
+
+    public async ValueTask FocusAsync() => await _input.FocusAsync();
+
+    protected override bool TryParseValueFromString(string? value,[MaybeNullWhen(false)] out string result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        result = value;
+        validationErrorMessage = null;
+        if(result != null)
+            return true;
+        validationErrorMessage = "result can't be null";
+        return false;
+    }
+}
+

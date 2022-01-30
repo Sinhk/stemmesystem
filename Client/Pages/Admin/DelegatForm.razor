@@ -1,0 +1,100 @@
+﻿@page "/admin/arrangement/{arrangementId:int}/delegat/ny-delegat"
+@page "/admin/arrangement/{arrangementId:int}/delegat/{delegatId:int}"
+@using Microsoft.AspNetCore.Components
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@using Stemmesystem.Web.Components
+@using Microsoft.AspNetCore.Authorization
+@inject IAdminDelegatService _delegatService
+@inject NavigationManager _navigation
+
+@attribute [Authorize(Roles = "admin")]
+
+@if (_delegat.Id == null)
+{
+    <h3>Ny delegat</h3>
+}
+else
+{
+    <h3>Rediger delegat @_delegat.Delegatnummer</h3>    
+}
+<EditForm Model="@_delegat" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="_customValidator" />
+    <ValidationSummary />
+    <div class="form-group">
+        <label>Delegatnummer<InputNumber class="form-control" placeholder="Delegatnummer" @bind-Value="_delegat.Delegatnummer" disabled="@(_delegat.Id != null)"/></label>
+    </div>
+    <div class="form-group">
+        <label>Navn<InputText class="form-control" placeholder="Navn" @bind-Value="_delegat.Navn"/></label>
+    </div>
+    <div class="form-group">
+        <label>Epost<InputText class="form-control" placeholder="Epost" @bind-Value="_delegat.Epost"/></label>
+    </div>
+    <div class="form-group">
+        <label>Telefon<InputText class="form-control" placeholder="Telefon" @bind-Value="_delegat.Telefon"/></label>
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@(_delegat.Id != null && !context.IsModified())">Lagre</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ArrangementId{get;set;}
+    [Parameter]
+    public int? DelegatId {get;set;}
+
+    private CustomValidator? _customValidator;
+
+    private DelegatInputModel _delegat = new();
+
+    protected override async Task OnInitializedAsync(){
+        if(DelegatId != null){
+            var delegat = await _delegatService.HentDelegat(new HentDelegatRequest(ArrangementId, DelegatId.Value));
+            if (delegat != null)
+                _delegat = new DelegatInputModel
+                {
+                    Delegatnummer = delegat.Delegatnummer,
+                    Epost = delegat.Epost,
+                    Gruppe = delegat.Gruppe,
+                    Navn = delegat.Navn,
+                    Telefon = delegat.Telefon
+                };
+        }
+    }
+
+    private async Task HandleValidSubmit(EditContext context){
+        _customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+        if (_delegat.Id == null)
+            await LeggTilDelegat(errors);
+        else
+            await OppdaterDelegat(errors);
+        
+        if (errors.Count > 0)
+        {
+            _customValidator?.DisplayErrors(errors);
+        }
+        context.MarkAsUnmodified();
+    }
+
+    private async Task OppdaterDelegat(IDictionary<string,List<string>> errors)
+    {
+        if (errors.Count <= 0)
+        {
+            _delegat.ArrangementId = ArrangementId;
+            await _delegatService.OppdaterDelegat(_delegat);
+        }
+    }
+
+    private async Task LeggTilDelegat(Dictionary<string, List<string>> errors)
+    {
+        if (errors.Count <= 0)
+        {
+            _delegat.ArrangementId = ArrangementId;
+            var delegat = await _delegatService.RegistrerNyDelegat(_delegat);
+            _navigation.NavigateTo($"/admin/arrangement/{ArrangementId}/delegat/{delegat.Id}");
+        }
+    }
+
+}

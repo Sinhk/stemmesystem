@@ -1,41 +1,32 @@
 image: mcr.microsoft.com/dotnet/sdk:6.0
 
 stages:
-    - build
-    - test
-    - deploy
+  - test
+  - deploy
 
 cache:
   key: "$CI_COMMIT_REF_SLUG"
   paths:
-      - .nuget
-
-build:
-  stage: build
-  script:
-    - dotnet restore --packages .nuget
-    - dotnet publish --configuration Release --runtime linux-x64 --output stemme src/Web
-  artifacts: 
-    paths:
-      - stemme
+    - .nuget
 
 test:
-    stage: test
-    script: 
-        - dotnet restore --packages .nuget
-        - dotnet test --no-restore
-
+  stage: test
+  script:
+    - dotnet restore --packages .nuget
+    - dotnet test --no-restore
 production:
   stage: deploy
-  image: alpine
-  inherit:
-    default: false
+  image: docker:latest
+  services:
+    - docker:dind
   variables:
-    GIT_STRATEGY: none
+    DOCKER_DRIVER: overlay
   script:
-    - apk add --no-cache zip curl 
-    - cd stemme
-    - zip -r stemme.zip .
-    - curl -X POST -u "\$stemme:$AZURE_PASSWORD" --data-binary @"stemme.zip" https://stemme.scm.azurewebsites.net/api/zipdeploy
+    - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community nodejs-npm
+    - npm i -g heroku
+    - heroku container:login
+    - docker build . -f  -t web
+    - heroku container:push web -a stemmesystem
+    - heroku container:release web -a stemmesystem
   only:
-    - master     
+    - master 

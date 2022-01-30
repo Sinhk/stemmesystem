@@ -1,0 +1,150 @@
+
+@inject IAdminStemmeService _stemmeService
+
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@using Stemmesystem.Shared
+@implements IDisposable
+
+<div class="card">
+    <div class="card-header" @onclick="@(_ => _visDetaljer = !_visDetaljer)">
+        <div class="row">
+            <div class="col">
+                @Votering.Tittel
+                <span>
+                    <small>@Votering.Beskrivelse</small>
+                </span>
+            </div>
+            <div class="col">
+                Avgitte stemmer: @_harStemt.Count/@Delegater (@AktiveDelegater) 
+            </div>
+
+            <div class="col">
+                @if (Votering.Aktiv)
+                {
+                    <div class="text-right">
+                        <button class="btn btn-danger" @onclick:stopPropagation @onclick="@(async () => await StoppVotering(ArrangementId, Votering.Id))">Stopp</button>
+                    </div>
+                }
+                else if (!Votering.Lukket)
+                {
+                    <div class="text-right">
+                        <button class="btn btn-success" @onclick:stopPropagation @onclick="@(async () => await StartVotering(ArrangementId, Votering.Id))">Start</button>
+
+                        @if (Votering.SluttTid != null)
+                        {
+                            <button class="btn btn-primary" @onclick:stopPropagation @onclick="@(async () => await LukkVotering(ArrangementId, Votering.Id))">Lukk</button>
+                        }
+                    </div>
+                }
+                else if (!Votering.Publisert)
+                {
+                    <div class="text-right">
+                        <button class="btn btn-primary" @onclick:stopPropagation @onclick="@(async () => await PubliserVotering(ArrangementId, Votering.Id))">Publiser</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-right">
+                        <button class="btn btn-primary" @onclick:stopPropagation @onclick="@(async () => await NyRunde(ArrangementId, Votering.Id))">Ny Runde</button>
+                    </div>
+                }
+            </div>
+        </div>
+        <span class="ml-2 mt-1 oi float-right @(_visDetaljer ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+    </div>
+    <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
+        <div class="card-body">
+            @if (Votering.Stemmer != null)
+            {
+                <b>Stemmer totalt: @Votering.Stemmer.Count</b>
+                <ul>
+                    @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
+                    {
+                        <li>@valg.Navn: @Votering.Stemmer.Count(s => s.ValgId == valg.Id)</li>
+                    }
+                </ul>    
+            }
+        </div>
+    </div>
+</div>
+
+@if (_nyRunde != null)
+{
+    <VoteringFormInline SakId="SakId" Votering="_nyRunde" OnSuccess="@(() => _nyRunde = null)"/>
+}
+
+@code {
+
+    [Parameter]
+    public AdminVoteringDto Votering { get; set; } = null!;
+
+    [Parameter]
+    public int ArrangementId { get; set; }
+
+    [CascadingParameter(Name = "AktiveDelegater")]
+    public int AktiveDelegater { get; set; }
+    
+    [CascadingParameter(Name = "Delegater")]
+    public int Delegater { get; set; }
+
+    private NotifierService? Notifier { get; set; }
+    private VoteringInputModel? _nyRunde;
+    private bool _visDetaljer;
+    private HashSet<int> _harStemt = new();
+
+
+    protected override void OnInitialized()
+    {
+        //Notifier = NotificationManager.ForArrangement(ArrangementId);
+        if(Notifier != null)
+            Notifier.HarStemt += OnHarStemt;
+
+        foreach (var delegat in Votering.AvgitStemme)
+        {
+            _harStemt.Add(delegat.Id);    
+        }
+    }
+
+    private void OnHarStemt(HarStemtEvent e)
+    {
+        InvokeAsync(() => 
+        {
+            if (e.VoteringId == Votering.Id)
+            {
+                _harStemt.Add(e.DelegatId);
+                StateHasChanged();
+            }
+        });
+    }
+
+    public async Task StartVotering(int arrangementId, int voteringId) => await _stemmeService.StartVotering(new AdminStemmeRequest(arrangementId, voteringId));
+    public async Task StoppVotering(int arrangementId, int voteringId) => await _stemmeService.StoppVotering(new AdminStemmeRequest(arrangementId, voteringId));
+    public async Task LukkVotering(int arrangementId, int voteringId) => await _stemmeService.LukkVotering(new AdminStemmeRequest(arrangementId, voteringId));
+    public async Task PubliserVotering(int arrangementId, int voteringId) => await _stemmeService.PubliserVotering(new AdminStemmeRequest(arrangementId, voteringId));
+
+
+    private async Task NyRunde(int arrangementId, int voteringId)
+    {
+        _nyRunde = await _stemmeService.KopierVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        var num = 2;
+        
+        var split = _nyRunde.Tittel.Split("Runde");
+        if (split.Length > 1)
+        {
+            var numStr = split[1];
+            int.TryParse(numStr.Trim(), out num);
+            num++;
+        }
+        _nyRunde = _nyRunde with{ Tittel = $"{split[0]}Runde {num}"};
+        
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if(Notifier == null) return;
+        Notifier.HarStemt -= OnHarStemt;
+    }
+
+}

@@ -1,0 +1,22 @@
+@using Stemmesystem.Shared
+@using Stemmesystem.Shared.Interfaces
+@inject IStemmeService _stemmeService
+
+<div class="col btn-group@(Base.Votering.Valg.Count > 2 ? "-vertical":"") btn-group-toggle" data-toggle="buttons">
+@foreach(var valg in Base.Votering.Valg.OrderBy(v=> v.SortId)){
+    <label class="btn @(Base.Stemmer != null && Base.Stemmer.Any(s=> s.ValgId == valg.Id) ? "btn-primary" :"btn-outline-primary") btn-lg">
+        <input type="radio" name="options" id="@valg.Id" autocomplete="off" @onclick="@(async e => await Base.RegistrerStemme(valg.Id))">@valg.Navn
+    </label>
+}
+</div>
+
+<button class="btn mt-2 @(Base.Stemmer != null && Base.Stemmer.Any(s=> s.ValgId == Konstanter.BlankStemme) ? "btn-primary" :"btn-outline-primary")" @onclick="@(async e => await Base.RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
+
+@code {
+    [CascadingParameter]
+    public AktivVotering Base { get; set; } = null!;
+    [Parameter]
+    public string Error { get; set; } = null!;
+    [Parameter]
+    public EventCallback<string> ErrorChanged { get; set; }
+}

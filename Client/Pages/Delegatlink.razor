@@ -1,0 +1,32 @@
+﻿@page "/kode/{kode}"
+@page "/pin/{kode}"
+
+@inject IDelegatkodeAuthService _authService
+@inject NavigationManager _navigationManager
+
+@if (isError)
+{
+    <h3 class="text-danger">Ugyldig delegatlink</h3>
+}
+else
+{
+    <p>Laster...</p>
+}
+
+
+@code {
+    private bool isError;
+
+    [Parameter]
+    public string? Kode { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Kode == null) { isError = true; return; }
+
+        await _authService.Login(Kode);
+        //if(delegat == null) { isError = true; return; }
+        //NavigationManager.NavigateTo($"/arrangement/{delegat.ArrangementId}");
+        _navigationManager.NavigateTo($"/");
+    }
+}

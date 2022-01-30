@@ -1,0 +1,57 @@
+﻿@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared
+@inject IStemmeService _stemmeService
+
+<h6>Du har valg @_valg.Count, du kan velge @Base.Votering.KanVelge</h6>
+<div class="btn-group-toggle btn-group-vertical btn-block" data-toggle="buttons">
+    @foreach (var valg in Base.Votering.Valg.OrderBy(v => v.SortId))
+    {
+        <label class="btn btn-outline-primary  @(_valg.Contains(valg.Id) ? "active" : "")">
+            <input type="checkbox" value="@valg.Id" @onclick="e => VoteChanged(valg.Id)" @onclick:preventDefault="true" checked="@_valg.Contains(valg.Id)"> @valg.Navn
+        </label>
+    }
+</div>
+<div class="row mt-2 justify-content-around">
+    <button class="btn col-4 @(Base.Stemmer.Any(s => s.ValgId == Konstanter.BlankStemme) ? "btn-primary" : "btn-outline-primary")" @onclick="@(async e => await Base.RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
+    <button class="btn col-4 @(Base.Stemmer.Any() && Base.Stemmer.All(s => s.ValgId != Konstanter.BlankStemme) ? "btn-success" : "btn-outline-success")" @onclick="@(async e => await Base.RegistrerStemme(_valg))">Stem</button>
+</div>
+
+@code {
+
+    [CascadingParameter]
+    public AktivVotering Base { get; set; } = null!;
+    
+    [Parameter]
+    public string Error { get; set; } = null!;
+    [Parameter]
+    public EventCallback<string> ErrorChanged { get; set; }
+
+    private HashSet<Guid> _valg = new();
+
+    protected override void OnInitialized()
+    {
+        foreach (var stemme in Base.Stemmer)
+        {
+            _valg.Add(stemme.ValgId);
+        }
+    }
+
+    private void VoteChanged(Guid valgId)
+    {
+        _valg.RemoveWhere(v => v == Konstanter.BlankStemme);
+        if (_valg.Contains(valgId))
+        {
+            _valg.Remove(valgId);
+            ErrorChanged.InvokeAsync("");
+        }
+        else
+        {
+            if (_valg.Count >= Base.Votering.KanVelge)
+            {
+                ErrorChanged.InvokeAsync($"Du kan bare velg {Base.Votering.KanVelge}");
+            }
+            else
+                _valg.Add(valgId);
+        }
+    }
+}

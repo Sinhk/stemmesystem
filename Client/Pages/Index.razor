@@ -1,0 +1,93 @@
+@page "/"
+@using System.Text.Json.Serialization
+@using System.Text.Json
+@using Stemmesystem.Shared
+@inject NavigationManager _navigation
+@inject IDelegatkodeAuthService _authService
+
+<PageTitle>Stemme</PageTitle>
+
+<h1>Romsdal og Nordmøre krets's stemmeside</h1>
+
+<label>Skriv PIN her for å logge inn:</label>
+<form @onsubmit="DelegatLogin">
+    @if(_error != null){
+        <span class="text-danger">@_error</span>
+    }
+    <div class="form-row align-items-center">
+        <div class="col-auto">
+        
+            <input type="text" class="form-control form-control-lg" id="pininput" placeholder="PIN" @bind-value=_pin>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary mb-2">Logg inn</button>
+        </div>
+    </div>
+    
+    <AuthorizeView>
+        <Authorized>
+            <div>
+                @_greeting
+            </div>    
+        </Authorized>
+    </AuthorizeView>
+    
+</form>
+
+@code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
+    
+    private string? _pin;
+    private string? _error;
+    
+    private string? _greeting;
+    
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web){ReferenceHandler = ReferenceHandler.IgnoreCycles};
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        Console.WriteLine($"User: {JsonSerializer.Serialize(authState.User.Identity, JsonSerializerOptions)}");
+        Console.WriteLine($"Claims: {string.Join('\n', authState.User.Claims)}");
+
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            var arrangementClaim = authState.User.FindFirst(AuthConstants.ArrangementClaimType);
+            if (arrangementClaim != null)
+            {
+                _navigation.NavigateTo($"/arrangement/{arrangementClaim.Value}");    
+            }
+        }
+
+    /*
+        if (DelegatStateProvider?.Delegatkode != null)
+        {
+            var delegat = await DelegatStateProvider.GetDelegat();
+            if (delegat != null)
+            {
+                _navigation.NavigateTo($"/arrangement/{delegat.ArrangementId}");    
+            }
+        }
+        */
+    }
+
+    private async Task DelegatLogin(){
+        _error = null;
+        if (_pin == null)
+        {
+            _error = "Ingen PIN oppgitt";
+            return;
+        }
+        if (_pin.Length < 4){
+            _error = "PIN er minimum 4 tegn";
+            return;
+        }
+
+        var success = await _authService.Login(_pin.ToUpperInvariant());
+        if(!success){
+            _error = "Ikke en gyldig PIN";
+        }
+    }
+}

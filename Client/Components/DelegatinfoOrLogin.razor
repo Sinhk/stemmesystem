@@ -1,0 +1,78 @@
+@inject IDelegatService DelegatService
+@inject IDelegatkodeAuthService AuthService
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@inject NavigationManager NavigationManager
+
+@if (delegat != null)
+{
+    <div>Delegat: <wbr>@delegat.Delegatnummer&nbsp;(@delegat.Navn)</div>
+}
+else
+{
+  <form class="form-inline" @onsubmit="DelegatLogin">
+      @if(error != null){
+          <span class="text-danger">@error</span>
+      }
+    <div class="form-group">
+
+          <input type="text" class="form-control" id="pininput" style="width: 10rem;" placeholder="Logg inn med PIN" @bind-value=pin>
+          <button type="submit" class="btn btn-success">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right-square" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+            </svg>
+<!--<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-square" viewBox="0 0 16 16">
+              <path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5H3z"/>
+              <path d="M8.354 10.354l7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z"/>
+            </svg>-->
+          </button>
+
+    </div>
+  </form>
+}
+
+@code {
+    private DelegatDto? delegat;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDelegat();
+
+        
+    }
+
+    private async Task LoadDelegat()
+    {
+        var result = await DelegatService.HentDelegatInfo();
+        delegat = result.Delegat;
+    }
+
+    private string? pin;
+    private string? error;
+    
+    /*
+    protected override async Task OnInitializedAsync()
+    {
+        arrangementer = await ArrangementService.HentArrangementAsync();
+    }
+    */
+    private async Task DelegatLogin(){
+        error = null;
+        if (pin == null)
+        {
+            error = "Ingen PIN oppgitt";
+            return;
+        }
+        if (pin.Length < 4){
+            error = "PIN er minimum 4 tegn";
+            return;
+        }
+
+        var success = await AuthService.Login(pin);
+        if(success == false){
+            error = "Ikke en gyldig PIN";
+            return;
+        }
+        NavigationManager.NavigateTo($"/arrangement/{delegat.ArrangementId}");
+    }
+}

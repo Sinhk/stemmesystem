@@ -1,0 +1,120 @@
+﻿@page "/admin/arrangement/{arrangementId:int}/sak/{sakId:int}/votering/ny-votering"
+@page "/admin/arrangement/{arrangementId:int}/sak/{sakId:int}/votering/{voteringId:int}"
+@using Microsoft.AspNetCore.Components
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@using Stemmesystem.Web.Components
+@using Microsoft.AspNetCore.Authorization
+@inject IArrangementService _arrangementService
+@inject ISakService _sakService
+@inject NavigationManager _navigation
+
+@attribute [Authorize(Roles = "admin")]
+
+@if (_voteringInput?.Id == null)
+{
+    <h3>Ny votering</h3>    
+}
+else
+{
+    <h3>Rediger votering</h3>    
+}
+
+<EditForm Model="@_voteringInput" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="_customValidator" />
+    <ValidationSummary />
+    <div class="form-group">
+        <label>Tittel<InputText class="form-control" placeholder="Tittel" @bind-Value="_voteringInput.Tittel"/></label>
+    </div>
+    <div class="form-group">
+        <label>Kan velge<InputNumber class="form-control" placeholder="Kan velge" @bind-Value="_voteringInput.KanVelge"/></label>
+    </div>
+    <div class="form-check">
+        <InputCheckbox class="form-check-input" placeholder="Hemmelig" @bind-Value="_voteringInput.Hemmelig" id="hemmeligCheck"/>
+        <label class="form-check-label" for="hemmeligCheck">Hemmelig</label>
+    </div>
+
+    <h4>Valg</h4>
+    @foreach (var valg in _voteringInput.Valg.OrderBy(v => v.SortId))
+    {
+        <div class="form-row">
+        <InputText class="form-control col-6" placeholder="Navn" @bind-Value="valg.Navn"/>
+        <button type="button" class="btn btn-danger btn-sm col-2" @onclick="@(_ => TaVekkValg(valg.Id))">ta vekk</button>
+        </div>
+    }
+    <div class="form-row">
+        <button type="button" class="btn btn-secondary btn-sm" @onclick=LeggTilValg>Legg til valg</button>
+    </div>
+    <div class="form-row mt-3">
+        <button type="submit" class="btn btn-primary">Lagre</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ArrangementId{get;set;}
+    [Parameter]
+    public int SakId {get;set;}
+    [Parameter]
+    public int? VoteringId {get;set;}
+
+    private CustomValidator? _customValidator;
+
+    private VoteringInputModel _voteringInput = new ();
+
+    protected override async Task OnInitializedAsync(){
+        if(VoteringId != null)
+        {
+            var votering = await _sakService.HentVotering(new HentVoteringRequest(SakId, VoteringId.Value));
+            if(votering != null)
+                _voteringInput = new VoteringInputModel
+                {
+                    SakId = SakId,
+                    Beskrivelse = votering.Beskrivelse,
+                    Hemmelig = votering.Hemmelig,
+                    Tittel = votering.Tittel,
+                    KanVelge = votering.KanVelge,
+                    Valg = votering.Valg
+                };
+        }
+    }
+
+    private async Task HandleValidSubmit(){
+        _customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+        
+        if (_voteringInput.Id != default)
+        {
+            await _sakService.OppdaterVotering(_voteringInput);
+        }
+        else
+        {
+            if (errors.Count > 0)
+            {
+                _customValidator?.DisplayErrors(errors);
+                return;
+            }
+            var (votering, err) = await _sakService.LagreNyVotering(_voteringInput);
+            if (err.Count > 0)
+            {
+                _customValidator?.DisplayErrors(err);
+                return;
+            }
+
+
+            if (votering != null) _navigation.NavigateTo($"/admin/arrangement/{ArrangementId}/sak/{SakId}/votering/{votering.Id}");
+        }
+    }
+
+    private void LeggTilValg()
+    {
+        _voteringInput.Valg.Add(new ValgDto(){SortId = _voteringInput.Valg.Count});
+    }
+
+    private void TaVekkValg(Guid valgId)
+    {
+        _voteringInput.Valg.RemoveAll(v => v.Id == valgId);
+    }
+
+}

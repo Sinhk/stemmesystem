@@ -1,0 +1,61 @@
+﻿@page "/admin/arrangement/{arrangementId:int}/dashboard"
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@using Microsoft.AspNetCore.Authorization
+@inject IArrangementService _arrangementService
+@implements IDisposable
+@attribute [Authorize]
+<div class="row">
+    <h3><b>@_arrangement?.Navn</b></h3>    
+</div>
+<div class="row">
+    <div class="col">Saker: @_arrangement?.Saker.Count </div>
+</div>
+<div class="row">
+    <div class="col">Delegater: @_arrangement?.Delegater.Count</div>
+    <div class="col">Aktive delegater: @_aktiveDelegater</div>
+</div>
+<CascadingValue Name="Delegater" Value="_arrangement?.Delegater.Count ?? 0">
+<CascadingValue Name="AktiveDelegater" Value="_aktiveDelegater">
+    <Saksliste ArrangementId="ArrangementId" />
+    <Delegatliste ArrangementId="ArrangementId" />
+</CascadingValue>
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public int ArrangementId {get;set;}
+
+    private ArrangementDto? _arrangement;
+    private int _aktiveDelegater;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var arrangement = await _arrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId});
+        if(arrangement != null)
+            _arrangement = arrangement;
+        
+        /*
+        _tracker.CountChanged += ActiveCountChanged;
+        _aktiveDelegater = _tracker.ActiveCount(ArrangementId);
+        */
+    }
+
+    /*
+    private void ActiveCountChanged(ActiveTrackerEvent e)
+    {
+        if (e.ArrangementId == ArrangementId)
+        InvokeAsync(() =>
+        {
+            _aktiveDelegater = e.NewCount;
+            StateHasChanged();
+        });
+    }
+    */
+    public void Dispose()
+    {
+        //_tracker.CountChanged -= ActiveCountChanged;
+    }
+
+}

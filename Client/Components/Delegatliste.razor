@@ -1,0 +1,134 @@
+﻿@inject IAdminDelegatService _delegatService
+@inject IPinSender _pinSender
+@inject NavigationManager _navigation
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@implements IDisposable 
+
+<div class="row" @onclick=@(_ => _expanded=!_expanded)>
+    <h4>Delegater</h4>
+    <span class="ml-2 mt-1 oi @(_expanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+</div>
+@if (_expanded)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th @ondblclick=@(_ => _showPin=!_showPin)>Delegat</th>
+            @if (_showPin)
+            {
+                <th>Pin</th>    
+            }
+            <th>Active</th>
+            <th>Send PIN</th>
+            <th>PIN sendt</th>
+        </tr>
+        </thead>
+        @if(!_delegater.Any())
+        {
+            <tr><td class="text-danger">Ingen delegater</td></tr>
+        }
+        else
+        {
+            <tbody>
+            @foreach (var delegat in _delegater.OrderBy(s => s.Delegatnummer))
+            {
+                <tr>
+                    <td>@delegat.Delegatnummer: @delegat.Navn</td>
+                    @if (_showPin)
+                    {
+                        <td>@delegat.Delegatkode</td>
+                    }
+                    <td>
+                        @*@if (_tracker.IsActive(ArrangementId, delegat.Id))
+                        {
+                            <span class="oi oi-check text-success"></span>
+                        }
+                        else
+                        {
+                            <span class="oi oi-x text-danger"></span>
+                        }*@
+                    </td>
+                    <td>
+                        
+                        @if (!string.IsNullOrEmpty(delegat.Telefon))
+                        {
+                            <SendPinSmsComponent DelegatId="delegat.Id" OnSendt="@(() => SmsSendt(delegat.Id))"/>
+                        }
+                        @if (!string.IsNullOrEmpty(delegat.Epost))
+                        {
+                            <SendPinEmailComponent DelegatId="delegat.Id" OnSendt="@(() => EpostSendt(delegat.Id))"/>
+                        }
+                    </td>
+                    <td>
+                        <ul class="list-unstyled">
+                            @if (delegat.SendtEmail != null)
+                            {
+                                <li>Epost sendt @delegat.SendtEmail.Value.ToString("g")</li>
+                            }
+                            @if (delegat.SendtSms != null)
+                            {
+                                <li>SMS sendt @delegat.SendtSms.Value.ToString("g")</li>
+                            }
+                            @if (delegat.SendtEmail == null && delegat.SendtSms == null)
+                            {
+                                <li class="text-danger">Nei</li>
+                            }
+                        </ul>
+                        
+                    </td>
+                </tr>
+            }
+            </tbody>
+        }
+    </table>
+}
+@code {
+
+    [Parameter]
+    public int ArrangementId { get; set; }
+
+    private bool _expanded;
+    private bool _showPin;
+
+    private ICollection<AdminDelegatDto> _delegater = null!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _delegater = await _delegatService.HentDelegater(new HentDelegatRequest(ArrangementId));
+        foreach (var dto in _delegater)
+        {
+            Console.WriteLine(dto);   
+        }
+    //_tracker.CountChanged += NewCount;
+    }
+
+    /*private void NewCount(ActiveTrackerEvent e)
+    {
+        InvokeAsync(StateHasChanged);
+    }*/
+
+    private void SmsSendt(int delegatId)
+    {
+        var delegat = _delegater.FirstOrDefault(d => d.Id == delegatId);
+        if (delegat != null)
+        {
+            delegat.SendtSms = DateTime.Now;
+        }
+    }
+    private void EpostSendt(int delegatId)
+    {
+        var delegat = _delegater.FirstOrDefault(d => d.Id == delegatId);
+        if (delegat != null)
+        {
+            delegat.SendtEmail = DateTime.Now;
+        }
+    }
+
+    public void Dispose()
+    {
+        //_tracker.CountChanged -= NewCount;
+    }
+
+}

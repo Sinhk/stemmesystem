@@ -1,0 +1,29 @@
+﻿@page "/resultater"
+
+@attribute [Authorize(Roles = "Delegat,admin")]
+
+@inject IArrangementService _arrangementService
+@inject IDelegatService _delegatService
+@inject ISakService _sakService
+@inject NavigationManager NavigationManager
+
+@using Stemmesystem.Shared.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@implements IDisposable
+
+@if (_arrangementer == null)
+{
+    <p><em>Laster...</em></p>
+}
+else
+{
+    <div class="row mt-4">
+        <h2>Resultater</h2>
+        <span class="ml-2 mt-1 oi "></span>
+    </div>
+    @foreach (var arrangement in _arrangementer)
+    {
+        <Resultatliste Arrangement="arrangement"></Resultatliste>    
+    }
+    
+}

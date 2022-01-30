@@ -1,0 +1,94 @@
+﻿@page "/admin/arrangement/{arrangementId:int}/sak/ny-sak"
+@page "/admin/arrangement/{arrangementId:int}/sak/{sakId:int}"
+@using Microsoft.AspNetCore.Components
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@using Stemmesystem.Web.Components
+@using Microsoft.AspNetCore.Authorization
+@inject IArrangementService ArrangementService
+@inject ISakService SakService
+@inject NavigationManager Navigation
+
+@attribute [Authorize(Roles = "admin")]
+
+@if (_sak.Id != null)
+{
+    <h3>Redigerer sak <b>@_sak.Tittel</b></h3>
+}
+else
+{
+    <h3>Ny sak</h3>    
+}
+
+<EditForm Model="@_sak" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="customValidator" />
+    <ValidationSummary />
+    <div class="form-group">
+        <label>Saknummer<InputText class="form-control" placeholder="Saknummer" @bind-Value="_sak.Nummer"/></label>
+    </div>
+    <div class="form-group">
+        <label>Tittel<InputText class="form-control" placeholder="Tittel" @bind-Value="_sak.Tittel"/></label>
+    </div>
+    <div class="form-group">
+            <label>Beskrivelse<InputText class="form-control" placeholder="Beskrivelse" @bind-Value="_sak.Beskrivelse"/></label>
+        </div>
+
+    <button type="submit" class="btn btn-primary">Lagre</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ArrangementId{get;set;}
+    [Parameter]
+    public int? SakId {get;set;}
+
+    private CustomValidator? customValidator;
+
+    private SakInputModel _sak = new();
+
+    protected override async Task OnInitializedAsync(){
+        if(SakId != null){
+            var sak = await SakService.HentSak(new SakRequest(SakId.Value));
+            if (sak != null)
+                _sak = new SakInputModel
+                {
+                    Beskrivelse = sak.Beskrivelse,
+                    Nummer = sak.Nummer,
+                    Tittel = sak.Tittel,
+                    Voteringer = sak.Voteringer.Select(v => new VoteringInputModel
+                    {
+                        Beskrivelse = v.Beskrivelse, Hemmelig = v.Hemmelig, KanVelge = v.KanVelge, Tittel = v.Tittel, Valg = v.Valg
+                    }).ToList()
+                };
+        }
+    }
+
+    private async Task HandleValidSubmit(){
+        customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+        _sak.ArrangementId = ArrangementId;
+        
+        if (_sak.Id != default)
+        {
+            await SakService.OppdaterSak(_sak);
+        }
+        else
+        {
+            if (errors.Count > 0)
+            {
+                customValidator?.DisplayErrors(errors);
+                return;
+            }
+            var (sak, err) = await SakService.LagreNySak(_sak);
+            if(err.Any())
+            {
+                customValidator?.DisplayErrors(err);
+                return;
+            }
+
+            if (sak != null) Navigation.NavigateTo($"/admin/arrangement/{ArrangementId}/sak/{sak.Id}");
+        }
+    }
+
+}

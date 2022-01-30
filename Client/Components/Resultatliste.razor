@@ -1,0 +1,71 @@
+﻿@inject IArrangementService _arrangementService
+@using Stemmesystem.Shared
+@using Stemmesystem.Shared.Models
+@using System.Linq
+@using Stemmesystem.Shared.Interfaces
+@using System.ComponentModel.DataAnnotations
+@implements IDisposable
+
+@if (_nyPublisert)
+{
+    <h5>Ny votering publisert. Last inn på nytt for å se</h5>    
+}
+<div class="row" @onclick="@OnTitleClick">
+    <h3>@Arrangement.Navn</h3>
+    <span class="ml-2 mt-1 oi @(_expanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+</div>
+@if (_expanded)
+{
+    if (_voteringer != null)
+    {
+        foreach(var votering in _voteringer){
+            <ResultatlisteElement Votering="votering"></ResultatlisteElement>
+        }        
+    }
+}
+
+@code {
+
+    [Parameter, Required]
+    public ArrangementInfo Arrangement { get; set; } = null!;
+    
+    private List<VoteringResultatDto>? _voteringer;
+
+    private NotifierService? Notifier { get; set; }
+    private bool _nyPublisert = false;
+    private bool _expanded;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Notifier = NotificationManager.ForArrangement(Sak.ArrangementId);
+        if (Notifier != null) 
+            Notifier.VoteringPublisert += OnVoteringPublisert;
+    }
+
+    private void OnVoteringPublisert(VoteringPublisertEvent e)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _nyPublisert = true;
+            StateHasChanged();
+        });
+    }
+
+    private async Task OnTitleClick()
+    {
+        _expanded = !_expanded;
+        if (_voteringer == null)
+        {
+            var resultater = await _arrangementService.HentResultater(new ArrangementRequest { ArrangementId = Arrangement.Id });
+            _voteringer = resultater;
+        }
+    }
+    
+    public void Dispose()
+    {
+        if (Notifier == null) return;
+            Notifier.VoteringPublisert -= OnVoteringPublisert;
+    }
+
+}

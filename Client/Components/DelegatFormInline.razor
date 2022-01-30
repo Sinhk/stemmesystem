@@ -1,0 +1,94 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@using Stemmesystem.Web.Components
+@using AutoMapper
+@inject IAdminDelegatService _delegatService
+@inject IMapper _mapper
+
+<EditForm class="form-inline" EditContext="EditContext" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="customValidator" />
+    <ValidationSummary />
+    
+    <input @ref="numInput" class="form-control" placeholder="Delegatnummer" @bind-value="DelegatInput.Delegatnummer"/>
+    <InputText class="form-control" placeholder="Navn" @bind-Value="DelegatInput.Navn"/>
+    <InputText class="form-control" placeholder="Gruppe" @bind-Value="DelegatInput.Gruppe"/>
+    <InputText class="form-control" placeholder="Epost" @bind-Value="DelegatInput.Epost"/>
+    <InputText class="form-control" placeholder="Telefon" @bind-Value="DelegatInput.Telefon"/>
+    @if (ArrangementId != null)
+    {
+        <button type="submit" class="btn btn-primary" disabled="@(DelegatInput.Id != null && !context.IsModified())">Lagre</button>    
+    }
+</EditForm>
+
+@code {
+    private CustomValidator? customValidator;
+    private ElementReference numInput;
+
+    [Parameter]
+    public DelegatInputModel DelegatInput { get; set; } = null!;
+
+
+    [Parameter]
+    public int? ArrangementId { get; set; }
+
+    public EditContext? EditContext { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await numInput.FocusAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(DelegatInput);
+    }
+
+    internal async Task<bool> HandleValidSubmit(EditContext context){
+        if (ArrangementId == null) return false;
+        customValidator?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+        if (DelegatInput.Id == null)
+            await LeggTilDelegat(errors);
+        else
+            await OppdaterDelegat(errors);
+        
+        context.MarkAsUnmodified();
+        if (errors.Count > 0)
+        {
+            customValidator?.DisplayErrors(errors);
+            return false;
+        }
+        return true;
+    }
+
+    private async Task OppdaterDelegat(IDictionary<string,List<string>> errors)
+    {
+        if(ArrangementId == null) return;
+        if (errors.Count <= 0)
+        {
+            DelegatInput.ArrangementId = ArrangementId.Value;
+            var delegat = await _delegatService.OppdaterDelegat(DelegatInput);
+            _mapper.Map(delegat, DelegatInput);
+        }
+    }
+
+    private async Task LeggTilDelegat(Dictionary<string, List<string>> errors)
+    {
+        if(ArrangementId == null) return;
+        if (errors.Count <= 0)
+        {
+            DelegatInput.ArrangementId = ArrangementId.Value;
+            var delegat = await _delegatService.RegistrerNyDelegat(DelegatInput);
+            _mapper.Map(delegat, DelegatInput);
+        }
+    }
+
+    public async Task FocusAsync()
+    {
+        await numInput.FocusAsync();
+    }
+
+}

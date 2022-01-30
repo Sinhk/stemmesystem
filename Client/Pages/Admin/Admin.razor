@@ -1,0 +1,16 @@
+﻿@page "/admin"
+
+<AuthorizeView Roles="admin">
+    <Authorized>
+        <ArrangementList></ArrangementList>
+    </Authorized>
+    <NotAuthorized>
+        <h3>Admin</h3>
+        <a href="Identity/Account/Login?returnUrl=/admin">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+
+}

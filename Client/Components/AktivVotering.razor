@@ -1,0 +1,105 @@
+﻿@using Stemmesystem.Shared
+@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@inject IStemmeService _stemmeService
+@inject ISakService _sakService
+
+<div class="col-xl-4 col-md-6">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">@Sak?.Tittel</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@Sak?.Beskrivelse</h6>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">@Votering.Tittel</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@Votering.Beskrivelse</h6>
+            @if (_harStemmt && !Endre)
+            {
+                <p>Du har stemt <b>@StemmerSomString()</b></p>
+                <button class="btn btn-secondary" @onclick="@(_ => Endre = true)">Endre</button>
+            }
+            else
+            {
+                @if (!string.IsNullOrEmpty(_error))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @_error
+                    </div>
+                }
+                <CascadingValue Value=this>
+                    @if (Votering.KanVelge > 1)
+                    {
+                        <Flervalgsvotering @bind-Error="_error"/>
+                    }
+                    else
+                    {
+                        <Enkelvotering @bind-Error="_error"/>
+                    }
+                </CascadingValue>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public VoteringDto Votering { get; set; } = null!;
+    
+    public SakInfoDto? Sak { get; set; }
+    
+    internal List<StemmeDto>? Stemmer = new();
+    private bool _harStemmt;
+    private bool Endre { get; set; } = false;
+
+    private string? _error;
+
+
+    public async Task RegistrerStemme(params Guid[] valg)
+    {
+        await RegistrerStemme(valg.ToList());
+    }
+
+    public async Task RegistrerStemme(ICollection<Guid> valg)
+    {
+        _error = null;
+        if (valg.Count > Votering.KanVelge)
+        {
+            _error = $"For mange valg! Du kan bare velge {Votering.KanVelge}";
+            return;
+        }
+        try
+        {
+            var stemmer = await _stemmeService.AvgiStemmeAsync(new AvgiStemmeRequest(Votering.Id, valg));
+            Stemmer = stemmer;
+            _harStemmt = true;
+            Endre = false;
+
+            StateHasChanged();
+        }
+        catch (StemmeException e)
+        {
+            _error = e.Message;
+        }
+    }
+
+    protected override async Task OnInitializedAsync(){
+        {
+            var (harStemmt, stemmeDtos) = await _stemmeService.HarStemmt(new StemmeRequest(Votering.Id));
+            _harStemmt = harStemmt;
+            if (stemmeDtos != null)
+                Stemmer = stemmeDtos;
+
+            var sakResult = await _sakService.HentSakInfo(new SakRequest(Votering.SakId));
+            Sak = sakResult.Value;
+        }
+    }
+
+    private string StemmerSomString()
+    {
+        if (Stemmer?.Any() != true) return "";
+
+        var navn = Stemmer.Select(s => s.ValgId == Konstanter.BlankStemme ? "Blankt" : Votering.Valg.First(v => v.Id == s.ValgId).Navn).ToList();
+        
+        return navn.Count == 1 ? navn.First() : $"{string.Join(", ", navn.SkipLast(1))} og {navn.Last()}";
+    }
+}

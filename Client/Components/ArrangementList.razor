@@ -1,0 +1,55 @@
+﻿@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Models
+@inject IArrangementService _arrangementService
+@inject NavigationManager Navigation
+
+<h1>Arrangementer</h1>
+
+@if (_arrangementer == null)
+{
+    <p><em>Laster...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Navn</th>
+            <th>Beskrivelse</th>
+            <th>Saker</th>
+            <th>Delegater</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var arrangement in _arrangementer)
+        {
+            <tr>
+                <td>@arrangement.Navn</td>
+                <td>@arrangement.Beskrivelse</td>
+                <td>@arrangement.SakerCount (@arrangement.VoteringerCount) </td>
+                <td>@arrangement.DelegaterCount</td>
+                <td>
+                    <button class="btn btn-secondary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}"))">Rediger</button>
+                    <button class="btn btn-primary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}/dashboard"))">Gå til</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <button class="btn btn-success" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/nytt-arrangement"))">Legg til</button>
+}
+
+@code {
+    private List<ArrangementInfo>? _arrangementer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _arrangementer = await _arrangementService.HentArrangementerAsync();
+    }
+
+    private void NavigerTilArrangement(int id)
+    {
+        Navigation.NavigateTo($"arrangement/{id}");
+    }
+}
