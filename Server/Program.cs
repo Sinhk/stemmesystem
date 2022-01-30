@@ -106,9 +106,6 @@ await using (var scope = app.Services.CreateAsyncScope())
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         await TestData.CreateAdminUsers(userManager, roleManager);
     }
-
-    var delegater = await db.Delegat.Select(d => new { d.Navn, d.Delegatkode }).ToListAsync();
-    Console.WriteLine(string.Join('\n',delegater));
 }
 
 // Configure the HTTP request pipeline.
