@@ -20,11 +20,9 @@ production:
   services:
     - docker:dind
   script:
-    - apk upgrade
     - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main/ npm
     - npm i -g heroku
     - heroku container:login
-    - docker build . -f Server/Dockerfile -t web
     - heroku container:push web -a stemmesystem
     - heroku container:release web -a stemmesystem
   only:
