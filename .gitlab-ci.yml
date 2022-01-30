@@ -22,7 +22,7 @@ production:
   variables:
     DOCKER_DRIVER: overlay
   script:
-    - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community nodejs-npm
+    - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community npm
     - npm i -g heroku
     - heroku container:login
     - docker build . -f  -t web
