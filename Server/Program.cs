@@ -83,6 +83,10 @@ builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
 builder.Services.AddAutoMapper(typeof(ApiAutoMapperProfile));
 builder.Services.AddLazyCache();
 
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+    builder.WebHost.UseUrls($"http://*:{port}");
+
 var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())
