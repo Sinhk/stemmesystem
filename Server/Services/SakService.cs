@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using LazyCache;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
-using Stemmesystem.Server.Data;
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
@@ -11,6 +11,7 @@ using Stemmesystem.Shared.Models;
 
 namespace Stemmesystem.Server.Services;
 
+[Authorize]
 public class SakService : ISakService
 {
     private readonly StemmesystemContext _context;
@@ -65,6 +66,7 @@ public class SakService : ISakService
             .AnyAsync(s => s.Nummer == nummer);
     }
 
+    [Authorize(Roles = "admin")]
     public async Task<LagreResult<SakDto>> LagreNySak(SakInputModel model)
     {
         var errors = new Dictionary<string, List<string>>();
@@ -88,6 +90,7 @@ public class SakService : ISakService
         return new LagreResult<SakDto>(dto, errors);
     }
 
+    [Authorize(Roles = "admin")]
     public async Task<SakDto> OppdaterSak(SakInputModel model)
     {
         var sak = await _context.Arrangement
@@ -103,7 +106,7 @@ public class SakService : ISakService
         await _context.SaveChangesAsync();
         return _mapper.Map<SakDto>(sak);
     }
-
+    [Authorize(Roles = "admin")]
     public async Task<LagreResult<VoteringDto>> LagreNyVotering(VoteringInputModel model)
     {
         var errors = new Dictionary<string, List<string>>();
@@ -122,6 +125,7 @@ public class SakService : ISakService
         return new LagreResult<VoteringDto>(nyVotering,errors);
     }
 
+    [Authorize(Roles = "admin")]
     public async Task<VoteringDto> OppdaterVotering(VoteringInputModel model)
     {
         var votering = await _context.Votering

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
 using Stemmesystem.Server.Data;
 using Stemmesystem.Server.InternalServices;
@@ -7,6 +8,7 @@ using Stemmesystem.Shared.Interfaces;
 
 namespace Stemmesystem.Server.Services;
 
+[Authorize(Roles = "admin")]
 public class PinSender : IPinSender
 {
     private readonly ISmsSender _smsSender;

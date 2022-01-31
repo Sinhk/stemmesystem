@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using Duende.IdentityServer.Extensions;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ProtoBuf.Grpc;
 using StemmeSystem.Data;
@@ -14,6 +15,7 @@ using Stemmesystem.Shared.Tools;
 
 namespace Stemmesystem.Server.Services;
 
+[Authorize]
 public class DelegatService : IDelegatService, IAdminDelegatService
 {
     private readonly StemmesystemContext _context;
@@ -44,6 +46,7 @@ public class DelegatService : IDelegatService, IAdminDelegatService
             .FirstOrDefaultAsync();
     }
 
+    [Authorize(Roles = "admin")]
     async Task<AdminDelegatDto?> IAdminDelegatService.HentDelegat(HentDelegatRequest request)
     {
         var (arrangementId, delgatId) = request;
@@ -54,7 +57,7 @@ public class DelegatService : IDelegatService, IAdminDelegatService
             .ProjectTo<AdminDelegatDto>(_mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
     }
-
+    [Authorize(Roles = "admin")]
     public async Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel dto)
     {
         var delegat = await _context.Delegat
@@ -75,6 +78,7 @@ public class DelegatService : IDelegatService, IAdminDelegatService
         return _mapper.Map<AdminDelegatDto>(delegat);
     }
 
+    [Authorize(Roles = "admin")]
     public async Task<ICollection<DelegatDto>> HentDelegater(int arrangementId)
     {
         return await _context.Delegat
@@ -98,7 +102,8 @@ public class DelegatService : IDelegatService, IAdminDelegatService
             .Where(d => d.ArrangementId == arrangement)
             .AllAsync(d => d.Delegatnummer != number);
     }
-
+    
+    [Authorize(Roles = "admin")]
     public async Task<AdminDelegatDto> RegistrerNyDelegat(DelegatInputModel dto)
     {
         if (!await IsValidNo(dto.ArrangementId, dto.Delegatnummer!.Value))

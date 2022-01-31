@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using LazyCache;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
 using Stemmesystem.Server.Data;
@@ -11,6 +12,7 @@ using Stemmesystem.Shared.Models;
 
 namespace Stemmesystem.Server.Services
 {
+    [Authorize]
     public class ArrangementService : IArrangementService
     {
         private readonly StemmesystemContext _context;
