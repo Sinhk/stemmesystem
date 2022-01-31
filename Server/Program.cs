@@ -1,8 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
+using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services.KeyManagement;
+using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using ProtoBuf.Grpc.Server;
 using Stemmesystem.Api;
 using Stemmesystem.Server;
@@ -18,6 +22,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var provider = builder.Configuration.GetValue("Provider", "Sqlite");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -48,7 +54,21 @@ builder.Services.AddIdentityServer()
             AllowedGrantTypes = {AuthConstants.DelegatkodeGrantType}
         });
     })
-    .AddProfileService<StemmeProfileService>();
+    .AddProfileService<StemmeProfileService>()
+    .AddOperationalStore(options =>
+    {
+        options.ConfigureDbContext = ConfigureDb;
+        options.EnableTokenCleanup = true;
+        options.RemoveConsumedTokens = true;
+        options.TokenCleanupInterval = 3600; // interval in seconds (default is 3600)
+    })
+    .AddInMemoryCaching();
+
+builder.Services.RemoveAll(typeof(IValidationKeysStore));
+builder.Services.RemoveAll(typeof(ISigningCredentialStore));
+builder.Services.AddTransient<ISigningCredentialStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
+builder.Services.AddTransient<IValidationKeysStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
+
 builder.Services.AddAuthentication()
     .AddIdentityServerJwt();
 
@@ -57,20 +77,7 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddCodeFirstGrpc();
 
-var provider = builder.Configuration.GetValue("Provider", "Sqlite");
-
-builder.Services.AddDbContext<StemmesystemContext>(options =>
-    _ = provider switch
-    {
-        "Sqlite" => options.UseSqlite(connectionString,
-            x => x.MigrationsAssembly("SqliteMigrations")),
-        "SqlServer" => options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection"),
-            x => x.MigrationsAssembly("SqlServerMigrations")),
-        "Postgres" => options.UseNpgsql(builder.Configuration.GetConnectionString("SqlServerConnection"),
-            x=> x.MigrationsAssembly("PostgresMigrations")),
-        _ => throw new Exception($"Unsupported provider: {provider}")
-    });
-    
+builder.Services.AddDbContext<StemmesystemContext>(ConfigureDb);
 
 builder.Services.AddScoped<IDelegatRepository, DelegatRepository>();
 builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
@@ -92,7 +99,10 @@ var app = builder.Build();
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<StemmesystemContext>();
-    await db.Database.MigrateAsync();    
+    var grantDb = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
+
+    await db.Database.MigrateAsync();
+    await grantDb.Database.MigrateAsync();
     
     if (!db.Arrangement.Any())
     {
@@ -146,3 +156,12 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+void ConfigureDb(DbContextOptionsBuilder dbContextOptionsBuilder) =>
+    _ = provider switch
+    {
+        "Sqlite" => dbContextOptionsBuilder.UseSqlite(connectionString, x => x.MigrationsAssembly("SqliteMigrations")),
+        "SqlServer" => dbContextOptionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection"), x => x.MigrationsAssembly("SqlServerMigrations")),
+        "Postgres" => dbContextOptionsBuilder.UseNpgsql(ConnectionStringUtils.ParseHerokuPostgresString(), x=> x.MigrationsAssembly("PostgresMigrations")),
+        _ => throw new Exception($"Unsupported provider: {provider}")
+    };
