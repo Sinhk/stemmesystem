@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services.KeyManagement;
@@ -93,7 +94,7 @@ builder.Services.AddLazyCache();
 
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
-    builder.WebHost.UseUrls($"http://*:{port}");
+    builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Any, int.Parse(port)));
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
