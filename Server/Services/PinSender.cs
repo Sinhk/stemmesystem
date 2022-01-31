@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
-using Stemmesystem.Server.Data;
 using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
@@ -22,13 +21,13 @@ public class PinSender : IPinSender
         _context = context;
     }
 
-    public async Task SendEmail(SendPinRequest request)
+    public async Task<SendPinResult> SendEmail(SendPinRequest request, CancellationToken cancellationToken = default)
     {
         var (delegatId, baseUrl) = request;
         var delegat = await _context.Delegat
             .Where(d => d.Id == delegatId)
             .Include(d=> d.Arrangement)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         if (delegat == null)
             throw new StemmeException($"Fant ikke delegat med id{delegatId}");
         if (string.IsNullOrEmpty(delegat.Epost))
@@ -36,29 +35,36 @@ public class PinSender : IPinSender
             
         //var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {baseUri} for å avgi din stemme i de sakene der du har stemmerett. Du kan også bruke lenken: {baseUri}/pin/{delegat.Delegatkode}";
         //await _emailSender.SendEmailAsync(delegat.Epost,$"PIN-kode til {delegat.Arrangement.Navn}",msg);
-        await _emailSender.SendEmailTemplateAsync(delegat.Epost, delegat.Navn, "d-c4f5f9ba460546779394bce9d3ab97b8", new {navn = delegat.Navn,arrangement = delegat.Arrangement.Navn, pin = delegat.Delegatkode, url = baseUrl });
-        delegat.SendtEmailInternal = DateTimeOffset.Now;
-        await _context.SaveChangesAsync();
+        var success = await _emailSender.SendEmailTemplateAsync(delegat.Epost, delegat.Navn, "d-7ef5c7f364414018912680e37d24634a", new {navn = delegat.Navn,arrangement = delegat.Arrangement.Navn, pin = delegat.Delegatkode, url = baseUrl });
+        if (success)
+        {
+            delegat.SendtEmailInternal = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync(cancellationToken);    
+        }
+        return new SendPinResult(success);
     }
 
-    public async Task SendSms(SendPinRequest request)
+    public async Task<SendPinResult> SendSms(SendPinRequest request, CancellationToken cancellationToken = default)
     {
         var (delegatId, baseUrl) = request;
         var delegat = await _context.Delegat
             .Where(d => d.Id == delegatId)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         if (delegat == null)
             throw new StemmeException($"Fant ikke delegat med id{delegatId}");
         if (string.IsNullOrEmpty(delegat.Telefon))
             throw new StemmeException($"Delegat {delegat.Delegatnummer} ({delegat.Navn}) har ikke telefonnummer");
-            
-        var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {baseUrl} for å avgi din stemme. Du kan også bruke lenken: {delegat}pin/{delegat.Delegatkode}";
+
+        var uri = new Uri(baseUrl, UriKind.Absolute);
+        var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {uri} for å avgi din stemme. Du kan også bruke lenken: {new Uri(uri,$"pin/{delegat.Delegatkode}")}";
 
         var success = await _smsSender.SendSms(delegat.Telefon, msg);
         if (success)
         {
-            delegat.SendtSmsInternal = DateTimeOffset.Now;
-            await _context.SaveChangesAsync();
+            delegat.SendtSmsInternal = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync(cancellationToken);
         }
+        
+        return new SendPinResult(success);
     }
 }

@@ -7,6 +7,7 @@ using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ProtoBuf.Grpc.Server;
@@ -15,6 +16,7 @@ using StemmeSystem.Data;
 using StemmeSystem.Data.Models;
 using Stemmesystem.Server;
 using Stemmesystem.Server.Data.Repositories;
+using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Tools;
@@ -84,6 +86,18 @@ builder.Services.AddScoped<IDelegatRepository, DelegatRepository>();
 builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
 builder.Services.AddScoped<DelegatService>();
 builder.Services.AddScoped<NotificationManager>();
+
+builder.Services.AddHttpClient<ISmsSender, SveveSmsSender>();
+builder.Services.AddOptions<SveveOptions>()
+    .BindConfiguration("Sveve")
+    .ValidateDataAnnotations();
+    
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddTransient<IEpostSender, EmailSender>();
+builder.Services.AddOptions<SendMailOptions>()
+    .BindConfiguration("SendGrid")
+    .ValidateDataAnnotations();
+
 
 builder.Services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
 builder.Services.AddSingleton<IKeyHasher, KeyHasher>();

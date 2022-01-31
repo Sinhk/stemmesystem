@@ -1,4 +1,3 @@
-using System.ServiceModel;
 using ProtoBuf.Grpc.Configuration;
 
 namespace Stemmesystem.Shared.Interfaces;
@@ -6,8 +5,9 @@ namespace Stemmesystem.Shared.Interfaces;
 [Service]
 public interface IPinSender
 {
-    Task SendEmail(SendPinRequest request);
-    Task SendSms(SendPinRequest request);
+    Task<SendPinResult> SendEmail(SendPinRequest request, CancellationToken cancellationToken = default);
+    Task<SendPinResult> SendSms(SendPinRequest request, CancellationToken cancellationToken = default);
 }
 
 public record SendPinRequest(int DelegatId, string BaseUrl);
+public record SendPinResult(bool Success);

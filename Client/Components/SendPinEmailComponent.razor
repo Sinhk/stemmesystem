@@ -27,8 +27,8 @@
     {
         try
         {
-            await PinSender.SendEmail(new SendPinRequest(DelegatId, Navigation.BaseUri));
-            return true;
+            var result =  await PinSender.SendEmail(new SendPinRequest(DelegatId, Navigation.BaseUri));
+            return result.Success;
         }
         catch (Exception e)
         {
