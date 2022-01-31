@@ -1,19 +1,27 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Duende.IdentityServer.EntityFramework.Options;
+using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Options;
+using StemmeSystem.Data.Models;
 using Stemmesystem.Server.Data.Entities;
 
-namespace Stemmesystem.Server.Data
+namespace StemmeSystem.Data
 {
-    public class StemmesystemContext : DbContext
+    public class StemmesystemContext : ApiAuthorizationDbContext<ApplicationUser>, IDataProtectionKeyContext
     {
         public DbSet<Delegat> Delegat => Set<Delegat>();
         public DbSet<Arrangement> Arrangement => Set<Arrangement>();
         public DbSet<Sak> Sak => Set<Sak>();
         public DbSet<Votering> Votering => Set<Votering>();
 
-        public StemmesystemContext(DbContextOptions<StemmesystemContext> options) : base(options)
+        public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
+        public StemmesystemContext(DbContextOptions<StemmesystemContext> options, IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options,operationalStoreOptions)
         {
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -47,6 +55,8 @@ namespace Stemmesystem.Server.Data
             });
         }
     }
+    
+    /*
     public class StemmesystemContextFactory : IDesignTimeDbContextFactory<StemmesystemContext>
     {
         public StemmesystemContext CreateDbContext(string[] args)
@@ -61,7 +71,8 @@ namespace Stemmesystem.Server.Data
                 , _ => throw new Exception($"Unsupported provider: {provider}")
             };
                 
-            return new StemmesystemContext(options);
+            return new StemmesystemContext(options, null);
         }
     }
+*/
 }

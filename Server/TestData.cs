@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Stemmesystem.Server.Data;
+using StemmeSystem.Data;
+using StemmeSystem.Data.Models;
 using Stemmesystem.Server.Data.Entities;
-using Stemmesystem.Server.Models;
 using Stemmesystem.Server.Services;
 using Stemmesystem.Shared.Models;
 

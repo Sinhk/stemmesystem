@@ -1,37 +1,45 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using Duende.IdentityServer.EntityFramework.DbContexts;
+using Duende.IdentityServer.EntityFramework.Storage;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services.KeyManagement;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ProtoBuf.Grpc.Server;
 using Stemmesystem.Api;
+using StemmeSystem.Data;
+using StemmeSystem.Data.Models;
 using Stemmesystem.Server;
-using Stemmesystem.Server.Data;
 using Stemmesystem.Server.Data.Repositories;
-using Stemmesystem.Server.Models;
 using Stemmesystem.Server.Services;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Tools;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
+using Secret = Duende.IdentityServer.Models.Secret;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var provider = builder.Configuration.GetValue("Provider", "Sqlite");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+builder.Services.AddDbContext<StemmesystemContext>(ConfigureDb);
+builder.Services.AddOperationalDbContext<StemmesystemContext>(options =>
+{
+    options.EnableTokenCleanup = true;
+    options.RemoveConsumedTokens = true;
+    options.TokenCleanupInterval = 3600; // interval in seconds (default is 3600)
+});
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<StemmesystemContext>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()    
-    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddEntityFrameworkStores<StemmesystemContext>()
    ;
 
 
@@ -39,7 +47,7 @@ JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
 builder.Services.AddIdentityServer()
     .AddExtensionGrantValidator<KodeExtensionGrantValidator>()
-    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(options =>
+    .AddApiAuthorization<ApplicationUser, StemmesystemContext>(options =>
     {
         options.IdentityResources["openid"].UserClaims.Add("name");
         options.ApiResources.Single().UserClaims.Add("name");
@@ -56,13 +64,6 @@ builder.Services.AddIdentityServer()
         });
     })
     .AddProfileService<StemmeProfileService>()
-    .AddOperationalStore(options =>
-    {
-        options.ConfigureDbContext = ConfigureDb;
-        options.EnableTokenCleanup = true;
-        options.RemoveConsumedTokens = true;
-        options.TokenCleanupInterval = 3600; // interval in seconds (default is 3600)
-    })
     .AddInMemoryCaching();
 
 builder.Services.RemoveAll(typeof(IValidationKeysStore));
@@ -78,7 +79,6 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddCodeFirstGrpc();
 
-builder.Services.AddDbContext<StemmesystemContext>(ConfigureDb);
 
 builder.Services.AddScoped<IDelegatRepository, DelegatRepository>();
 builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
@@ -100,10 +100,8 @@ var app = builder.Build();
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<StemmesystemContext>();
-    var grantDb = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
 
     await db.Database.MigrateAsync();
-    await grantDb.Database.MigrateAsync();
     
     if (!db.Arrangement.Any())
     {
@@ -161,8 +159,8 @@ app.Run();
 void ConfigureDb(DbContextOptionsBuilder dbContextOptionsBuilder) =>
     _ = provider switch
     {
-        "Sqlite" => dbContextOptionsBuilder.UseSqlite(connectionString, x => x.MigrationsAssembly("SqliteMigrations")),
-        "SqlServer" => dbContextOptionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection"), x => x.MigrationsAssembly("SqlServerMigrations")),
-        "Postgres" => dbContextOptionsBuilder.UseNpgsql(ConnectionStringUtils.ParseHerokuPostgresString(), x=> x.MigrationsAssembly("PostgresMigrations")),
+        "Sqlite" => dbContextOptionsBuilder.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly("SqliteMigrations")),
+        "SqlServer" => dbContextOptionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection") ?? "not-provided", x => x.MigrationsAssembly("SqlServerMigrations")),
+        "Postgres" => dbContextOptionsBuilder.UseNpgsql(ConnectionStringUtils.ParseHerokuPostgresString() ?? "not-provided", x=> x.MigrationsAssembly("PostgresMigrations")),
         _ => throw new Exception($"Unsupported provider: {provider}")
     };

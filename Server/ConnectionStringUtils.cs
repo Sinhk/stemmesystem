@@ -4,12 +4,10 @@ namespace Stemmesystem.Server;
 
 public class ConnectionStringUtils
 {
-    
-    
-    internal static string ParseHerokuPostgresString()
+    internal static string? ParseHerokuPostgresString()
     {
-        var databaseUrl = System.Environment.GetEnvironmentVariable("DATABASE_URL");
-        if (databaseUrl == null) return string.Empty;
+        var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+        if (databaseUrl == null) return null;
         var databaseUri = new Uri(databaseUrl);
         var userInfo = databaseUri.UserInfo.Split(':');
 

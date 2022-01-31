@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using LazyCache;
 using Microsoft.EntityFrameworkCore;
+using StemmeSystem.Data;
 using Stemmesystem.Server.Data;
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared;

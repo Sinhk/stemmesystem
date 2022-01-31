@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StemmeSystem.Data;
 using Stemmesystem.Server.Data.Entities;
 
 namespace Stemmesystem.Server.Data.Repositories;

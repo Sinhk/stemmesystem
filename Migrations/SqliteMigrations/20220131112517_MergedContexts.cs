@@ -1,9 +1,11 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Stemmesystem.Server.Data.Migrations
+#nullable disable
+
+namespace SqliteMigrations
 {
-    public partial class CreateIdentitySchema : Migration
+    public partial class MergedContexts : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -47,6 +49,20 @@ namespace Stemmesystem.Server.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DataProtectionKeys",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    FriendlyName = table.Column<string>(type: "TEXT", nullable: true),
+                    Xml = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DataProtectionKeys", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DeviceCodes",
                 columns: table => new
                 {
@@ -58,7 +74,7 @@ namespace Stemmesystem.Server.Data.Migrations
                     Description = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
                     CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Expiration = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Data = table.Column<string>(type: "TEXT", maxLength: 51870, nullable: false)
+                    Data = table.Column<string>(type: "TEXT", maxLength: 50000, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -72,11 +88,11 @@ namespace Stemmesystem.Server.Data.Migrations
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     Version = table.Column<int>(type: "INTEGER", nullable: false),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Use = table.Column<string>(type: "TEXT", maxLength: 450, nullable: true),
+                    Use = table.Column<string>(type: "TEXT", nullable: true),
                     Algorithm = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     IsX509Certificate = table.Column<bool>(type: "INTEGER", nullable: false),
                     DataProtected = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Data = table.Column<string>(type: "TEXT", maxLength: 51870, nullable: false)
+                    Data = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -96,7 +112,7 @@ namespace Stemmesystem.Server.Data.Migrations
                     CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Expiration = table.Column<DateTime>(type: "TEXT", nullable: true),
                     ConsumedTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Data = table.Column<string>(type: "TEXT", maxLength: 51870, nullable: false)
+                    Data = table.Column<string>(type: "TEXT", maxLength: 50000, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -299,6 +315,9 @@ namespace Stemmesystem.Server.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "DataProtectionKeys");
 
             migrationBuilder.DropTable(
                 name: "DeviceCodes");

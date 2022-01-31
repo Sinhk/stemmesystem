@@ -3,6 +3,7 @@ using Duende.IdentityServer.Extensions;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using ProtoBuf.Grpc;
+using StemmeSystem.Data;
 using Stemmesystem.Server.Data;
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Server.Data.Repositories;
