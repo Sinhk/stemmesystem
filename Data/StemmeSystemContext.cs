@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Options;
 using StemmeSystem.Data.Models;
 using Stemmesystem.Server.Data.Entities;

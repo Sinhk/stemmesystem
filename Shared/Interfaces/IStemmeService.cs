@@ -1,5 +1,4 @@
-﻿using System.ServiceModel;
-using ProtoBuf.Grpc;
+﻿using ProtoBuf.Grpc;
 using ProtoBuf.Grpc.Configuration;
 using Stemmesystem.Shared.Models;
 

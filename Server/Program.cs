@@ -74,6 +74,11 @@ builder.Services.AddTransient<ISigningCredentialStore>(serviceProvider => servic
 builder.Services.AddTransient<IValidationKeysStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
 
 builder.Services.AddAuthentication()
+    .AddGoogle("Google", options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    })
     .AddIdentityServerJwt();
 
 builder.Services.AddControllersWithViews();
