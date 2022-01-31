@@ -2,21 +2,22 @@
 @inject IDelegatkodeAuthService AuthService
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inject NavigationManager NavigationManager
 
-@if (delegat != null)
+@if (_delegat != null)
 {
-    <div>Delegat: <wbr>@delegat.Delegatnummer&nbsp;(@delegat.Navn)</div>
+    <div>Delegat: <wbr>@_delegat.Delegatnummer&nbsp;(@_delegat.Navn)</div>
 }
 else
 {
   <form class="form-inline" @onsubmit="DelegatLogin">
-      @if(error != null){
-          <span class="text-danger">@error</span>
+      @if(_error != null){
+          <span class="text-danger">@_error</span>
       }
     <div class="form-group">
 
-          <input type="text" class="form-control" id="pininput" style="width: 10rem;" placeholder="Logg inn med PIN" @bind-value=pin>
+          <input type="text" class="form-control" id="pininput" style="width: 10rem;" placeholder="Logg inn med PIN" @bind-value=_pin>
           <button type="submit" class="btn btn-success">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right-square" viewBox="0 0 16 16">
               <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
@@ -32,23 +33,29 @@ else
 }
 
 @code {
-    private DelegatDto? delegat;
+    private DelegatDto? _delegat;
     
     protected override async Task OnInitializedAsync()
     {
         await LoadDelegat();
-
-        
     }
 
     private async Task LoadDelegat()
     {
-        var result = await DelegatService.HentDelegatInfo();
-        delegat = result.Delegat;
+        try
+        {
+            var result = await DelegatService.HentDelegatInfo();
+            _delegat = result.Delegat;
+        }
+        catch (Grpc.Core.RpcException ex) when (ex.Status.DebugException is AccessTokenNotAvailableException te)
+        {
+            //TODO: Handle this?
+            Console.WriteLine(te.Message);
+        }
     }
 
-    private string? pin;
-    private string? error;
+    private string? _pin;
+    private string? _error;
     
     /*
     protected override async Task OnInitializedAsync()
@@ -57,22 +64,22 @@ else
     }
     */
     private async Task DelegatLogin(){
-        error = null;
-        if (pin == null)
+        _error = null;
+        if (_pin == null)
         {
-            error = "Ingen PIN oppgitt";
+            _error = "Ingen PIN oppgitt";
             return;
         }
-        if (pin.Length < 4){
-            error = "PIN er minimum 4 tegn";
+        if (_pin.Length < 4){
+            _error = "PIN er minimum 4 tegn";
             return;
         }
 
-        var success = await AuthService.Login(pin);
+        var success = await AuthService.Login(_pin);
         if(success == false){
-            error = "Ikke en gyldig PIN";
+            _error = "Ikke en gyldig PIN";
             return;
         }
-        NavigationManager.NavigateTo($"/arrangement/{delegat.ArrangementId}");
+        NavigationManager.NavigateTo($"/arrangement/{_delegat.ArrangementId}");
     }
 }
