@@ -1,4 +1,4 @@
-﻿namespace Stemmesystem.Server.Data.Entities
+﻿namespace StemmeSystem.Data.Entities
 {
     public record Stemme
     {

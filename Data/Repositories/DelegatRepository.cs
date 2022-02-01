@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StemmeSystem.Data;
-using Stemmesystem.Server.Data.Entities;
+using StemmeSystem.Data.Entities;
 
-namespace Stemmesystem.Server.Data.Repositories;
+namespace StemmeSystem.Data.Repositories;
 
 public interface IDelegatRepository
 {

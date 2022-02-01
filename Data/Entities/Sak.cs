@@ -1,4 +1,6 @@
-﻿namespace Stemmesystem.Server.Data.Entities
+﻿using Stemmesystem.Server.Data.Entities;
+
+namespace StemmeSystem.Data.Entities
 {
     public class Sak
     {

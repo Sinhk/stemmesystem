@@ -45,7 +45,6 @@ class DelegatkodeAuthService : IDelegatkodeAuthService
         Console.WriteLine(response.Raw);
         await _sessionStorage.SetItemAsStringAsync("token", response.AccessToken);
         ((CustomAuthenticationProvider)_authenticationStateProvider).Notify();
-        //TODO: return delegat
         return true;
 
     }

@@ -4,7 +4,7 @@ using LazyCache;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
-using Stemmesystem.Server.Data.Entities;
+using StemmeSystem.Data.Entities;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
 using Stemmesystem.Shared.Models;
@@ -51,6 +51,7 @@ public class SakService : ISakService
     public async Task<ICollection<VoteringDto>> HentVoteringer(HentVoteringerRequest request, CancellationToken cancellationToken = default)
     {
         return await _context.Arrangement
+            .AsSplitQuery()
             .SelectMany(a => a.Saker)
             .Where(s => s.Id == request.SakId)
             .SelectMany(s=> s.Voteringer)
@@ -120,20 +121,22 @@ public class SakService : ISakService
         var votering = _mapper.Map<Votering>(model);
         sak.LeggTil(votering);
         await _context.SaveChangesAsync();
-        _notificationManager.ForArrangement(sak.ArrangementId).OnNyVotering(new NyVoteringEvent(votering.Id, sak.Id));
+        await _notificationManager.ForArrangement(sak.ArrangementId).NyVotering(new NyVoteringEvent(votering.Id, sak.Id));
         var nyVotering = _mapper.Map<VoteringDto>(votering);
         return new LagreResult<VoteringDto>(nyVotering,errors);
     }
 
     [Authorize(Roles = "admin")]
-    public async Task<VoteringDto> OppdaterVotering(VoteringInputModel model)
+    public async Task<LagreResult<VoteringDto>> OppdaterVotering(VoteringInputModel model)
     {
         var votering = await _context.Votering
             .Where(a => a.Id == model.Id)
             .FirstOrDefaultAsync();
+        if (votering == null)
+            return LagreResult<VoteringDto>.Error("Fant ikke votering å oppdatere");
         _mapper.Map(model, votering);
         await _context.SaveChangesAsync();
-        return _mapper.Map<VoteringDto>(votering);
+        return LagreResult.Success(_mapper.Map<VoteringDto>(votering));
     }
 
 

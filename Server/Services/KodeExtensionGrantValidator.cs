@@ -2,7 +2,7 @@
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
-using Stemmesystem.Server.Data.Repositories;
+using StemmeSystem.Data.Repositories;
 using Stemmesystem.Shared;
 
 namespace Stemmesystem.Server.Services;

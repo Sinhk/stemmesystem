@@ -47,8 +47,12 @@ namespace Stemmesystem.Shared.Models
     public record SakInfoDto(int Id, string Tittel, string Beskrivelse);
 
 
-    public record VoteringResultatDto(int Id, string Tittel, string Beskrivelse, List<StemmeDto> Stemmer, List<ValgDto> Valg);
-    
+    public record VoteringResultatDto(int Id, string Tittel, string Beskrivelse, List<StemmeDto>? Stemmer, List<ValgDto>? Valg)
+    {
+        public List<StemmeDto> Stemmer { get; init; } = Stemmer ?? new List<StemmeDto>();
+        public List<ValgDto> Valg { get; init; } = Valg ?? new List<ValgDto>();
+    }
+
     /*
     [ProtoContract]
     public record VoteringDto

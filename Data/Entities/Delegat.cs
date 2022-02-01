@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared.Tools;
 
-namespace Stemmesystem.Server.Data.Entities
+namespace StemmeSystem.Data.Entities
 {
     public class Delegat
     {

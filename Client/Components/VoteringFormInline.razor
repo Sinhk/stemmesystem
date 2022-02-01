@@ -71,19 +71,23 @@ else
         _customValidator?.ClearErrors();
 
         Votering.Valg.RemoveAll(v => string.IsNullOrEmpty(v.Navn));
-        
-        if (Votering.Id != default)
+        if (Votering.Id.GetValueOrDefault() != default)
         {
-            var votering = await _sakService.OppdaterVotering(Votering);
-            _mapper.Map(votering, Votering);
+            var (votering, errors) = await _sakService.OppdaterVotering(Votering);
+
+            if (errors?.Count > 0)
+            {
+                _customValidator?.DisplayErrors(errors);
+                return;
+            }
+            if (votering != null)
+            {
+                _mapper.Map(votering, Votering);  
+                await OnSuccess.InvokeAsync();    
+            }
         }
         else
         {
-            /*
-             if(await SakService.ErNummerBrukt(ArrangementId, _votering.Nummer))
-                errors.Add(nameof(_votering.Nummer), new List<string>{"Saknummer er allerede brukt"});
-            */
-            
             var (votering, errors) = await _sakService.LagreNyVotering(Votering);
             
             if (errors?.Count > 0)

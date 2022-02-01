@@ -23,9 +23,9 @@ public record AdminStemmeRequest(int ArrangementId, int VoteringId);
 [Service]
 public interface IAdminStemmeService
 {
-    Task StartVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
-    Task StoppVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
-    Task PubliserVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
-    Task LukkVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
+    Task<HentResult<AdminVoteringDto>> StartVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
+    Task<HentResult<AdminVoteringDto>> StoppVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
+    Task<HentResult<AdminVoteringDto>> PubliserVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
+    Task<HentResult<AdminVoteringDto>> LukkVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
     Task<VoteringInputModel> KopierVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
 }

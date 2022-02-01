@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
+using StemmeSystem.Data.Entities;
 using Stemmesystem.Server.Data.Entities;
 
 namespace Stemmesystem.Server.Data.Repositories;
@@ -7,6 +8,7 @@ namespace Stemmesystem.Server.Data.Repositories;
 public interface IArrangementRepository
 {
     Task<Arrangement?> HentArrangementAsync(int id, CancellationToken cancellationToken = default);
+    Task<Votering?> FinnVoteringAsync(int arrangemntId, int voteringId, CancellationToken cancellationToken = default);
 }
 
 public class ArrangementRepository : IArrangementRepository
@@ -25,7 +27,20 @@ public class ArrangementRepository : IArrangementRepository
             .FirstOrDefaultAsync(cancellationToken);
         return arrangement;
     }
-    
+
+    public async Task<Votering?> FinnVoteringAsync(int arrangemntId, int voteringId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Arrangement
+            .AsTracking()
+            .AsSingleQuery()
+            .Where(a => a.Id == arrangemntId)
+            .Where(a => a.Aktiv == true)
+            .SelectMany(a => a.Saker)
+            .SelectMany(s => s.Voteringer)
+            .Where(v => v.Id == voteringId)
+            .SingleOrDefaultAsync(cancellationToken: cancellationToken);
+    }
+
     private IQueryable<Arrangement> GetSingleQuery(StemmesystemContext context)
     {
         return context.Arrangement

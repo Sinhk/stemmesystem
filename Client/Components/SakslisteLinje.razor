@@ -71,7 +71,7 @@
 
 @if (_nyRunde != null)
 {
-    <VoteringFormInline SakId="SakId" Votering="_nyRunde" OnSuccess="@(() => _nyRunde = null)"/>
+    <VoteringFormInline Votering="_nyRunde" OnSuccess="@(() => _nyRunde = null)"/>
 }
 
 @code {
@@ -118,10 +118,33 @@
         });
     }
 
-    public async Task StartVotering(int arrangementId, int voteringId) => await _stemmeService.StartVotering(new AdminStemmeRequest(arrangementId, voteringId));
-    public async Task StoppVotering(int arrangementId, int voteringId) => await _stemmeService.StoppVotering(new AdminStemmeRequest(arrangementId, voteringId));
-    public async Task LukkVotering(int arrangementId, int voteringId) => await _stemmeService.LukkVotering(new AdminStemmeRequest(arrangementId, voteringId));
-    public async Task PubliserVotering(int arrangementId, int voteringId) => await _stemmeService.PubliserVotering(new AdminStemmeRequest(arrangementId, voteringId));
+    public async Task StartVotering(int arrangementId, int voteringId)
+    {
+        var result = await _stemmeService.StartVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        if(result.Success)
+            Votering = result.Value;
+    }
+
+    public async Task StoppVotering(int arrangementId, int voteringId)
+    {
+        var result = await _stemmeService.StoppVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        if(result.Success)
+            Votering = result.Value;
+    }
+
+    public async Task LukkVotering(int arrangementId, int voteringId)
+    {
+        var result = await _stemmeService.LukkVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        if(result.Success)
+            Votering = result.Value;
+    }
+
+    public async Task PubliserVotering(int arrangementId, int voteringId)
+    {
+        var result = await _stemmeService.PubliserVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        if(result.Success)
+            Votering = result.Value;
+    }
 
 
     private async Task NyRunde(int arrangementId, int voteringId)
@@ -136,8 +159,8 @@
             int.TryParse(numStr.Trim(), out num);
             num++;
         }
-        _nyRunde = _nyRunde with{ Tittel = $"{split[0]}Runde {num}"};
-        
+        _nyRunde = _nyRunde with{ Tittel = $"{split[0].TrimEnd('-', ' ')} - Runde {num}"};
+
         StateHasChanged();
     }
 

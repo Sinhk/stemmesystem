@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using StemmeSystem.Data.Entities;
 using Stemmesystem.Data.Models;
 
 namespace Stemmesystem.Server.Data.Entities

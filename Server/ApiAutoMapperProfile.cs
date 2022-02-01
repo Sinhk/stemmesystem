@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using StemmeSystem.Data.Entities;
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared.Models;
 
@@ -40,8 +41,9 @@ public class ApiAutoMapperProfile : Profile
         CreateMap<Votering, VoteringDto>();
         CreateMap<Votering, AdminVoteringDto>();
         CreateMap<Votering, VoteringResultatDto>();
-        CreateMap<VoteringInputModel, Votering>(MemberList.Source)
-            .ForSourceMember(s => s.Startet, o => o.DoNotValidate());
+        CreateMap<Votering, VoteringInputModel>()
+            .ForMember(s => s.Startet, o => o.Ignore())
+            .ReverseMap();;
         /*CreateMap<Votering, VoteringDto>()
             .ForMember(v=> v.Id,opt =>
             {

@@ -34,7 +34,7 @@ else
             {
                 foreach (var votering in _voteringer)
                 {
-                    <AktivVotering Votering=votering/>
+                    <AktivVotering @key="votering.Id" Votering=votering/>
                 }
             }
             else

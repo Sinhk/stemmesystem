@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ProtoBuf.Grpc;
 using StemmeSystem.Data;
+using StemmeSystem.Data.Entities;
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Server.Data.Repositories;
 using Stemmesystem.Shared;
@@ -64,7 +65,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             throw new StemmeException("Votering er ferdig eller har ikke startet enda");
         }
 
-        var stemmer = votering.RegistrerStemme(request.ValgIder, delegat, delegatkode, _keyHasher, _notificationManager);
+        var stemmer = await votering.RegistrerStemme(request.ValgIder, delegat, delegatkode, _keyHasher, _notificationManager.ForArrangement(votering.Sak.ArrangementId), cancellationToken);
             
         await _context.SaveChangesAsync(cancellationToken);
         var dto = _mapper.Map<List<StemmeDto>>(stemmer);
@@ -72,36 +73,28 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     }
 
     [Authorize(Roles = "admin")]
-    public async Task StartVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
+    public async Task<HentResult<AdminVoteringDto>> StartVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
     {
-        var arrangement = await _arrangementRepository.HentArrangementAsync(request.ArrangementId, cancellationToken);
-        if(arrangement == null)
-            return;
-        _context.Attach(arrangement);
-        var votering = arrangement.FinnVotering(request.VoteringId);
+        var votering = await _arrangementRepository.FinnVoteringAsync(request.ArrangementId, request.VoteringId, cancellationToken);
         if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
         votering.StartVotering();
 
         await _context.SaveChangesAsync(cancellationToken);
-            
-        _notificationManager.ForArrangement(request.ArrangementId).OnVoteringStartet(new VoteringStartetEvent(votering.Id, votering.SakId));
+        await _notificationManager.ForArrangement(request.ArrangementId).VoteringStartet(new VoteringStartetEvent(_mapper.Map<VoteringDto>(votering)), cancellationToken);
+        return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
 
     [Authorize(Roles = "admin")]
-    public async Task StoppVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
+    public async Task<HentResult<AdminVoteringDto>> StoppVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
     {
-        var arrangement = await _arrangementRepository.HentArrangementAsync(request.ArrangementId, cancellationToken);
-        if(arrangement == null)
-            return;
-        _context.Attach(arrangement);
-        var votering = arrangement.FinnVotering(request.VoteringId);
-        if (votering == null)
+        var votering = await _arrangementRepository.FinnVoteringAsync(request.ArrangementId, request.VoteringId, cancellationToken);if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
         votering.AvsluttVotering();
         await _context.SaveChangesAsync(cancellationToken);
             
-        _notificationManager.ForArrangement(request.ArrangementId).OnVoteringStoppet(new(votering.Id));
+        await _notificationManager.ForArrangement(request.ArrangementId).VoteringStoppet(new VoteringStoppetEvent(votering.Id), cancellationToken);
+        return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
 
         
@@ -178,53 +171,43 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     }
 
     [Authorize(Roles = "admin")]
-    public async Task LukkVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
+    public async Task<HentResult<AdminVoteringDto>> LukkVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
     {
         var (arrangementId, voteringId) = request;
-        var arrangement = await _arrangementRepository.HentArrangementAsync(arrangementId, cancellationToken);
-        if(arrangement == null)
-            return;
-        _context.Attach(arrangement);
-        var votering = arrangement.FinnVotering(voteringId);
+        var votering = await _arrangementRepository.FinnVoteringAsync(arrangementId, voteringId, cancellationToken);
         if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
         if (votering.Aktiv)
         {
             votering.AvsluttVotering();
-            _notificationManager.ForArrangement(arrangementId).OnVoteringStoppet(new VoteringStoppetEvent(votering.Id));
+            await _notificationManager.ForArrangement(arrangementId).VoteringStoppet(new VoteringStoppetEvent(votering.Id), cancellationToken);
         }
         votering.LukkVotering();
         await _context.SaveChangesAsync(cancellationToken);
             
-        _notificationManager.ForArrangement(arrangementId).OnVoteringLukket(new VoteringLukketEvent(votering.Id));
+        await _notificationManager.ForArrangement(arrangementId).VoteringLukket(new VoteringLukketEvent(votering.Id), cancellationToken);
+        return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
         
     [Authorize(Roles = "admin")]
-    public async Task PubliserVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
+    public async Task<HentResult<AdminVoteringDto>> PubliserVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
     {
         var (arrangementId, voteringId) = request;
-        var arrangement = await _arrangementRepository.HentArrangementAsync(arrangementId, cancellationToken);
-        if(arrangement == null)
-            return;
-        _context.Attach(arrangement);
-        var votering = arrangement.FinnVotering(voteringId);
+        var votering = await _arrangementRepository.FinnVoteringAsync(arrangementId, voteringId, cancellationToken);
         if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
         votering.PubliserVotering();
         await _context.SaveChangesAsync(cancellationToken);
             
-        _notificationManager.ForArrangement(arrangementId).OnVoteringPublisert(new VoteringPublisertEvent(votering.Id, votering.SakId));
+        await _notificationManager.ForArrangement(arrangementId).VoteringPublisert(new VoteringPublisertEvent(votering.Id, votering.SakId), cancellationToken);
+        return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
 
     [Authorize(Roles = "admin")]
     public async Task<VoteringInputModel> KopierVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
     {
         var (arrangementId, voteringId) = request;
-        var arrangement = await _arrangementRepository.HentArrangementAsync(arrangementId, cancellationToken);
-        if(arrangement == null)
-            throw new StemmeException("Fant ikke valgt arrangement");
-        _context.Attach(arrangement);
-        var votering = arrangement.FinnVotering(voteringId);
+        var votering = await _arrangementRepository.FinnVoteringAsync(arrangementId, voteringId, cancellationToken);
         if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
             

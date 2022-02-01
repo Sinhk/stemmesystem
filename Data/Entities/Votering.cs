@@ -1,7 +1,9 @@
-﻿using Stemmesystem.Shared;
+﻿using Stemmesystem.Server.Data.Entities;
+using Stemmesystem.Shared;
+using Stemmesystem.Shared.SignalR;
 using Stemmesystem.Shared.Tools;
 
-namespace Stemmesystem.Server.Data.Entities
+namespace StemmeSystem.Data.Entities
 {
     public class Votering
     {
@@ -71,7 +73,7 @@ namespace Stemmesystem.Server.Data.Entities
             SluttTid = DateTime.UtcNow;
         }
 
-        public List<Stemme> RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat, string delegatkode, IKeyHasher keyHasher, NotificationManager notificationManager)
+        public async Task<List<Stemme>> RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat, string delegatkode, IKeyHasher keyHasher, IDelegatHubClient notifier, CancellationToken cancellationToken = default)
         {
             List<Guid> idList = valgIder.ToList();
             if(idList.Count > 1 && idList.Contains(Konstanter.BlankStemme))
@@ -79,14 +81,13 @@ namespace Stemmesystem.Server.Data.Entities
             
             if(idList.Count > KanVelge)
                 throw new StemmeException($"For mange valg {idList.Count}, bare {KanVelge} er lov per delegat");
-
-            var notifier = notificationManager.ForArrangement(Sak.ArrangementId);
+            
             if (_avgitStemme.Any(d => d.Id == delegat.Id))
             {
-                List<Stemme> fjernes = Hemmelig ? _stemmer.Where(s => keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
+                var fjernes = Hemmelig ? _stemmer.Where(s => keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
 
                 _stemmer.RemoveAll(s=>  fjernes.Contains(s));
-                fjernes.ForEach(s=> notifier.OnStemmeFjernet(new StemmeFjernetEvent(Id,s.Id)));
+                await Parallel.ForEachAsync(fjernes,cancellationToken, async (s, token) => await notifier.StemmeFjernet(new StemmeFjernetEvent(Id,s.Id), token));
             }
 
             List<Stemme> stemmer = new(); 
@@ -104,8 +105,8 @@ namespace Stemmesystem.Server.Data.Entities
             _stemmer.AddRange(stemmer);
             _avgitStemme.Add(delegat);
 
-            stemmer.ForEach(s=> notifier.OnNyStemme(new NyStemmeEvent(Id,s.Id)));
-            notifier.OnHarStemt(new HarStemtEvent(Id,delegat.Id));
+            await Parallel.ForEachAsync(stemmer, cancellationToken, async (s, token) => await notifier.NyStemme(new NyStemmeEvent(Id, s.Id), token));
+            await notifier.HarStemt(new HarStemtEvent(Id,delegat.Id), cancellationToken);
             return stemmer;
         }
 
@@ -124,7 +125,7 @@ namespace Stemmesystem.Server.Data.Entities
         public Votering Kopier() =>
             new(Tittel, Hemmelig)
             {
-                Aktiv = true
+                Aktiv = false
                 , Beskrivelse = Beskrivelse
                 , KanVelge = KanVelge
                 , SakId = SakId

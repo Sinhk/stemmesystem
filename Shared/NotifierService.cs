@@ -2,20 +2,7 @@
 
 namespace Stemmesystem.Shared;
 
-public class NotificationManager
-{
-    private readonly IDictionary<int, NotifierService> _notifiers = new ConcurrentDictionary<int, NotifierService>();
-
-    public NotifierService ForArrangement(int arrangementId)
-    {
-        if (_notifiers.TryGetValue(arrangementId, out var notifier)) return notifier;
-            
-        notifier = new NotifierService(arrangementId);
-        _notifiers[arrangementId] = notifier;
-        return notifier;
-    }
-}
-    
+  
 public class NotifierService
 {
     public int ArrangementId { get; }
