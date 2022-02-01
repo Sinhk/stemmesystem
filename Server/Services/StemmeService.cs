@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using ProtoBuf.Grpc;
 using StemmeSystem.Data;
 using StemmeSystem.Data.Entities;
-using Stemmesystem.Server.Data.Entities;
+using StemmeSystem.Data.Repositories;
 using Stemmesystem.Server.Data.Repositories;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;

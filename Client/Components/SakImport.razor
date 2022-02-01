@@ -45,10 +45,6 @@
             await using var stream = e.File.OpenReadStream();
             using var reader = new StreamReader(stream);
             var saker = await _import.LesSaker(reader, ArrangementId);
-            foreach (var sakInputModel in saker)
-            {
-                Console.WriteLine(sakInputModel);
-            }
             _importSaker = new List<SakInputModel>(saker);
         }
         catch (Exception ex)

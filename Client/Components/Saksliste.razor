@@ -19,7 +19,6 @@
     {
         foreach (var sak in _saker.OrderBy(s => s.Nummer))
         {
-            Console.WriteLine(sak);
             <h5>@sak.Nummer - @sak.Tittel</h5>
             <p><small>@sak.Beskrivelse</small></p>
             foreach (var votering in sak.Voteringer){

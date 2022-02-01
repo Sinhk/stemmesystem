@@ -33,8 +33,6 @@ public class CustomAuthenticationProvider : RemoteAuthenticationService<RemoteAu
             return new AuthenticationState(new ClaimsPrincipal());
 
         var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(token.Claims,AuthConstants.DelegatkodeGrantType,JwtClaimTypes.Name,JwtClaimTypes.Role));
-        Console.WriteLine($"AuthState: {JsonSerializer.Serialize(claimsPrincipal.Identity, JsonSerializerOptions)}");
-        Console.WriteLine($"AuthState.Authenticated: {claimsPrincipal.Identity?.IsAuthenticated == true}");
         return new AuthenticationState(claimsPrincipal);
     }
 

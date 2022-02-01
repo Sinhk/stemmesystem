@@ -49,9 +49,7 @@
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateTask;
-        Console.WriteLine($"User: {JsonSerializer.Serialize(authState.User.Identity, JsonSerializerOptions)}");
-        Console.WriteLine($"Claims: {string.Join('\n', authState.User.Claims)}");
-
+        
         if (authState.User.Identity?.IsAuthenticated == true)
         {
             var arrangementClaim = authState.User.FindFirst(AuthConstants.ArrangementClaimType);

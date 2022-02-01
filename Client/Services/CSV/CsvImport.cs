@@ -43,7 +43,6 @@ namespace Stemmesystem.Client.Services.CSV
             var list = new List<SakInputModel>();
             await foreach (var sak in csv.GetRecordsAsync<CsvSak>())
             {
-                Console.WriteLine(sak);
                 list.Add(new SakInputModel
                 {
                     ArrangementId = arrangementId,

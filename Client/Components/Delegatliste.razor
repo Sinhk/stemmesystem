@@ -97,10 +97,6 @@
     protected override async Task OnInitializedAsync()
     {
         _delegater = await _delegatService.HentDelegater(new HentDelegatRequest(ArrangementId));
-        foreach (var dto in _delegater)
-        {
-            Console.WriteLine(dto);   
-        }
     //_tracker.CountChanged += NewCount;
     }
 
