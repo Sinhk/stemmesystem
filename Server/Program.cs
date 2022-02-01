@@ -5,17 +5,22 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services.KeyManagement;
 using Duende.IdentityServer.Stores;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using ProtoBuf.Grpc.Server;
 using Stemmesystem.Api;
 using StemmeSystem.Data;
 using StemmeSystem.Data.Models;
+using StemmeSystem.Data.Repositories;
 using Stemmesystem.Server;
 using Stemmesystem.Server.Data.Repositories;
+using Stemmesystem.Server.Hubs;
 using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
 using Stemmesystem.Shared;
@@ -81,8 +86,16 @@ builder.Services.AddAuthentication()
     })
     .AddIdentityServerJwt();
 
+builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>());
+
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "application/octet-stream" });
+});
 
 builder.Services.AddCodeFirstGrpc();
 
@@ -152,6 +165,7 @@ else
     app.UseHsts();
 }
 
+app.UseResponseCompression();
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
@@ -171,6 +185,7 @@ app.MapGrpcService<ArrangementService>();
 app.MapGrpcService<StemmeService>();
 app.MapGrpcService<PinSender>();
 app.MapControllers();
+app.MapHub<DelegatHub>("/hubs/delegat");
 app.MapFallbackToFile("index.html");
 
 app.Run();

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Stemmesystem.Client.SignalR;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
 using Stemmesystem.Shared.Models;
@@ -12,21 +13,21 @@ namespace Stemmesystem.Client.Pages
 
         private ArrangementInfo? _arrangement;
         private DelegatDto? _delegat;
-        private ICollection<VoteringDto> _voteringer = new List<VoteringDto>();
-        private NotifierService? _notifier;
+        private List<VoteringDto> _voteringer = new List<VoteringDto>();
+        [Inject]
+        private INotifierService _notifier { get; set; } = null!;
+
         private bool _disposed;
 
         protected override async Task OnInitializedAsync()
         {
             var result = await DelegatService.HentDelegatInfo();
-            Console.WriteLine(result);
             _delegat = result.Delegat;
             
             ArrangementInfo? arrangement;
             if(Id != null)
             {
                 arrangement = await ArrangementService.HentArrangementInfoAsync(new ArrangementRequest {ArrangementId = Id.Value});
-                Console.WriteLine(arrangement);
             }
             else
             {
@@ -44,11 +45,13 @@ namespace Stemmesystem.Client.Pages
             _arrangement = arrangement;
             /*
              _notifier = Notifications.ForArrangement(_arrangement.Id);
-            _notifier.VoteringStartet += VoteringStartet;
-            _notifier.VoteringStoppet += VoteringStoppet;
             */
             
             _voteringer = await ArrangementService.FinnAktiveVoteringer(new ArrangementRequest {ArrangementId = _arrangement.Id});
+
+            _notifier.OnVoteringStartet(VoteringStartet);
+            _notifier.OnVoteringStoppet(VoteringStoppet);
+            await _notifier.Start();
         }
         
         public void Dispose() => Dispose(true);
@@ -76,31 +79,14 @@ namespace Stemmesystem.Client.Pages
 
         public void VoteringStartet(VoteringStartetEvent e)
         {
-            _ = InvokeAsync(async () =>
-            {
-                var votering = await SakService.HentVotering(new HentVoteringRequest(e.SakId, e.VoteringId));
-                if(votering != null)
-                {
-                    _voteringer.Add(votering);
-                    StateHasChanged();
-                }
-            });
+            _voteringer.Add(e.Votering);
+                StateHasChanged();
         }
 
         public void VoteringStoppet(VoteringStoppetEvent e)
         {
-            _ = InvokeAsync(async () =>
-            {
-                var votering = _voteringer.FirstOrDefault(v => v.Id == e.VoteringId);
-                if(votering != null)
-                    _voteringer.Remove(votering);
-                else
-                {
-                    if (_arrangement != null)
-                        _voteringer = await ArrangementService.FinnAktiveVoteringer(new ArrangementRequest {ArrangementId = _arrangement.Id});
-                }
-                StateHasChanged();
-            });
+            _voteringer.RemoveAll(v => v.Id == e.VoteringId);
+            StateHasChanged();
         }
     }
 }

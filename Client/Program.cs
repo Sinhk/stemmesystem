@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Stemmesystem.Client;
 using Stemmesystem.Client.Services.CSV;
+using Stemmesystem.Client.SignalR;
 using Stemmesystem.Shared.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -50,6 +51,7 @@ JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<IDelegatkodeAuthService, DelegatkodeAuthService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationProvider>();
+builder.Services.AddScoped<INotifierService, NotifierService>();
 
 
 builder.Services.AddApiAuthorization();

@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+﻿using Stemmesystem.Shared.Models;
 
 namespace Stemmesystem.Shared;
 
@@ -43,7 +43,7 @@ public record NyStemmeEvent(int VoteringId, Guid StemmeId);
 
 public record StemmeFjernetEvent(int VoteringId, Guid StemmeId);
 
-public record VoteringStartetEvent(int VoteringId, int SakId);
+public record VoteringStartetEvent(VoteringDto Votering);
 
 public record VoteringStoppetEvent(int VoteringId);
 
