@@ -13,29 +13,36 @@
         <div class="card-body">
             <h5 class="card-title">@Votering.Tittel</h5>
             <h6 class="card-subtitle mb-2 text-muted">@Votering.Beskrivelse</h6>
-            @if (_harStemmt && !Endre)
+            @if (!_loading)
             {
-                <p>Du har stemt <b>@StemmerSomString()</b></p>
-                <button class="btn btn-secondary" @onclick="@(_ => Endre = true)">Endre</button>
+                @if (_harStemmt && !Endre)
+                {
+                    <p>Du har stemt <b>@StemmerSomString()</b></p>
+                    <button class="btn btn-secondary" @onclick="@(_ => Endre = true)">Endre</button>
+                }
+                else
+                {
+                    @if (!string.IsNullOrEmpty(_error))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @_error
+                        </div>
+                    }
+                    <CascadingValue Value=this>
+                        @if (Votering.KanVelge > 1)
+                        {
+                            <Flervalgsvotering @bind-Error="_error"/>
+                        }
+                        else
+                        {
+                            <Enkelvotering @bind-Error="_error"/>
+                        }
+                    </CascadingValue>
+                }
             }
             else
             {
-                @if (!string.IsNullOrEmpty(_error))
-                {
-                    <div class="alert alert-danger" role="alert">
-                        @_error
-                    </div>
-                }
-                <CascadingValue Value=this>
-                    @if (Votering.KanVelge > 1)
-                    {
-                        <Flervalgsvotering @bind-Error="_error"/>
-                    }
-                    else
-                    {
-                        <Enkelvotering @bind-Error="_error"/>
-                    }
-                </CascadingValue>
+                <p>Laster...</p>
             }
         </div>
     </div>
@@ -53,6 +60,7 @@
 
     private string? _error;
 
+    private bool _loading = true;
 
     public async Task RegistrerStemme(params Guid[] valg)
     {
@@ -82,16 +90,17 @@
         }
     }
 
-    protected override async Task OnInitializedAsync(){
-        {
-            var (harStemmt, stemmeDtos) = await _stemmeService.HarStemmt(new StemmeRequest(Votering.Id));
-            _harStemmt = harStemmt;
-            if (stemmeDtos != null)
-                Stemmer = stemmeDtos;
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        var (harStemmt, stemmeDtos) = await _stemmeService.HarStemmt(new StemmeRequest(Votering.Id));
+        _harStemmt = harStemmt;
+        if (stemmeDtos != null)
+            Stemmer = stemmeDtos;
 
-            var sakResult = await _sakService.HentSakInfo(new SakRequest(Votering.SakId));
-            Sak = sakResult.Value;
-        }
+        var sakResult = await _sakService.HentSakInfo(new SakRequest(Votering.SakId));
+        Sak = sakResult.Value;
+        _loading = false;
     }
 
     private string StemmerSomString()
