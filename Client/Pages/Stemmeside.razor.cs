@@ -14,8 +14,7 @@ namespace Stemmesystem.Client.Pages
         private ArrangementInfo? _arrangement;
         private DelegatDto? _delegat;
         private List<VoteringDto> _voteringer = new List<VoteringDto>();
-        [Inject]
-        private INotifierService _notifier { get; set; } = null!;
+        private INotifierService Notifier => Service;
 
         private bool _disposed;
 
@@ -49,9 +48,9 @@ namespace Stemmesystem.Client.Pages
             
             _voteringer = await ArrangementService.FinnAktiveVoteringer(new ArrangementRequest {ArrangementId = _arrangement.Id});
 
-            _notifier.OnVoteringStartet(VoteringStartet);
-            _notifier.OnVoteringStoppet(VoteringStoppet);
-            await _notifier.Start();
+            Notifier.OnVoteringStartet(VoteringStartet);
+            Notifier.OnVoteringStoppet(VoteringStoppet);
+            await Notifier.Start();
         }
         
         public void Dispose() => Dispose(true);

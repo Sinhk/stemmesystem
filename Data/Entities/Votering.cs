@@ -54,8 +54,8 @@ namespace StemmeSystem.Data.Entities
         public static Votering EnkelVotering(string tittel, bool hemmelig = false) 
         {
             Votering v = new(tittel, hemmelig);
-            v._valg.Add(new("For"));
-            v._valg.Add(new("Mot"));
+            v._valg.Add(new Valg("For"));
+            v._valg.Add(new Valg("Mot"));
             return v;
         }
 

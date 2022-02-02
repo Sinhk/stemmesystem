@@ -10,6 +10,7 @@
 @using Stemmesystem.Shared.Interfaces
 @using Microsoft.AspNetCore.Authorization
 @implements IDisposable
+@inherits OwningComponentBase<Stemmesystem.Client.SignalR.INotifierService>
 
 @if (_arrangement == null)
 {
