@@ -1,9 +1,12 @@
 
 @inject IAdminStemmeService _stemmeService
+@inherits OwningComponentBase<INotifierService>
 
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Shared
+@using Stemmesystem.Client.SignalR
+@using NotifierService = Stemmesystem.Shared.NotifierService
 @implements IDisposable
 
 <div class="card">
@@ -16,7 +19,7 @@
                 </span>
             </div>
             <div class="col">
-                Avgitte stemmer: @_harStemt.Count/@Delegater (@AktiveDelegater) 
+                Avgitte stemmer: @_harStemt.Count/@Delegater 
             </div>
 
             <div class="col">
@@ -81,9 +84,6 @@
 
     [Parameter]
     public int ArrangementId { get; set; }
-
-    [CascadingParameter(Name = "AktiveDelegater")]
-    public int AktiveDelegater { get; set; }
     
     [CascadingParameter(Name = "Delegater")]
     public int Delegater { get; set; }
@@ -96,9 +96,8 @@
 
     protected override void OnInitialized()
     {
-        //Notifier = NotificationManager.ForArrangement(ArrangementId);
-        if(Notifier != null)
-            Notifier.HarStemt += OnHarStemt;
+        Service.OnHarStemt(OnHarStemt);
+        Service.Start();
 
         foreach (var delegat in Votering.AvgitStemme)
         {

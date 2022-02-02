@@ -16,10 +16,8 @@
     <div class="col">Aktive delegater: @_aktiveDelegater</div>
 </div>
 <CascadingValue Name="Delegater" Value="_arrangement?.Delegater.Count ?? 0">
-<CascadingValue Name="AktiveDelegater" Value="_aktiveDelegater">
     <Saksliste ArrangementId="ArrangementId" />
     <Delegatliste ArrangementId="ArrangementId" />
-</CascadingValue>
 </CascadingValue>
 
 @code {

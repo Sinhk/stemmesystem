@@ -3,7 +3,9 @@
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Shared
+@using Stemmesystem.Client.SignalR
 @implements IDisposable
+@inherits OwningComponentBase<Stemmesystem.Client.SignalR.INotifierService>
 
 <div class="row" @onclick="@(_ => _expanded=!_expanded)">
     <h4>Saker</h4>
@@ -31,7 +33,7 @@
 @code {
     [Parameter]
     public int ArrangementId { get; set; }
-    private NotifierService? Notifier { get; set; }
+    private INotifierService Notifier => Service;
     private ICollection<AdminSakDto> _saker = null!;
     private bool _expanded;
 
@@ -40,17 +42,15 @@
         _saker = await _sakService.HentSaker(new SakerRequest(ArrangementId));
         //Notifier = _notificationManager.ForArrangement(ArrangementId);
         
-        /*
-        Notifier.VoteringStartet += OnVoteringStartet;
-        Notifier.VoteringStoppet += OnVoteringStoppet;
-        Notifier.VoteringLukket += OnVoteringLukket;
-        Notifier.VoteringPublisert += OnVoteringPublisert;
-        Notifier.NyVotering += NyVotering;
-        Notifier.NyStemme += OnNyStemme;
-        Notifier.StemmeFjernet += OnStemmeFjernet;
-        */
+        Notifier.OnVoteringStartet(OnVoteringStartet);
+        Notifier.OnVoteringStoppet(OnVoteringStoppet);
+        Notifier.OnVoteringLukket(OnVoteringLukket);
+        Notifier.OnVoteringPublisert(OnVoteringPublisert);
+        Notifier.OnNyVotering(NyVotering);
+        Notifier.OnNyStemme(OnNyStemme);
+        Notifier.OnStemmeFjernet(OnStemmeFjernet);
     }
-/*
+
     public void OnNyStemme(NyStemmeEvent e)
     {
         _ = InvokeAsync(async () =>
@@ -177,7 +177,7 @@
         });
     }
 
-*/
+
     public void Dispose()
     {
         if (Notifier == null) return;

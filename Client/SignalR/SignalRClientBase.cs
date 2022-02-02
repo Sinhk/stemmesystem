@@ -6,7 +6,9 @@ namespace Stemmesystem.Client.SignalR;
 
 public abstract class SignalRClientBase : ISignalRClient, IAsyncDisposable
 {
+    protected HubConnection HubConnection { get; private set; }
     protected bool Started { get; private set; }
+
 
     protected SignalRClientBase(NavigationManager navigationManager, IAccessTokenProvider tokenProvider, string hubPath) =>
         HubConnection = new HubConnectionBuilder()
@@ -24,7 +26,6 @@ public abstract class SignalRClientBase : ISignalRClient, IAsyncDisposable
 
     public bool IsConnected => HubConnection?.State == HubConnectionState.Connected;
 
-    protected HubConnection HubConnection { get; private set; }
 
     public async ValueTask DisposeAsync()
     {
