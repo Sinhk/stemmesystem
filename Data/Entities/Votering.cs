@@ -1,6 +1,7 @@
-﻿using Stemmesystem.Server.Data.Entities;
+﻿using System.Diagnostics.CodeAnalysis;
+using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared;
-using Stemmesystem.Shared.SignalR;
+using Stemmesystem.Shared.Models;
 using Stemmesystem.Shared.Tools;
 
 namespace StemmeSystem.Data.Entities
@@ -67,13 +68,14 @@ namespace StemmeSystem.Data.Entities
             StartTid = DateTime.UtcNow;
         }
 
+        [MemberNotNull(nameof(SluttTid))]
         public void AvsluttVotering()
         {
             Aktiv = false;
             SluttTid = DateTime.UtcNow;
         }
 
-        public async Task<List<Stemme>> RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat, string delegatkode, IKeyHasher keyHasher, IDelegatHubClient notifier, CancellationToken cancellationToken = default)
+        public (List<Stemme> stemmer, List<Stemme>? fjernes) RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat, string delegatkode, IKeyHasher keyHasher)
         {
             List<Guid> idList = valgIder.ToList();
             if(idList.Count > 1 && idList.Contains(Konstanter.BlankStemme))
@@ -81,13 +83,12 @@ namespace StemmeSystem.Data.Entities
             
             if(idList.Count > KanVelge)
                 throw new StemmeException($"For mange valg {idList.Count}, bare {KanVelge} er lov per delegat");
-            
+
+            List<Stemme>? fjernes = null;
             if (_avgitStemme.Any(d => d.Id == delegat.Id))
             {
-                var fjernes = Hemmelig ? _stemmer.Where(s => keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
-
+                fjernes = Hemmelig ? _stemmer.Where(s => keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
                 _stemmer.RemoveAll(s=>  fjernes.Contains(s));
-                await Parallel.ForEachAsync(fjernes,cancellationToken, async (s, token) => await notifier.StemmeFjernet(new StemmeFjernetEvent(Id,s.Id), token));
             }
 
             List<Stemme> stemmer = new(); 
@@ -105,9 +106,7 @@ namespace StemmeSystem.Data.Entities
             _stemmer.AddRange(stemmer);
             _avgitStemme.Add(delegat);
 
-            await Parallel.ForEachAsync(stemmer, cancellationToken, async (s, token) => await notifier.NyStemme(new NyStemmeEvent(Id, s.Id), token));
-            await notifier.HarStemt(new HarStemtEvent(Id,delegat.Id), cancellationToken);
-            return stemmer;
+            return (stemmer,fjernes);
         }
 
         public void LukkVotering()

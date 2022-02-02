@@ -1,6 +1,5 @@
 
 @inject IAdminStemmeService _stemmeService
-@inherits OwningComponentBase<INotifierService>
 
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
@@ -81,23 +80,25 @@
 
     [Parameter]
     public AdminVoteringDto Votering { get; set; } = null!;
+    
+    [Parameter]
+    public IAdminNotifierService Notifier { get; set; } = null!;
 
     [Parameter]
     public int ArrangementId { get; set; }
     
     [CascadingParameter(Name = "Delegater")]
     public int Delegater { get; set; }
-
-    private NotifierService? Notifier { get; set; }
+    
     private VoteringInputModel? _nyRunde;
     private bool _visDetaljer;
     private HashSet<int> _harStemt = new();
+    private IDisposable? Subscription;
 
 
     protected override void OnInitialized()
     {
-        Service.OnHarStemt(OnHarStemt);
-        Service.Start();
+        Subscription = Notifier.OnHarStemt(OnHarStemt);
 
         foreach (var delegat in Votering.AvgitStemme)
         {
@@ -120,29 +121,21 @@
     public async Task StartVotering(int arrangementId, int voteringId)
     {
         var result = await _stemmeService.StartVotering(new AdminStemmeRequest(arrangementId, voteringId));
-        if(result.Success)
-            Votering = result.Value;
     }
 
     public async Task StoppVotering(int arrangementId, int voteringId)
     {
         var result = await _stemmeService.StoppVotering(new AdminStemmeRequest(arrangementId, voteringId));
-        if(result.Success)
-            Votering = result.Value;
     }
 
     public async Task LukkVotering(int arrangementId, int voteringId)
     {
         var result = await _stemmeService.LukkVotering(new AdminStemmeRequest(arrangementId, voteringId));
-        if(result.Success)
-            Votering = result.Value;
     }
 
     public async Task PubliserVotering(int arrangementId, int voteringId)
     {
         var result = await _stemmeService.PubliserVotering(new AdminStemmeRequest(arrangementId, voteringId));
-        if(result.Success)
-            Votering = result.Value;
     }
 
 
@@ -165,8 +158,7 @@
 
     public void Dispose()
     {
-        if(Notifier == null) return;
-        Notifier.HarStemt -= OnHarStemt;
+        Subscription?.Dispose();
     }
 
 }

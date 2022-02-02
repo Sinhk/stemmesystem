@@ -7,12 +7,6 @@ namespace Stemmesystem.Server.Hubs;
 
 public class DelegatHub : Hub<IDelegatHubClient>
 {
-    public async Task SendMessage(string user, string message)
-    {
-        await Clients.All.ReceiveMessage(user, message);
-    }
-
-
     public override async Task OnConnectedAsync()
     {
         if (Context.User?.IsAuthenticated() == true)
@@ -48,4 +42,3 @@ public class DelegatHub : Hub<IDelegatHubClient>
         await base.OnDisconnectedAsync(exception);
     }
 }
-

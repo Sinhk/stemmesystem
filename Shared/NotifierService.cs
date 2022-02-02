@@ -39,18 +39,18 @@ public class NotifierService
 }
 
 
-public record NyStemmeEvent(int VoteringId, Guid StemmeId);
+public record NyStemmeEvent(int VoteringId, StemmeDto Stemme);
 
 public record StemmeFjernetEvent(int VoteringId, Guid StemmeId);
 
 public record VoteringStartetEvent(VoteringDto Votering);
 
-public record VoteringStoppetEvent(int VoteringId);
+public record VoteringStoppetEvent(int VoteringId, DateTime Time);
 
-public record VoteringLukketEvent(int VoteringId);
+public record VoteringLukketEvent(int SakId, int VoteringId);
 
-public record VoteringPublisertEvent(int VoteringId, int SakId);
+public record VoteringPublisertEvent(int ArrangementId, int SakId, int VoteringId);
 
-public record NyVoteringEvent(int VoteringId, int SakId);
+public record NyVoteringEvent(AdminVoteringDto Votering);
 
 public record HarStemtEvent(int VoteringId, int DelegatId);

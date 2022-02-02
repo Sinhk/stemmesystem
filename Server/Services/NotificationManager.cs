@@ -10,17 +10,24 @@ public class NotificationManager
 {
 
     private readonly IHubContext<DelegatHub, IDelegatHubClient> _delegatContext;
-    
-    private readonly IDictionary<int, NotifierService> _notifiers = new ConcurrentDictionary<int, NotifierService>();
+    private readonly IHubContext<AdminHub, IAdminHubClient> _adminContext;
 
-    public NotificationManager(IHubContext<DelegatHub, IDelegatHubClient> delegatContext)
+    public NotificationManager(IHubContext<DelegatHub, IDelegatHubClient> delegatContext, IHubContext<AdminHub, IAdminHubClient> adminContext)
     {
-        this._delegatContext = delegatContext;
+        _delegatContext = delegatContext;
+        _adminContext = adminContext;
     }
 
     public IDelegatHubClient ForArrangement(int arrangementId)
     {
         var client = _delegatContext.Clients.Group(arrangementId.ToString());
         return client;
+    }
+
+    public IAdminHubClient ForAdmin(int? arrangementId = null)
+    {
+        if (arrangementId != null)
+            return _adminContext.Clients.Group(arrangementId.Value.ToString());
+        return _adminContext.Clients.All;
     }
 }

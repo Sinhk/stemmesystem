@@ -14,7 +14,7 @@ namespace Stemmesystem.Client.Pages
         private ArrangementInfo? _arrangement;
         private DelegatDto? _delegat;
         private List<VoteringDto> _voteringer = new List<VoteringDto>();
-        private INotifierService Notifier => Service;
+        private IDelegatNotifierService Notifier => Service;
 
         private bool _disposed;
 

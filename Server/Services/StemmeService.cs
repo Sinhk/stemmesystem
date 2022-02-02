@@ -65,9 +65,15 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             throw new StemmeException("Votering er ferdig eller har ikke startet enda");
         }
 
-        var stemmer = await votering.RegistrerStemme(request.ValgIder, delegat, delegatkode, _keyHasher, _notificationManager.ForArrangement(votering.Sak.ArrangementId), cancellationToken);
-            
+        var notifier = _notificationManager.ForAdmin(votering.Sak.ArrangementId);
+        var (stemmer, fjernes) = votering.RegistrerStemme(request.ValgIder, delegat, delegatkode, _keyHasher);
+        
         await _context.SaveChangesAsync(cancellationToken);
+        
+        if(fjernes != null && fjernes.Any())
+            await Parallel.ForEachAsync(fjernes, cancellationToken, async (s, token) => await notifier.StemmeFjernet(new StemmeFjernetEvent(votering.Id, s.Id), token));
+        await Parallel.ForEachAsync(stemmer, cancellationToken, async (s, token) => await notifier.NyStemme(new NyStemmeEvent(votering.Id, new StemmeDto(s.Id, s.ValgId)), token));
+        await notifier.HarStemt(new HarStemtEvent(votering.Id,delegat.Id), cancellationToken);
         var dto = _mapper.Map<List<StemmeDto>>(stemmer);
         return dto;
     }
@@ -81,19 +87,24 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         votering.StartVotering();
 
         await _context.SaveChangesAsync(cancellationToken);
-        await _notificationManager.ForArrangement(request.ArrangementId).VoteringStartet(new VoteringStartetEvent(_mapper.Map<VoteringDto>(votering)), cancellationToken);
+        var e = new VoteringStartetEvent(_mapper.Map<AdminVoteringDto>(votering));
+        await _notificationManager.ForArrangement(request.ArrangementId).VoteringStartet(e, cancellationToken);
+        await _notificationManager.ForAdmin(request.ArrangementId).VoteringStartet(e, cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
 
     [Authorize(Roles = "admin")]
     public async Task<HentResult<AdminVoteringDto>> StoppVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
     {
-        var votering = await _arrangementRepository.FinnVoteringAsync(request.ArrangementId, request.VoteringId, cancellationToken);if (votering == null)
+        var votering = await _arrangementRepository.FinnVoteringAsync(request.ArrangementId, request.VoteringId, cancellationToken);
+        if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
         votering.AvsluttVotering();
         await _context.SaveChangesAsync(cancellationToken);
-            
-        await _notificationManager.ForArrangement(request.ArrangementId).VoteringStoppet(new VoteringStoppetEvent(votering.Id), cancellationToken);
+
+        var e = new VoteringStoppetEvent(votering.Id, votering.SluttTid.Value);
+        await _notificationManager.ForArrangement(request.ArrangementId).VoteringStoppet(e, cancellationToken);
+        await _notificationManager.ForAdmin(request.ArrangementId).VoteringStoppet(e, cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
 
@@ -164,7 +175,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             throw new StemmeException($"Votering med id {voteringId} ble ikke funnet");
 
         var stemmer = votering.Hemmelig
-            ? votering.Stemmer.Where(s => _keyHasher.VerifyHash(s.StemmeHash, delegat.Delegatkode)).ToList()
+            ? votering.Stemmer.Where(s => s.StemmeHash != null && _keyHasher.VerifyHash(s.StemmeHash, delegat.Delegatkode)).ToList()
             : votering.Stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
 
         return stemmer;
@@ -180,12 +191,12 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         if (votering.Aktiv)
         {
             votering.AvsluttVotering();
-            await _notificationManager.ForArrangement(arrangementId).VoteringStoppet(new VoteringStoppetEvent(votering.Id), cancellationToken);
+            await _notificationManager.ForArrangement(arrangementId).VoteringStoppet(new VoteringStoppetEvent(votering.Id, votering.SluttTid.Value), cancellationToken);
         }
         votering.LukkVotering();
         await _context.SaveChangesAsync(cancellationToken);
             
-        await _notificationManager.ForArrangement(arrangementId).VoteringLukket(new VoteringLukketEvent(votering.Id), cancellationToken);
+        await _notificationManager.ForAdmin(arrangementId).VoteringLukket(new VoteringLukketEvent(votering.SakId, votering.Id), cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
         
@@ -199,7 +210,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         votering.PubliserVotering();
         await _context.SaveChangesAsync(cancellationToken);
             
-        await _notificationManager.ForArrangement(arrangementId).VoteringPublisert(new VoteringPublisertEvent(votering.Id, votering.SakId), cancellationToken);
+        await _notificationManager.ForAdmin().VoteringPublisert(new VoteringPublisertEvent(arrangementId, votering.SakId, votering.Id), cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
 

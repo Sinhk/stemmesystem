@@ -20,13 +20,13 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(5)]
         public DateTime? StartTid { get; init; }
         [ProtoMember(6)]
-        public DateTime? SluttTid { get; init; }
+        public DateTime? SluttTid { get; set; }
         [ProtoMember(7)]
         public int SakId { get; init; }
 
         [ProtoMember(8)] public List<ValgDto> Valg { get; init; } = new();
         [ProtoMember(9)]
-        public bool Aktiv { get; init; }
+        public bool Aktiv { get; set; }
         [ProtoMember(10)]
         public bool Lukket { get; init; }
         [ProtoMember(11)]

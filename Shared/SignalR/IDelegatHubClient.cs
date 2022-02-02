@@ -2,9 +2,12 @@
 
 public interface IDelegatHubClient
 {
-    Task ReceiveMessage(string user, string message);
     Task VoteringStartet(VoteringStartetEvent e, CancellationToken cancellationToken = default);
     Task VoteringStoppet(VoteringStoppetEvent e, CancellationToken cancellationToken = default);
+}
+
+public interface IAdminHubClient : IDelegatHubClient
+{
     Task NyStemme(NyStemmeEvent e, CancellationToken cancellationToken = default);
     Task StemmeFjernet(StemmeFjernetEvent e, CancellationToken cancellationToken = default);
     Task VoteringLukket(VoteringLukketEvent e, CancellationToken cancellationToken = default);

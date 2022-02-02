@@ -51,7 +51,8 @@ JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<IDelegatkodeAuthService, DelegatkodeAuthService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationProvider>();
-builder.Services.AddScoped<INotifierService, NotifierService>();
+builder.Services.AddScoped<IDelegatNotifierService, DelegatNotifierService>();
+builder.Services.AddScoped<IAdminNotifierService, AdminNotifierService>();
 
 
 builder.Services.AddApiAuthorization();

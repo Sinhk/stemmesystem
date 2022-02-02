@@ -121,9 +121,9 @@ public class SakService : ISakService
         var votering = _mapper.Map<Votering>(model);
         sak.LeggTil(votering);
         await _context.SaveChangesAsync();
-        await _notificationManager.ForArrangement(sak.ArrangementId).NyVotering(new NyVoteringEvent(votering.Id, sak.Id));
-        var nyVotering = _mapper.Map<VoteringDto>(votering);
-        return new LagreResult<VoteringDto>(nyVotering,errors);
+        var nyVotering = _mapper.Map<AdminVoteringDto>(votering);
+        await _notificationManager.ForAdmin(sak.ArrangementId).NyVotering(new NyVoteringEvent(nyVotering));
+        return new LagreResult<VoteringDto>(nyVotering, errors);
     }
 
     [Authorize(Roles = "admin")]

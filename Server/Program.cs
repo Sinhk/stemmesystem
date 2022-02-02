@@ -186,6 +186,7 @@ app.MapGrpcService<StemmeService>();
 app.MapGrpcService<PinSender>();
 app.MapControllers();
 app.MapHub<DelegatHub>("/hubs/delegat");
+app.MapHub<AdminHub>("/hubs/admin");
 app.MapFallbackToFile("index.html");
 
 app.Run();

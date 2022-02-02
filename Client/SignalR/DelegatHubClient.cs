@@ -6,90 +6,84 @@ using Stemmesystem.Shared.SignalR;
 
 namespace Stemmesystem.Client.SignalR;
 
-public interface IDelegatSignalRClient : IDelegatHubClient, ISignalRClient
+public interface IDelegatNotifierService : ISignalRClient
 {
-    
+    IDisposable? OnVoteringStartet(Action<VoteringStartetEvent> action);
+    IDisposable? OnVoteringStoppet(Action<VoteringStoppetEvent> action);
 }
 
-public interface INotifierService : ISignalRClient
+public interface IAdminNotifierService : ISignalRClient
 {
-    void OnVoteringStartet(Action<VoteringStartetEvent> action);
-    void OnVoteringStoppet(Action<VoteringStoppetEvent> action);
-    void OnNyStemme(Action<NyStemmeEvent> action);
-    void OnStemmeFjernet(Action<StemmeFjernetEvent> action);
-    void OnVoteringLukket(Action<VoteringLukketEvent> action);
-    void OnVoteringPublisert(Action<VoteringPublisertEvent> action);
-    void OnNyVotering(Action<NyVoteringEvent> action);
-    void OnHarStemt(Action<HarStemtEvent> action);
+    Task KobleTilArrangement(int arrangementId, CancellationToken cancellationToken = default);
+    Task KobleFraArrangement(int arrangementId, CancellationToken cancellationToken = default);
+    IDisposable? OnVoteringStartet(Action<VoteringStartetEvent> action);
+    IDisposable? OnVoteringStoppet(Action<VoteringStoppetEvent> action);
+    IDisposable? OnNyStemme(Action<NyStemmeEvent> action);
+    IDisposable? OnStemmeFjernet(Action<StemmeFjernetEvent> action);
+    IDisposable? OnVoteringLukket(Action<VoteringLukketEvent> action);
+    IDisposable? OnVoteringPublisert(Action<VoteringPublisertEvent> action);
+    IDisposable? OnNyVotering(Action<NyVoteringEvent> action);
+    IDisposable? OnHarStemt(Action<HarStemtEvent> action);
 }
 
-public class NotifierService : SignalRClientBase, INotifierService
+public class DelegatNotifierService : SignalRClientBase, IDelegatNotifierService
 {
-    public NotifierService(NavigationManager navigationManager, IAccessTokenProvider tokenProvider) : base(navigationManager, tokenProvider, "hubs/delegat")
+    public DelegatNotifierService(NavigationManager navigationManager, IAccessTokenProvider tokenProvider) : base(navigationManager, tokenProvider, "hubs/delegat")
     {
     }
 
-    public void OnVoteringStartet(Action<VoteringStartetEvent> action)
+    public IDisposable OnVoteringStartet(Action<VoteringStartetEvent> action)
+        => HubConnection.On(nameof(IDelegatHubClient.VoteringStartet), action);
+
+    public IDisposable OnVoteringStoppet(Action<VoteringStoppetEvent> action)
+        => HubConnection.On(nameof(IDelegatHubClient.VoteringStoppet), action);
+}
+
+public class AdminNotifierService : SignalRClientBase, IAdminNotifierService
+{
+    public AdminNotifierService(NavigationManager navigationManager, IAccessTokenProvider tokenProvider) : base(navigationManager, tokenProvider, "hubs/admin")
     {
-        if (!Started)
+    }
+
+    public async Task KobleTilArrangement(int arrangementId, CancellationToken cancellationToken = default)
+    {
+        try
         {
-            HubConnection.On(nameof(IDelegatHubClient.VoteringStartet), action);
+            await HubConnection.InvokeAsync("KobleTilArrangement", arrangementId, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            Console.WriteLine(e.Message);
         }
     }
 
-    public void OnVoteringStoppet(Action<VoteringStoppetEvent> action)
+    public async Task KobleFraArrangement(int arrangementId, CancellationToken cancellationToken = default)
     {
-        if (!Started)
+        try
         {
-            HubConnection.On(nameof(IDelegatHubClient.VoteringStoppet), action);
+            await HubConnection.InvokeAsync("KobleFraArrangement", arrangementId, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            Console.WriteLine(e.Message);
         }
     }
 
-    public void OnNyStemme(Action<NyStemmeEvent> action)
-    {
-        if (!Started)
-        {
-            HubConnection.On(nameof(IDelegatHubClient.NyStemme), action);
-        }
-    }
+    public IDisposable OnVoteringStartet(Action<VoteringStartetEvent> action) => HubConnection.On(nameof(IDelegatHubClient.VoteringStartet), action);
 
-    public void OnStemmeFjernet(Action<StemmeFjernetEvent> action)
-    {
-        if (!Started)
-        {
-            HubConnection.On(nameof(IDelegatHubClient.StemmeFjernet), action);
-        }
-    }
+    public IDisposable OnVoteringStoppet(Action<VoteringStoppetEvent> action) => HubConnection.On(nameof(IDelegatHubClient.VoteringStoppet), action);
 
-    public void OnVoteringLukket(Action<VoteringLukketEvent> action)
-    {
-        if (!Started)
-        {
-            HubConnection.On(nameof(IDelegatHubClient.VoteringLukket), action);
-        }
-    }
+    public IDisposable OnNyStemme(Action<NyStemmeEvent> action) => HubConnection.On(nameof(IAdminHubClient.NyStemme), action);
 
-    public void OnVoteringPublisert(Action<VoteringPublisertEvent> action)
-    {
-        if (!Started)
-        {
-            HubConnection.On(nameof(IDelegatHubClient.VoteringPublisert), action);
-        }
-    }
+    public IDisposable OnStemmeFjernet(Action<StemmeFjernetEvent> action) => HubConnection.On(nameof(IAdminHubClient.StemmeFjernet), action);
 
-    public void OnNyVotering(Action<NyVoteringEvent> action)
-    {
-        if (!Started)
-        {
-            HubConnection.On(nameof(IDelegatHubClient.NyVotering), action);
-        }
-    }
+    public IDisposable OnVoteringLukket(Action<VoteringLukketEvent> action) => HubConnection.On(nameof(IAdminHubClient.VoteringLukket), action);
 
-    public void OnHarStemt(Action<HarStemtEvent> action)
-    {
-        if (!Started)
-        {
-            HubConnection.On(nameof(IDelegatHubClient.HarStemt), action);
-        }
-    }
+    public IDisposable OnVoteringPublisert(Action<VoteringPublisertEvent> action) => HubConnection.On(nameof(IAdminHubClient.VoteringPublisert), action);
+
+    public IDisposable OnNyVotering(Action<NyVoteringEvent> action) => HubConnection.On(nameof(IAdminHubClient.NyVotering), action);
+
+    public IDisposable OnHarStemt(Action<HarStemtEvent> action) => HubConnection.On(nameof(IAdminHubClient.HarStemt), action);
 }
