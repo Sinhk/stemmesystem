@@ -130,6 +130,7 @@ namespace Stemmesystem.Server.Areas.Identity.Pages.Account
                         if (addLoginResult.Succeeded)
                         {
                             _logger.LogInformation("Added external provider {LoginProvider} for user {Name} .", info.LoginProvider, info.Principal.Identity.Name);
+                           await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
                             return LocalRedirect(returnUrl);
                         }
                     }
