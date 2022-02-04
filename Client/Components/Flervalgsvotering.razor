@@ -2,7 +2,7 @@
 @using Stemmesystem.Shared
 @inject IStemmeService _stemmeService
 
-<h6>Du har valg @_valg.Count, du kan velge @Base.Votering.KanVelge</h6>
+<h6>Du har valgt @_valg.Count, du kan velge @Base.Votering.KanVelge</h6>
 <div class="btn-group-toggle btn-group-vertical btn-block" data-toggle="buttons">
     @foreach (var valg in Base.Votering.Valg.OrderBy(v => v.SortId))
     {
@@ -48,7 +48,7 @@
         {
             if (_valg.Count >= Base.Votering.KanVelge)
             {
-                ErrorChanged.InvokeAsync($"Du kan bare velg {Base.Votering.KanVelge}");
+                ErrorChanged.InvokeAsync($"Du kan bare velge {Base.Votering.KanVelge}");
             }
             else
                 _valg.Add(valgId);
