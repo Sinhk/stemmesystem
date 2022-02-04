@@ -11,7 +11,7 @@
 }
 else
 {
-  <form class="form-inline" @onsubmit="DelegatLogin">
+  <form class="form-inline d-none d-md-block" @onsubmit="DelegatLogin">
       @if(_error != null){
           <span class="text-danger">@_error</span>
       }
