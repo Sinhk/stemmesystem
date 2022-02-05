@@ -60,7 +60,7 @@ namespace Stemmesystem.Client.Services.CSV
                             , Valg = new List<ValgDto>(sak.Valg?.Select(v => new ValgDto
                             {
                                 Id = new Guid()
-                                , Navn = v
+                                , Navn = v.Trim(' ','"')
                             }) ?? Enumerable.Empty<ValgDto>() )
                         }
                     }
