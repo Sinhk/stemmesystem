@@ -75,6 +75,10 @@
             _error = $"For mange valg! Du kan bare velge {Votering.KanVelge}";
             return;
         }
+        if (valg.Count == 0)
+        {
+            valg.Add(Konstanter.BlankStemme);
+        }
         try
         {
             var stemmer = await _stemmeService.AvgiStemmeAsync(new AvgiStemmeRequest(Votering.Id, valg));
