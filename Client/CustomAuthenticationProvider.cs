@@ -42,6 +42,8 @@ public class CustomAuthenticationProvider : RemoteAuthenticationService<RemoteAu
         if (string.IsNullOrEmpty(token))
             return null;
         var securityToken = new JwtSecurityToken(token);
+        if (securityToken.ValidTo < DateTime.UtcNow)
+            return null;
         return securityToken;
     }
 
