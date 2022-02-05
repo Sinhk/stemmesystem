@@ -10,19 +10,15 @@ public class AdminHub : Hub<IAdminHubClient>
 {
     public async Task KobleTilArrangement(int arrangementId)
     {
-        Console.WriteLine("Adding to group");
         await Groups.AddToGroupAsync(Context.ConnectionId, arrangementId.ToString());
     }
     public async Task KobleFraArrangement(int arrangementId)
     {
-        Console.WriteLine("Removing from group");
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, arrangementId.ToString());
     }
     
     public override async Task OnConnectedAsync()
     {
-        Console.WriteLine($"{Context.UserIdentifier} Connecting with id {Context.ConnectionId}");
-        
         if (Context.User?.IsAuthenticated() == true)
         {
             if (Context.User.IsInRole("admin")) 

@@ -59,12 +59,10 @@
 
     public void OnNyStemme(NyStemmeEvent e)
     {
-        Console.WriteLine("Ny stemme");
         var (voteringId, stemme) = e;
         var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
         if (votering is {Stemmer: { } })
         {
-            Console.WriteLine(e);
             votering.Stemmer.Add(stemme);
         }
         else
@@ -76,12 +74,10 @@
 
     public void OnStemmeFjernet(StemmeFjernetEvent e)
     {
-        Console.WriteLine("Stemme fjernet");
         var (voteringId, stemmeId) = e;
         var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
         if (votering != null)
         {
-            Console.WriteLine(e);
             votering.Stemmer.RemoveAll(s=> s.Id == stemmeId);
         }
         else
@@ -176,7 +172,6 @@
 
     public async ValueTask DisposeAsync()
     {
-        Console.WriteLine("DISPOSING");
         await Notifier.KobleFraArrangement(ArrangementId);
         foreach (var s in _subscriptions)
         {
