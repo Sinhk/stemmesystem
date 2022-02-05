@@ -6,7 +6,7 @@
 <div class="btn-group-toggle btn-group-vertical btn-block" data-toggle="buttons">
     @foreach (var valg in Base.Votering.Valg.OrderBy(v => v.SortId))
     {
-        <label class="btn btn-outline-primary  @(_valg.Contains(valg.Id) ? "active" : "")">
+        <label class="btn @(_valg.Contains(valg.Id) ? "btn-outline-success active" : "btn-outline-primary")">
             <input type="checkbox" value="@valg.Id" @onclick="e => VoteChanged(valg.Id)" @onclick:preventDefault="true" checked="@_valg.Contains(valg.Id)"> @valg.Navn
         </label>
     }
