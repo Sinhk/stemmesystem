@@ -9,6 +9,8 @@
 
 @using Stemmesystem.Shared.Interfaces
 @using Microsoft.AspNetCore.Authorization
+
+@inherits OwningComponentBase
 @implements IDisposable
 
 @if (_arrangementer == null)
@@ -20,6 +22,10 @@ else
     <div class="row mt-4">
         <h2>Resultater</h2>
         <span class="ml-2 mt-1 oi "></span>
+        @if (_nyPublisert)
+        {
+            <h5>Ny votering publisert. Last inn på nytt for å se</h5>    
+        }
     </div>
     @foreach (var arrangement in _arrangementer)
     {

@@ -211,6 +211,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         await _context.SaveChangesAsync(cancellationToken);
             
         await _notificationManager.ForAdmin().VoteringPublisert(new VoteringPublisertEvent(arrangementId, votering.SakId, votering.Id), cancellationToken);
+        await _notificationManager.ForArrangement(arrangementId).VoteringPublisert(new VoteringPublisertEvent(arrangementId, votering.SakId, votering.Id), cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
 

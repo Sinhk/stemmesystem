@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Stemmesystem.Client.SignalR;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
 using Stemmesystem.Shared.Models;
@@ -11,9 +12,10 @@ namespace Stemmesystem.Client.Pages
         [CascadingParameter]
         private Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
         
-        private NotifierService? _notifier;
         private bool _disposed;
         private List<ArrangementInfo>? _arrangementer;
+        private IDisposable? _subscription;
+        private bool _nyPublisert = false;
 
         protected override async Task OnInitializedAsync()
         {
@@ -25,6 +27,10 @@ namespace Stemmesystem.Client.Pages
             {
                 var arrangement = await _arrangementService.HentArrangementerAsync();
                 _arrangementer = arrangement;
+
+                var notifier = ScopedServices.GetRequiredService<IAdminNotifierService>();
+                _subscription = notifier.OnVoteringPublisert(OnVoteringPublisert);
+                await notifier.Start();
             }
             else if (authState.User.IsInRole("Delegat"))
             {
@@ -34,36 +40,26 @@ namespace Stemmesystem.Client.Pages
                     var id = int.Parse(arrangementClaim.Value);
                     var arrangement = await _arrangementService.HentArrangementInfoAsync(new ArrangementRequest {ArrangementId = id});
                     if (arrangement != null) _arrangementer = new List<ArrangementInfo> { arrangement };
+                    var notifier = ScopedServices.GetRequiredService<IDelegatNotifierService>();
+                    _subscription = notifier.OnVoteringPublisert(OnVoteringPublisert);
+                    await notifier.Start();
                 }
             }
-            
-            /*
-             _notifier = Notifications.ForArrangement(_arrangement.Id);
-            _notifier.VoteringStartet += VoteringStartet;
-            _notifier.VoteringStoppet += VoteringStoppet;
-            */
         }
         
+        private void OnVoteringPublisert(VoteringPublisertEvent e)
+        {
+            _nyPublisert = true;
+            StateHasChanged();
+        }
+
         public void Dispose() => Dispose(true);
 
         private void Dispose(bool disposing)
         {
             if (_disposed)
                 return;
-/*
-            if (_notifier != null)
-            {
-                _notifier.VoteringStartet -= VoteringStartet;
-                _notifier.VoteringStoppet -= VoteringStoppet;
-            }
-            */
-/*
-            if (disposing)
-            {
-                if (Tracker != null && _arrangement != null &&_delegat != null)
-                    Tracker.RegisterInactive(_arrangement.Id, _delegat.Id);
-            }
-*/
+            _subscription?.Dispose();
             _disposed = true;
         }
     }

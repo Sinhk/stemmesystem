@@ -10,6 +10,7 @@ public interface IDelegatNotifierService : ISignalRClient
 {
     IDisposable? OnVoteringStartet(Action<VoteringStartetEvent> action);
     IDisposable? OnVoteringStoppet(Action<VoteringStoppetEvent> action);
+    IDisposable? OnVoteringPublisert(Action<VoteringPublisertEvent> action);
 }
 
 public interface IAdminNotifierService : ISignalRClient
@@ -37,6 +38,8 @@ public class DelegatNotifierService : SignalRClientBase, IDelegatNotifierService
 
     public IDisposable OnVoteringStoppet(Action<VoteringStoppetEvent> action)
         => HubConnection.On(nameof(IDelegatHubClient.VoteringStoppet), action);
+    public IDisposable OnVoteringPublisert(Action<VoteringPublisertEvent> action)
+        => HubConnection.On(nameof(IDelegatHubClient.VoteringPublisert), action);
 }
 
 public class AdminNotifierService : SignalRClientBase, IAdminNotifierService
