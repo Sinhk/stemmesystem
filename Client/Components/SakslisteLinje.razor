@@ -143,15 +143,25 @@
     {
         _nyRunde = await _stemmeService.KopierVotering(new AdminStemmeRequest(arrangementId, voteringId));
         var num = 2;
-        
-        var split = _nyRunde.Tittel.Split("Runde");
-        if (split.Length > 1)
+        if (_nyRunde.Tittel.Contains(". runde", StringComparison.OrdinalIgnoreCase))
         {
-            var numStr = split[1];
-            int.TryParse(numStr.Trim(), out num);
-            num++;
+            if(int.TryParse(_nyRunde.Tittel.Split('.',StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[0],out num))
+            {
+                num++;
+                _nyRunde.Tittel = num + _nyRunde.Tittel[1..];
+            }
         }
-        _nyRunde = _nyRunde with{ Tittel = $"{split[0].TrimEnd('-', ' ')} - Runde {num}"};
+        else
+        {
+            var split = _nyRunde.Tittel.Split("Runde",StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (split.Length > 1)
+            {
+                var numStr = split[1];
+                int.TryParse(numStr.Trim(), out num);
+                num++;
+            }
+            _nyRunde = _nyRunde with{ Tittel = $"{split[0].TrimEnd('-', ' ')} - Runde {num}"};
+        }
 
         StateHasChanged();
     }
