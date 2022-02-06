@@ -8,8 +8,8 @@ namespace Stemmesystem.Server.Hubs;
 
 public class DelegatHub : Hub<IDelegatHubClient>
 {
-    private static readonly ConcurrentDictionary<string, int> Tracker = new ConcurrentDictionary<string, int>();
-    private static readonly ConcurrentDictionary<int, int> Counts = new ConcurrentDictionary<int, int>();
+    private static readonly ConcurrentDictionary<string, int> Tracker = new();
+    private static readonly ConcurrentDictionary<int, int> Counts = new();
 
     public  int GetActiveCount(int arrangementId)
     {

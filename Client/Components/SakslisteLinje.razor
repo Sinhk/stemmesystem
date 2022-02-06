@@ -45,7 +45,7 @@
                         <button class="btn btn-primary" @onclick:stopPropagation @onclick="@(async () => await PubliserVotering(ArrangementId, Votering.Id))">Publiser</button>
                     </div>
                 }
-                else
+                @if(Votering.Lukket)
                 {
                     <div class="text-right">
                         <button class="btn btn-primary" @onclick:stopPropagation @onclick="@(async () => await NyRunde(ArrangementId, Votering.Id))">Ny Runde</button>
