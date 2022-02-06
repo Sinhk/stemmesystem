@@ -49,7 +49,7 @@ public static class TestData
         await CreateUser(userManager, "siljeth.kroknes@gmail.com");
     }
 
-    private static async Task<ApplicationUser> CreateUser(UserManager<ApplicationUser> userManager, string email)
+    internal static async Task<ApplicationUser> CreateUser(UserManager<ApplicationUser> userManager, string email)
     {
         var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
         await userManager.CreateAsync(user);

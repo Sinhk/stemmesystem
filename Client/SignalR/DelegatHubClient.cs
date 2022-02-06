@@ -11,6 +11,8 @@ public interface IDelegatNotifierService : ISignalRClient
     IDisposable? OnVoteringStartet(Action<VoteringStartetEvent> action);
     IDisposable? OnVoteringStoppet(Action<VoteringStoppetEvent> action);
     IDisposable? OnVoteringPublisert(Action<VoteringPublisertEvent> action);
+    IDisposable OnCountChanged(Action<ActiveCountChangedEvent> action);
+    Task<int> GetActiveCount(int arrangementId, CancellationToken cancellationToken = default);
 }
 
 public interface IAdminNotifierService : ISignalRClient
@@ -32,6 +34,20 @@ public class DelegatNotifierService : SignalRClientBase, IDelegatNotifierService
     public DelegatNotifierService(NavigationManager navigationManager, IAccessTokenProvider tokenProvider) : base(navigationManager, tokenProvider, "hubs/delegat")
     {
     }
+    public async Task<int> GetActiveCount(int arrangementId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await HubConnection.InvokeAsync<int>("GetActiveCount", arrangementId, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            Console.WriteLine(e.Message);
+        }
+
+        return 0;
+    }
 
     public IDisposable OnVoteringStartet(Action<VoteringStartetEvent> action)
         => HubConnection.On(nameof(IDelegatHubClient.VoteringStartet), action);
@@ -40,6 +56,8 @@ public class DelegatNotifierService : SignalRClientBase, IDelegatNotifierService
         => HubConnection.On(nameof(IDelegatHubClient.VoteringStoppet), action);
     public IDisposable OnVoteringPublisert(Action<VoteringPublisertEvent> action)
         => HubConnection.On(nameof(IDelegatHubClient.VoteringPublisert), action);
+    public IDisposable OnCountChanged(Action<ActiveCountChangedEvent> action)
+        => HubConnection.On(nameof(IDelegatHubClient.CountChanged), action);
 }
 
 public class AdminNotifierService : SignalRClientBase, IAdminNotifierService
