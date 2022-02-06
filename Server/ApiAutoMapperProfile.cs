@@ -40,7 +40,8 @@ public class ApiAutoMapperProfile : Profile
 
         CreateMap<Votering, VoteringDto>();
         CreateMap<Votering, AdminVoteringDto>();
-        CreateMap<Votering, VoteringResultatDto>();
+        CreateMap<Votering, VoteringResultatDto>()
+            .ForMember(v =>v.SakNavn, opt => opt.MapFrom(s => s.Sak.Tittel));
         CreateMap<Votering, VoteringInputModel>()
             .ForMember(s => s.Startet, o => o.Ignore())
             .ReverseMap();;

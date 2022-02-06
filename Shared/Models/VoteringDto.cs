@@ -47,10 +47,19 @@ namespace Stemmesystem.Shared.Models
     public record SakInfoDto(int Id, string Tittel, string Beskrivelse);
 
 
-    public record VoteringResultatDto(int Id, string Tittel, string Beskrivelse, List<StemmeDto>? Stemmer, List<ValgDto>? Valg)
+    [ProtoContract]
+    public record VoteringResultatDto
     {
-        public List<StemmeDto> Stemmer { get; init; } = Stemmer ?? new List<StemmeDto>();
-        public List<ValgDto> Valg { get; init; } = Valg ?? new List<ValgDto>();
+        [ProtoMember(1)]
+        public int Id { get; init; }
+        [ProtoMember(2)]
+        public string Tittel { get; init; }
+        [ProtoMember(3)] public string Beskrivelse { get; init; }
+        [ProtoMember(4)] public List<StemmeDto> Stemmer { get; init; } = new();
+        [ProtoMember(5)] public List<ValgDto> Valg { get; init; } = new();
+        [ProtoMember(6)] public string SakNavn { get; init; }
+        [ProtoMember(7)] public string SakNummer { get; init; }
+        
     }
 
     /*
@@ -101,7 +110,8 @@ namespace Stemmesystem.Shared.Models
 /*
         [ProtoMember(14)]
         public ICollection<DelegatDto> AvgitStemme { get; set; }
-        *//*
+        */
+    /*
     }
 */
     
