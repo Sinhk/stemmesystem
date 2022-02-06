@@ -5,7 +5,9 @@ public interface IDelegatHubClient
     Task VoteringStartet(VoteringStartetEvent e, CancellationToken cancellationToken = default);
     Task VoteringStoppet(VoteringStoppetEvent e, CancellationToken cancellationToken = default);
     Task VoteringPublisert(VoteringPublisertEvent e, CancellationToken cancellationToken = default);
+    Task CountChanged(ActiveCountChangedEvent e, CancellationToken cancellationToken = default);
 }
+
 
 public interface IAdminHubClient : IDelegatHubClient
 {

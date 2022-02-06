@@ -2,8 +2,10 @@
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Microsoft.AspNetCore.Authorization
+@using Stemmesystem.Shared
 @inject IArrangementService _arrangementService
 @implements IDisposable
+@inherits OwningComponentBase<Stemmesystem.Client.SignalR.IDelegatNotifierService>
 @attribute [Authorize]
 <div class="row">
     <h3><b>@_arrangement?.Navn</b></h3>    
@@ -34,23 +36,23 @@
         if(arrangement != null)
             _arrangement = arrangement;
         
-        /*
-        _tracker.CountChanged += ActiveCountChanged;
-        _aktiveDelegater = _tracker.ActiveCount(ArrangementId);
-        */
+        
+        Service.OnCountChanged(ActiveCountChanged);
+        await Service.Start();
+        _aktiveDelegater = await Service.GetActiveCount(ArrangementId);
+
     }
 
-    /*
-    private void ActiveCountChanged(ActiveTrackerEvent e)
+    
+    private void ActiveCountChanged(ActiveCountChangedEvent e)
     {
         if (e.ArrangementId == ArrangementId)
-        InvokeAsync(() =>
         {
             _aktiveDelegater = e.NewCount;
             StateHasChanged();
-        });
+        }
     }
-    */
+    
     public void Dispose()
     {
         //_tracker.CountChanged -= ActiveCountChanged;
