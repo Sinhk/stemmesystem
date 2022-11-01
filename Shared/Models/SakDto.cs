@@ -9,13 +9,15 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(1)]
         public int Id { get; internal init; }
         [ProtoMember(2)]
-        public string Nummer { get; init; }
-        [ProtoMember(3)]
-        public string Tittel { get; init; }
+        public string? Nummer { get; init; }
+        [ProtoMember(3), Required]
+        public string Tittel { get; init; } = null!;
+
         [ProtoMember(4)]
         public string? Beskrivelse { get; set; }
 
-        [ProtoMember(5)] public List<VoteringDto> Voteringer { get; internal init; } = new();
+        [ProtoMember(5)] 
+        public List<VoteringDto> Voteringer { get; internal init; } = new();
         [ProtoMember(6)]
         public int ArrangementId { get; set; }
     }
@@ -43,9 +45,9 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(1)]
         public int Id { get; internal init; }
         [ProtoMember(2)]
-        public string Nummer { get; init; }
+        public string? Nummer { get; init; }
         [ProtoMember(3)]
-        public string Tittel { get; init; }
+        public string? Tittel { get; init; }
         [ProtoMember(4)]
         public string? Beskrivelse { get; set; }
 

@@ -52,10 +52,8 @@ namespace Stemmesystem.Client.Pages
             Notifier.OnVoteringStoppet(VoteringStoppet);
             await Notifier.Start();
         }
-        
-        public void Dispose() => Dispose(true);
 
-        private void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (_disposed)
                 return;
@@ -73,6 +71,7 @@ namespace Stemmesystem.Client.Pages
                     Tracker.RegisterInactive(_arrangement.Id, _delegat.Id);
             }
 */
+            base.Dispose(disposing);
             _disposed = true;
         }
 

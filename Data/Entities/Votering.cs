@@ -87,7 +87,7 @@ namespace StemmeSystem.Data.Entities
             List<Stemme>? fjernes = null;
             if (_avgitStemme.Any(d => d.Id == delegat.Id))
             {
-                fjernes = Hemmelig ? _stemmer.Where(s => keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
+                fjernes = Hemmelig ? _stemmer.Where(s => s.StemmeHash != null && keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
                 _stemmer.RemoveAll(s=>  fjernes.Contains(s));
             }
 

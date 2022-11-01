@@ -5,13 +5,12 @@
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
 @using Microsoft.AspNetCore.Authorization
-@inject IArrangementService ArrangementService
 @inject ISakService SakService
 @inject NavigationManager Navigation
 
 @attribute [Authorize(Roles = "admin")]
 
-@if (_sak.Id != null)
+@if (_sak.Id != default)
 {
     <h3>Redigerer sak <b>@_sak.Tittel</b></h3>
 }

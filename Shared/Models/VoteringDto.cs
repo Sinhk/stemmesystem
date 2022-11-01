@@ -12,9 +12,9 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(1)]
         public int Id { get; init; }
         [ProtoMember(2)]
-        public string Tittel { get; init; }
+        public string? Tittel { get; init; }
         [ProtoMember(3)]
-        public string Beskrivelse { get; init; }
+        public string? Beskrivelse { get; init; }
         [ProtoMember(4)]
         public int KanVelge { get; init; }
         [ProtoMember(5)]
@@ -133,9 +133,9 @@ namespace Stemmesystem.Shared.Models
         public int SakId { get; init; }
         [ProtoMember(2)]
         public int? Id { get; init; }
-        
-        [ProtoMember(4)]
-        public string Tittel { get; set; }
+
+        [ProtoMember(4), Required] 
+        public string Tittel { get; set; } = null!;
         [ProtoMember(5)]
         public string? Beskrivelse { get; set; }
         [ProtoMember(6)]

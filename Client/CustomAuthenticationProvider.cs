@@ -1,7 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Blazored.SessionStorage;
 using IdentityModel;
 using Microsoft.AspNetCore.Components;
@@ -16,7 +14,6 @@ namespace Stemmesystem.Client;
 public class CustomAuthenticationProvider : RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, ApiAuthorizationProviderOptions>
 {
     private readonly ISessionStorageService _sessionStorage;
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web){ReferenceHandler = ReferenceHandler.Preserve};
 
     public CustomAuthenticationProvider(IJSRuntime jsRuntime, IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> options, NavigationManager navigation, AccountClaimsPrincipalFactory<RemoteUserAccount> accountClaimsPrincipalFactory, ISessionStorageService sessionStorage) : base(jsRuntime, options, navigation, accountClaimsPrincipalFactory )
     {

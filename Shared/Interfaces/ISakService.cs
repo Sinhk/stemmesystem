@@ -69,10 +69,10 @@ public record LagreResult<T>
     [ProtoMember(2)]
     public IDictionary<string, List<string>>? Errors { get; init; }
 
-    public void Deconstruct(out T? value, out IDictionary<string, List<string>>? errors)
+    public void Deconstruct(out T? value, out IDictionary<string, List<string>> errors)
     {
         value = Value;
-        errors = Errors;
+        errors = Errors ?? new Dictionary<string, List<string>>();
     }
 
     public static LagreResult<T> Error(string error) => new(default, new Dictionary<string, List<string>> { [""] = new() { error } });

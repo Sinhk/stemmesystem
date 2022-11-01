@@ -85,6 +85,13 @@ else
             _error = "Ikke en gyldig PIN";
             return;
         }
+        if (_delegat == null)
+        {
+            _error = "Noe gikk galt med innloggingen";
+            return;
+        }
+                
+            
         NavigationManager.NavigateTo($"/arrangement/{_delegat.ArrangementId}");
     }
 }

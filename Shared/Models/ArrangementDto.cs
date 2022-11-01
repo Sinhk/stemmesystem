@@ -11,7 +11,8 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(2)]
         [Required(ErrorMessage = "Navn er påkrevd")]
         [StringLength(20)]
-        public string Navn { get; init; }
+        public string Navn { get; init; } = null!;
+
         [ProtoMember(3)]
         public string? Beskrivelse { get; set; }
         
