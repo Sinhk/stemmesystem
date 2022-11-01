@@ -18,7 +18,7 @@ namespace PostgresMigrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("stemme")
-                .HasAnnotation("ProductVersion", "6.0.1")
+                .HasAnnotation("ProductVersion", "6.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -334,6 +334,157 @@ namespace PostgresMigrations
                     b.ToTable("AspNetUserTokens", "stemme");
                 });
 
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Delegat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArrangementId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Delegatkode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Delegatnummer")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Epost")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Gruppe")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Navn")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("SendtEmailInternal")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("SendtEmail");
+
+                    b.Property<DateTimeOffset?>("SendtSmsInternal")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("SendtSms");
+
+                    b.Property<string>("Telefon")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Delegatkode")
+                        .IsUnique();
+
+                    b.HasIndex("ArrangementId", "Delegatnummer")
+                        .IsUnique();
+
+                    b.ToTable("Delegat", "stemme");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Sak", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArrangementId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Nummer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tittel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArrangementId");
+
+                    b.ToTable("Sak", "stemme");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Stemme", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("DelegatId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StemmeHash")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ValgId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("VoteringId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DelegatId");
+
+                    b.HasIndex("VoteringId");
+
+                    b.ToTable("Stemme", "stemme");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Votering", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Aktiv")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Hemmelig")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("KanVelge")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Lukket")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Publisert")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("SakId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("SluttTid")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("StartTid")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Tittel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SakId");
+
+                    b.ToTable("Votering", "stemme");
+                });
+
             modelBuilder.Entity("StemmeSystem.Data.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -427,166 +578,15 @@ namespace PostgresMigrations
                     b.ToTable("Arrangement", "stemme");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Delegat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ArrangementId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Delegatkode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Delegatnummer")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Epost")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Gruppe")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Navn")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("SendtEmailInternal")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("SendtEmail");
-
-                    b.Property<DateTimeOffset?>("SendtSmsInternal")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("SendtSms");
-
-                    b.Property<string>("Telefon")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Delegatkode")
-                        .IsUnique();
-
-                    b.HasIndex("ArrangementId", "Delegatnummer")
-                        .IsUnique();
-
-                    b.ToTable("Delegat", "stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ArrangementId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Beskrivelse")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Nummer")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Tittel")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArrangementId");
-
-                    b.ToTable("Sak", "stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Stemme", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("DelegatId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("StemmeHash")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ValgId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("VoteringId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DelegatId");
-
-                    b.HasIndex("VoteringId");
-
-                    b.ToTable("Stemme", "stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Aktiv")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Beskrivelse")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Hemmelig")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("KanVelge")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("Lukket")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Publisert")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("SakId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("SluttTid")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("StartTid")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Tittel")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SakId");
-
-                    b.ToTable("Votering", "stemme");
-                });
-
             modelBuilder.Entity("DelegatVotering", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Delegat", null)
+                    b.HasOne("StemmeSystem.Data.Entities.Delegat", null)
                         .WithMany()
                         .HasForeignKey("AvgitStemmeId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Votering", null)
+                    b.HasOne("StemmeSystem.Data.Entities.Votering", null)
                         .WithMany()
                         .HasForeignKey("HarStemmtIId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -644,7 +644,7 @@ namespace PostgresMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Delegat", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Delegat", b =>
                 {
                     b.HasOne("Stemmesystem.Server.Data.Entities.Arrangement", "Arrangement")
                         .WithMany("Delegater")
@@ -655,7 +655,7 @@ namespace PostgresMigrations
                     b.Navigation("Arrangement");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Sak", b =>
                 {
                     b.HasOne("Stemmesystem.Server.Data.Entities.Arrangement", "Arrangement")
                         .WithMany("Saker")
@@ -666,22 +666,22 @@ namespace PostgresMigrations
                     b.Navigation("Arrangement");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Stemme", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Stemme", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Delegat", "Delegat")
+                    b.HasOne("StemmeSystem.Data.Entities.Delegat", "Delegat")
                         .WithMany()
                         .HasForeignKey("DelegatId");
 
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Votering", null)
+                    b.HasOne("StemmeSystem.Data.Entities.Votering", null)
                         .WithMany("Stemmer")
                         .HasForeignKey("VoteringId");
 
                     b.Navigation("Delegat");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Votering", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Sak", "Sak")
+                    b.HasOne("StemmeSystem.Data.Entities.Sak", "Sak")
                         .WithMany("Voteringer")
                         .HasForeignKey("SakId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -716,21 +716,21 @@ namespace PostgresMigrations
                     b.Navigation("Valg");
                 });
 
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Sak", b =>
+                {
+                    b.Navigation("Voteringer");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Votering", b =>
+                {
+                    b.Navigation("Stemmer");
+                });
+
             modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Arrangement", b =>
                 {
                     b.Navigation("Delegater");
 
                     b.Navigation("Saker");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
-                {
-                    b.Navigation("Voteringer");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
-                {
-                    b.Navigation("Stemmer");
                 });
 #pragma warning restore 612, 618
         }

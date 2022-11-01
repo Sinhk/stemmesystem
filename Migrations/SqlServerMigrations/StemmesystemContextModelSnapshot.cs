@@ -18,7 +18,7 @@ namespace SqlServerMigrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("stemme")
-                .HasAnnotation("ProductVersion", "6.0.1")
+                .HasAnnotation("ProductVersion", "6.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -335,6 +335,157 @@ namespace SqlServerMigrations
                     b.ToTable("AspNetUserTokens", "stemme");
                 });
 
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Delegat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("ArrangementId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Delegatkode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Delegatnummer")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Epost")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gruppe")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Navn")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("SendtEmailInternal")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("SendtEmail");
+
+                    b.Property<DateTimeOffset?>("SendtSmsInternal")
+                        .HasColumnType("datetimeoffset")
+                        .HasColumnName("SendtSms");
+
+                    b.Property<string>("Telefon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Delegatkode")
+                        .IsUnique();
+
+                    b.HasIndex("ArrangementId", "Delegatnummer")
+                        .IsUnique();
+
+                    b.ToTable("Delegat", "stemme");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Sak", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("ArrangementId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nummer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Tittel")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArrangementId");
+
+                    b.ToTable("Sak", "stemme");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Stemme", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("DelegatId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StemmeHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ValgId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("VoteringId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DelegatId");
+
+                    b.HasIndex("VoteringId");
+
+                    b.ToTable("Stemme", "stemme");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Votering", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<bool>("Aktiv")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Hemmelig")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("KanVelge")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Lukket")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Publisert")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SakId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SluttTid")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("StartTid")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Tittel")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SakId");
+
+                    b.ToTable("Votering", "stemme");
+                });
+
             modelBuilder.Entity("StemmeSystem.Data.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -429,166 +580,15 @@ namespace SqlServerMigrations
                     b.ToTable("Arrangement", "stemme");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Delegat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int>("ArrangementId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Delegatkode")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Delegatnummer")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Epost")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Gruppe")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Navn")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("SendtEmailInternal")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnName("SendtEmail");
-
-                    b.Property<DateTimeOffset?>("SendtSmsInternal")
-                        .HasColumnType("datetimeoffset")
-                        .HasColumnName("SendtSms");
-
-                    b.Property<string>("Telefon")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Delegatkode")
-                        .IsUnique();
-
-                    b.HasIndex("ArrangementId", "Delegatnummer")
-                        .IsUnique();
-
-                    b.ToTable("Delegat", "stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int>("ArrangementId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Beskrivelse")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Nummer")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Tittel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArrangementId");
-
-                    b.ToTable("Sak", "stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Stemme", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("DelegatId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("StemmeHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("ValgId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("VoteringId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DelegatId");
-
-                    b.HasIndex("VoteringId");
-
-                    b.ToTable("Stemme", "stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<bool>("Aktiv")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Beskrivelse")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Hemmelig")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("KanVelge")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Lukket")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Publisert")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("SakId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("SluttTid")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("StartTid")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Tittel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SakId");
-
-                    b.ToTable("Votering", "stemme");
-                });
-
             modelBuilder.Entity("DelegatVotering", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Delegat", null)
+                    b.HasOne("StemmeSystem.Data.Entities.Delegat", null)
                         .WithMany()
                         .HasForeignKey("AvgitStemmeId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Votering", null)
+                    b.HasOne("StemmeSystem.Data.Entities.Votering", null)
                         .WithMany()
                         .HasForeignKey("HarStemmtIId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -646,7 +646,7 @@ namespace SqlServerMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Delegat", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Delegat", b =>
                 {
                     b.HasOne("Stemmesystem.Server.Data.Entities.Arrangement", "Arrangement")
                         .WithMany("Delegater")
@@ -657,7 +657,7 @@ namespace SqlServerMigrations
                     b.Navigation("Arrangement");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Sak", b =>
                 {
                     b.HasOne("Stemmesystem.Server.Data.Entities.Arrangement", "Arrangement")
                         .WithMany("Saker")
@@ -668,22 +668,22 @@ namespace SqlServerMigrations
                     b.Navigation("Arrangement");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Stemme", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Stemme", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Delegat", "Delegat")
+                    b.HasOne("StemmeSystem.Data.Entities.Delegat", "Delegat")
                         .WithMany()
                         .HasForeignKey("DelegatId");
 
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Votering", null)
+                    b.HasOne("StemmeSystem.Data.Entities.Votering", null)
                         .WithMany("Stemmer")
                         .HasForeignKey("VoteringId");
 
                     b.Navigation("Delegat");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Votering", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Sak", "Sak")
+                    b.HasOne("StemmeSystem.Data.Entities.Sak", "Sak")
                         .WithMany("Voteringer")
                         .HasForeignKey("SakId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -718,21 +718,21 @@ namespace SqlServerMigrations
                     b.Navigation("Valg");
                 });
 
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Sak", b =>
+                {
+                    b.Navigation("Voteringer");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Votering", b =>
+                {
+                    b.Navigation("Stemmer");
+                });
+
             modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Arrangement", b =>
                 {
                     b.Navigation("Delegater");
 
                     b.Navigation("Saker");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
-                {
-                    b.Navigation("Voteringer");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
-                {
-                    b.Navigation("Stemmer");
                 });
 #pragma warning restore 612, 618
         }

@@ -15,7 +15,7 @@ namespace SqliteMigrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.10");
 
             modelBuilder.Entity("DelegatVotering", b =>
                 {
@@ -322,6 +322,151 @@ namespace SqliteMigrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Delegat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ArrangementId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Delegatkode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Delegatnummer")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Epost")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Gruppe")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Navn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("SendtEmailInternal")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SendtEmail");
+
+                    b.Property<DateTimeOffset?>("SendtSmsInternal")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("SendtSms");
+
+                    b.Property<string>("Telefon")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Delegatkode")
+                        .IsUnique();
+
+                    b.HasIndex("ArrangementId", "Delegatnummer")
+                        .IsUnique();
+
+                    b.ToTable("Delegat");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Sak", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ArrangementId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Nummer")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tittel")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArrangementId");
+
+                    b.ToTable("Sak");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Stemme", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("DelegatId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StemmeHash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ValgId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("VoteringId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DelegatId");
+
+                    b.HasIndex("VoteringId");
+
+                    b.ToTable("Stemme");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Votering", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Aktiv")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Hemmelig")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("KanVelge")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Lukket")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Publisert")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SakId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("SluttTid")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("StartTid")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tittel")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SakId");
+
+                    b.ToTable("Votering");
+                });
+
             modelBuilder.Entity("StemmeSystem.Data.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -413,160 +558,15 @@ namespace SqliteMigrations
                     b.ToTable("Arrangement");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Delegat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ArrangementId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Delegatkode")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Delegatnummer")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Epost")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Gruppe")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Navn")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTimeOffset?>("SendtEmailInternal")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("SendtEmail");
-
-                    b.Property<DateTimeOffset?>("SendtSmsInternal")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("SendtSms");
-
-                    b.Property<string>("Telefon")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Delegatkode")
-                        .IsUnique();
-
-                    b.HasIndex("ArrangementId", "Delegatnummer")
-                        .IsUnique();
-
-                    b.ToTable("Delegat");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ArrangementId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Beskrivelse")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Nummer")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Tittel")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArrangementId");
-
-                    b.ToTable("Sak");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Stemme", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("DelegatId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("StemmeHash")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ValgId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("VoteringId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DelegatId");
-
-                    b.HasIndex("VoteringId");
-
-                    b.ToTable("Stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Aktiv")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Beskrivelse")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Hemmelig")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("KanVelge")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Lukket")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Publisert")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("SakId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("SluttTid")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("StartTid")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Tittel")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SakId");
-
-                    b.ToTable("Votering");
-                });
-
             modelBuilder.Entity("DelegatVotering", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Delegat", null)
+                    b.HasOne("StemmeSystem.Data.Entities.Delegat", null)
                         .WithMany()
                         .HasForeignKey("AvgitStemmeId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Votering", null)
+                    b.HasOne("StemmeSystem.Data.Entities.Votering", null)
                         .WithMany()
                         .HasForeignKey("HarStemmtIId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -624,7 +624,7 @@ namespace SqliteMigrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Delegat", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Delegat", b =>
                 {
                     b.HasOne("Stemmesystem.Server.Data.Entities.Arrangement", "Arrangement")
                         .WithMany("Delegater")
@@ -635,7 +635,7 @@ namespace SqliteMigrations
                     b.Navigation("Arrangement");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Sak", b =>
                 {
                     b.HasOne("Stemmesystem.Server.Data.Entities.Arrangement", "Arrangement")
                         .WithMany("Saker")
@@ -646,22 +646,22 @@ namespace SqliteMigrations
                     b.Navigation("Arrangement");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Stemme", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Stemme", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Delegat", "Delegat")
+                    b.HasOne("StemmeSystem.Data.Entities.Delegat", "Delegat")
                         .WithMany()
                         .HasForeignKey("DelegatId");
 
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Votering", null)
+                    b.HasOne("StemmeSystem.Data.Entities.Votering", null)
                         .WithMany("Stemmer")
                         .HasForeignKey("VoteringId");
 
                     b.Navigation("Delegat");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Votering", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Sak", "Sak")
+                    b.HasOne("StemmeSystem.Data.Entities.Sak", "Sak")
                         .WithMany("Voteringer")
                         .HasForeignKey("SakId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -696,21 +696,21 @@ namespace SqliteMigrations
                     b.Navigation("Valg");
                 });
 
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Sak", b =>
+                {
+                    b.Navigation("Voteringer");
+                });
+
+            modelBuilder.Entity("StemmeSystem.Data.Entities.Votering", b =>
+                {
+                    b.Navigation("Stemmer");
+                });
+
             modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Arrangement", b =>
                 {
                     b.Navigation("Delegater");
 
                     b.Navigation("Saker");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
-                {
-                    b.Navigation("Voteringer");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
-                {
-                    b.Navigation("Stemmer");
                 });
 #pragma warning restore 612, 618
         }
