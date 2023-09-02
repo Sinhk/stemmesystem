@@ -34,8 +34,11 @@
         _expanded = !_expanded;
         if (_voteringer == null)
         {
-            var resultater = await _arrangementService.HentResultater(new ArrangementRequest { ArrangementId = Arrangement.Id });
-            _voteringer = resultater;
+            _voteringer = new List<VoteringResultatDto>();
+            await foreach (var resulat in _arrangementService.HentResultater(new ArrangementRequest { ArrangementId = Arrangement.Id }))
+            {
+                _voteringer.Add(resulat);
+            }
         }
     }
 

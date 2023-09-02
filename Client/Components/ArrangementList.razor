@@ -41,11 +41,12 @@ else
 }
 
 @code {
-    private List<ArrangementInfo>? _arrangementer;
+    private List<ArrangementInfo> _arrangementer = new();
 
     protected override async Task OnInitializedAsync()
     {
-        _arrangementer = await _arrangementService.HentArrangementerAsync();
+        await foreach (var arrangement in _arrangementService.HentArrangementerAsync())
+            _arrangementer.Add(arrangement);
     }
 
     private void NavigerTilArrangement(int id)

@@ -45,8 +45,11 @@ namespace Stemmesystem.Client.Pages
             /*
              _notifier = Notifications.ForArrangement(_arrangement.Id);
             */
-            
-            _voteringer = await ArrangementService.FinnAktiveVoteringer(new ArrangementRequest {ArrangementId = _arrangement.Id});
+
+            await foreach (var votering in ArrangementService.FinnAktiveVoteringer(new ArrangementRequest { ArrangementId = _arrangement.Id }))
+            {
+                _voteringer.Add(votering);
+            }
 
             Notifier.OnVoteringStartet(VoteringStartet);
             Notifier.OnVoteringStoppet(VoteringStoppet);

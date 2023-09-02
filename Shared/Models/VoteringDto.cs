@@ -9,10 +9,19 @@ namespace Stemmesystem.Shared.Models
     [ProtoInclude(13, typeof(AdminVoteringDto))]
     public record VoteringDto
     {
+        private VoteringDto()
+        {
+            Tittel = null!;
+        }
+        public VoteringDto(string tittel)
+        {
+            Tittel = tittel;
+        }
+
         [ProtoMember(1)]
         public int Id { get; init; }
         [ProtoMember(2)]
-        public string? Tittel { get; init; }
+        public string Tittel { get; init; } 
         [ProtoMember(3)]
         public string? Beskrivelse { get; init; }
         [ProtoMember(4)]
@@ -42,6 +51,13 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(1)] public List<DelegatDto> AvgitStemme { get; init; } = new();
         [ProtoMember(2)] public List<StemmeDto> Stemmer { get; init; } = new();
 
+        private AdminVoteringDto() : this(tittel:null!)
+        {
+        }
+        
+        public AdminVoteringDto(string tittel) : base(tittel)
+        {
+        }
     }
     
     public record SakInfoDto(int Id, string Tittel, string Beskrivelse);
@@ -55,9 +71,9 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(2)]
         public string Tittel { get; init; }
         [ProtoMember(3)] public string Beskrivelse { get; init; }
-        [ProtoMember(4)] public List<StemmeDto> Stemmer { get; init; } = new();
-        [ProtoMember(5)] public List<ValgDto> Valg { get; init; } = new();
-        [ProtoMember(6)] public string SakNavn { get; init; }
+        [ProtoMember(4, IsRequired = true)] public List<StemmeDto> Stemmer { get; init; } = new();
+        [ProtoMember(5, IsRequired = true)] public List<ValgDto> Valg { get; init; } = new();
+        [ProtoMember(6)] public string SakNavn { get; init; } 
         [ProtoMember(7)] public string SakNummer { get; init; }
         
     }
@@ -145,7 +161,7 @@ namespace Stemmesystem.Shared.Models
         [Required, Range(1,int.MaxValue,ErrorMessage = "\"Kan velge\" må være 1 eller mer") ]
         public int KanVelge { get; set; } =1;
         
-        [ProtoMember(8)]
+        [ProtoMember(8, IsRequired = true)]
         public List<ValgDto> Valg { get; set; } = new();
 
         public bool Startet { get; set; }

@@ -73,7 +73,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         if(fjernes != null && fjernes.Any())
             await Parallel.ForEachAsync(fjernes, cancellationToken, async (s, token) => await notifier.StemmeFjernet(new StemmeFjernetEvent(votering.Id, s.Id), token));
         await Parallel.ForEachAsync(stemmer, cancellationToken, async (s, token) => await notifier.NyStemme(new NyStemmeEvent(votering.Id, new StemmeDto(s.Id, s.ValgId)), token));
-        await notifier.HarStemt(new HarStemtEvent(votering.Id,delegat.Id), cancellationToken);
+        await notifier.HarStemt(new HarStemtEvent(votering.Id, delegat.Id), cancellationToken);
         var dto = _mapper.Map<List<StemmeDto>>(stemmer);
         return dto;
     }

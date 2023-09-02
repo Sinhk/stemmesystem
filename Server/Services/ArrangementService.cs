@@ -74,16 +74,16 @@ namespace Stemmesystem.Server.Services
                 ;
         }
 
-        public async Task<List<ArrangementInfo>> HentArrangementerAsync(CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<ArrangementInfo> HentArrangementerAsync(CancellationToken cancellationToken = default)
         {
-                        return await _context.Arrangement
+                return _context.Arrangement
                 .AsSplitQuery()
                 .Include(a=> a.Delegater)
                 .Include(a=> a.Saker)
                 .ThenInclude(s => s.Voteringer)
                 .Where(a=> a.Aktiv == true)
                 .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
-                .ToListAsync(cancellationToken);
+                .AsAsyncEnumerable();
         }
 
         public async Task<ArrangementDto?> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
@@ -115,27 +115,27 @@ namespace Stemmesystem.Server.Services
             return (await HentArrangementAsync(arrangement.Id))!;
         }
 
-        public async Task<List<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request)
+        public IAsyncEnumerable<VoteringDto> FinnAktiveVoteringer(ArrangementRequest request)
         {
-            return await _context.Arrangement
+            return _context.Arrangement
                 .AsSplitQuery()
                 .Where(a=> a.Id == request.ArrangementId)
                 .SelectMany(a => a.Saker)
                 .SelectMany(s => s.Voteringer)
                 .Where(v => v.Aktiv)
                 .ProjectTo<VoteringDto>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+                .AsAsyncEnumerable();
         }
 
-        public async Task<List<VoteringResultatDto>> HentResultater(ArrangementRequest request)
+        public IAsyncEnumerable<VoteringResultatDto> HentResultater(ArrangementRequest request)
         {
-            return await _context.Arrangement
+            return _context.Arrangement
                 .Where(a=> a.Id == request.ArrangementId)
                 .SelectMany(a => a.Saker)
                 .SelectMany(s => s.Voteringer)
                 .Where(v => v.Publisert)
                 .ProjectTo<VoteringResultatDto>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+                .AsAsyncEnumerable();
         }
 
         public async Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request)

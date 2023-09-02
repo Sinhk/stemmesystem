@@ -15,7 +15,7 @@ namespace Stemmesystem.Client.Pages
         private bool _disposed;
         private List<ArrangementInfo>? _arrangementer;
         private IDisposable? _subscription;
-        private bool _nyPublisert = false;
+        private bool _nyPublisert;
 
         protected override async Task OnInitializedAsync()
         {
@@ -25,8 +25,11 @@ namespace Stemmesystem.Client.Pages
                 return;
             if (authState.User.IsInRole("admin"))
             {
-                var arrangement = await _arrangementService.HentArrangementerAsync();
-                _arrangementer = arrangement;
+                _arrangementer ??= new List<ArrangementInfo>();
+                await foreach (var arrangementInfo in _arrangementService.HentArrangementerAsync())
+                {
+                    _arrangementer.Add(arrangementInfo);
+                }
 
                 var notifier = ScopedServices.GetRequiredService<IAdminNotifierService>();
                 _subscription = notifier.OnVoteringPublisert(OnVoteringPublisert);

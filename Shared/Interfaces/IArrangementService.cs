@@ -10,10 +10,10 @@ namespace Stemmesystem.Shared.Interfaces;
 public interface IArrangementService
 {
     Task<ArrangementDto?> HentArrangementAsync(HentArrangementRequest request, CancellationToken cancellationToken = default);
-    Task<List<ArrangementInfo>> HentArrangementerAsync(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<ArrangementInfo> HentArrangementerAsync(CancellationToken cancellationToken = default);
     Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request);
-    Task<List<VoteringResultatDto>> HentResultater(ArrangementRequest request);
-    Task<List<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request);
+    IAsyncEnumerable<VoteringResultatDto> HentResultater(ArrangementRequest request);
+    IAsyncEnumerable<VoteringDto> FinnAktiveVoteringer(ArrangementRequest request);
 
 
     Task<ArrangementDto> NyttArrangement(ArrangementInputModel dto);

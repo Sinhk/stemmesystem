@@ -5,7 +5,6 @@
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
 @using Microsoft.AspNetCore.Authorization
-@inject IArrangementService _arrangementService
 @inject ISakService _sakService
 @inject NavigationManager _navigation
 
@@ -67,8 +66,7 @@ else
         if(VoteringId != null)
         {
             var votering = await _sakService.HentVotering(new HentVoteringRequest(SakId, VoteringId.Value));
-            if(votering != null)
-                _voteringInput = new VoteringInputModel
+            _voteringInput = new VoteringInputModel
                 {
                     SakId = SakId,
                     Beskrivelse = votering.Beskrivelse,
