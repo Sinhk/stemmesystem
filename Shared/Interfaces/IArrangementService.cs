@@ -1,10 +1,10 @@
 ﻿using ProtoBuf;
 using ProtoBuf.Grpc.Configuration;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core.Models;
 
 [assembly: CompatibilityLevel(CompatibilityLevel.Level300)]
 
-namespace Stemmesystem.Shared.Interfaces;
+namespace Stemmesystem.Core.Interfaces;
 
 [Service]
 public interface IArrangementService

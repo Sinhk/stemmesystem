@@ -1,6 +1,6 @@
-﻿using Stemmesystem.Shared.Models;
+﻿using Stemmesystem.Core.Models;
 
-namespace Stemmesystem.Shared;
+namespace Stemmesystem.Core;
 
   
 public class NotifierService

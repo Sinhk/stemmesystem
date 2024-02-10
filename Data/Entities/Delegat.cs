@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Stemmesystem.Server.Data.Entities;
-using Stemmesystem.Shared.Tools;
+using Stemmesystem.Core.Tools;
 
 namespace StemmeSystem.Data.Entities
 {

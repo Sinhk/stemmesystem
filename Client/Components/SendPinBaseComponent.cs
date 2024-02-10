@@ -1,15 +1,15 @@
 ﻿#nullable disable
 using Microsoft.AspNetCore.Components;
-using Stemmesystem.Shared.Interfaces;
+using Stemmesystem.Core.Interfaces;
 
 namespace Stemmesystem.Client.Components
 {
-    public abstract class SendPinBaseComponent : ComponentBase
+    public abstract class SendPinBaseComponent : ComponentBase, IDisposable
     {
         [Inject] protected NavigationManager Navigation { get; set; }
         
         [Inject] protected IPinSender PinSender { get; set; }
-        protected SendState State = SendState.NotSent;
+        protected SendState State { get; private set; } = SendState.NotSent;
         private CancellationTokenSource _cancelation;
         
         [Parameter]
@@ -41,6 +41,12 @@ namespace Stemmesystem.Client.Components
             Sending,
             Sent,
             Failed
+        }
+
+        public void Dispose()
+        {
+            _cancelation?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

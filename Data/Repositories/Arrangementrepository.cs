@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StemmeSystem.Data;
 using StemmeSystem.Data.Entities;
 using Stemmesystem.Server.Data.Entities;
 
-namespace Stemmesystem.Server.Data.Repositories;
+namespace StemmeSystem.Data.Repositories;
 
 public interface IArrangementRepository
 {
@@ -41,7 +40,7 @@ public class ArrangementRepository : IArrangementRepository
             .SingleOrDefaultAsync(cancellationToken: cancellationToken);
     }
 
-    private IQueryable<Arrangement> GetSingleQuery(StemmesystemContext context)
+    private static IQueryable<Arrangement> GetSingleQuery(StemmesystemContext context)
     {
         return context.Arrangement
                 .AsSingleQuery()

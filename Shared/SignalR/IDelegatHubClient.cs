@@ -1,4 +1,4 @@
-﻿namespace Stemmesystem.Shared.SignalR;
+﻿namespace Stemmesystem.Core.SignalR;
 
 public interface IDelegatHubClient
 {

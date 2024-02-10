@@ -22,26 +22,26 @@ namespace StemmeSystem.Data
         {
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(builder);
             if (!Database.IsSqlite())
-                modelBuilder.HasDefaultSchema("stemme");
+                builder.HasDefaultSchema("stemme");
 
-            modelBuilder.Entity<Arrangement>(e =>{});
+            builder.Entity<Arrangement>();
 
-            modelBuilder.Entity<Sak>(e =>{});
-            modelBuilder.Entity<Votering>(e =>
+            builder.Entity<Sak>();
+            builder.Entity<Votering>(e =>
             {
                 e.HasMany(v => v.AvgitStemme).WithMany(d=> d.HarStemmtI);
             });
 
-            modelBuilder.Entity<Stemme>(e =>
+            builder.Entity<Stemme>(e =>
             {
                 e.HasKey(s => s.Id);
             });
 
-            modelBuilder.Entity<Delegat>(e =>
+            builder.Entity<Delegat>(e =>
             {
                 e.HasIndex(x => new { x.ArrangementId, x.Delegatnummer }).IsUnique();
                 e.HasIndex(x => x.Delegatkode).IsUnique();

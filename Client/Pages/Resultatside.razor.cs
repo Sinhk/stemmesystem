@@ -1,9 +1,10 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Stemmesystem.Client.SignalR;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
 
 namespace Stemmesystem.Client.Pages
 {
@@ -40,7 +41,7 @@ namespace Stemmesystem.Client.Pages
                 var arrangementClaim = authState.User.FindFirst(AuthConstants.ArrangementClaimType);
                 if (arrangementClaim?.Value != null)
                 {
-                    var id = int.Parse(arrangementClaim.Value);
+                    var id = int.Parse(arrangementClaim.Value, CultureInfo.InvariantCulture);
                     var arrangement = await _arrangementService.HentArrangementInfoAsync(new ArrangementRequest {ArrangementId = id});
                     if (arrangement != null) _arrangementer = new List<ArrangementInfo> { arrangement };
                     var notifier = ScopedServices.GetRequiredService<IDelegatNotifierService>();
@@ -58,6 +59,7 @@ namespace Stemmesystem.Client.Pages
 
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
             if (_disposed)
                 return;
             _subscription?.Dispose();

@@ -1,8 +1,9 @@
-﻿using ProtoBuf.Grpc;
+﻿using System.Diagnostics.CodeAnalysis;
+using ProtoBuf.Grpc;
 using ProtoBuf.Grpc.Configuration;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core.Models;
 
-namespace Stemmesystem.Shared.Interfaces;
+namespace Stemmesystem.Core.Interfaces;
 
 [Service]
 public interface IDelegatService

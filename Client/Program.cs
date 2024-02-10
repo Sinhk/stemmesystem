@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Stemmesystem.Client;
 using Stemmesystem.Client.Services.CSV;
 using Stemmesystem.Client.SignalR;
-using Stemmesystem.Shared.Interfaces;
+using Stemmesystem.Core.Interfaces;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

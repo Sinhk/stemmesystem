@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using ProtoBuf;
 
-namespace Stemmesystem.Shared.Models
+namespace Stemmesystem.Core.Models
 {
 
     [ProtoContract]
@@ -33,7 +33,8 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(7)]
         public int SakId { get; init; }
 
-        [ProtoMember(8)] public List<ValgDto> Valg { get; init; } = new();
+        [ProtoMember(8, IsRequired = true)] 
+        public List<ValgDto> Valg { get; init; } = new();
         [ProtoMember(9)]
         public bool Aktiv { get; set; }
         [ProtoMember(10)]
@@ -48,8 +49,8 @@ namespace Stemmesystem.Shared.Models
     [ProtoContract]
     public record AdminVoteringDto : VoteringDto
     {
-        [ProtoMember(1)] public List<DelegatDto> AvgitStemme { get; init; } = new();
-        [ProtoMember(2)] public List<StemmeDto> Stemmer { get; init; } = new();
+        [ProtoMember(1, IsRequired = true)] public List<DelegatDto> AvgitStemme { get; init; } = new();
+        [ProtoMember(2, IsRequired = true)] public List<StemmeDto> Stemmer { get; init; } = new();
 
         private AdminVoteringDto() : this(tittel:null!)
         {
@@ -69,12 +70,12 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(1)]
         public int Id { get; init; }
         [ProtoMember(2)]
-        public string Tittel { get; init; }
-        [ProtoMember(3)] public string Beskrivelse { get; init; }
+        public required string Tittel { get; init; }
+        [ProtoMember(3)] public string? Beskrivelse { get; init; }
         [ProtoMember(4, IsRequired = true)] public List<StemmeDto> Stemmer { get; init; } = new();
         [ProtoMember(5, IsRequired = true)] public List<ValgDto> Valg { get; init; } = new();
-        [ProtoMember(6)] public string SakNavn { get; init; } 
-        [ProtoMember(7)] public string SakNummer { get; init; }
+        [ProtoMember(6)] public required string SakNavn { get; init; } 
+        [ProtoMember(7)] public required string SakNummer { get; init; }
         
     }
 
@@ -136,8 +137,8 @@ namespace Stemmesystem.Shared.Models
     {
         [ProtoMember(1)]
         public Guid Id { get; init; }
-        [ProtoMember(2)]
-        public string Navn { get; set; } = null!;
+        [ProtoMember(2, IsRequired = true)]
+        public required string Navn { get; set; }
         [ProtoMember(3)]
         public int? SortId { get; set; }
     }
@@ -150,8 +151,8 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(2)]
         public int? Id { get; init; }
 
-        [ProtoMember(4), Required] 
-        public string Tittel { get; set; } = null!;
+        [ProtoMember(4, IsRequired = true), Required] 
+        public required string Tittel { get; set; }
         [ProtoMember(5)]
         public string? Beskrivelse { get; set; }
         [ProtoMember(6)]

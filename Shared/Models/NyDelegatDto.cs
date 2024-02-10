@@ -1,4 +1,4 @@
-﻿namespace Stemmesystem.Shared.Models;
+﻿namespace Stemmesystem.Core.Models;
 
 public record NyDelegatDto(int Nummer)
 {

@@ -1,4 +1,5 @@
-﻿using Stemmesystem.Server.Data.Entities;
+﻿using System.Globalization;
+using Stemmesystem.Server.Data.Entities;
 
 namespace StemmeSystem.Data.Entities
 {
@@ -30,7 +31,7 @@ namespace StemmeSystem.Data.Entities
             Tittel = tittel;
         }
 
-        public Sak(int nummer, string tittel) : this(nummer.ToString(), tittel)
+        public Sak(int nummer, string tittel) : this(nummer.ToString(CultureInfo.InvariantCulture), tittel)
         {
         }
     }

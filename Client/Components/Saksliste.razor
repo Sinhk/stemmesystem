@@ -1,29 +1,34 @@
-﻿@inject IStemmeService _stemmeService
-@inject ISakService _sakService
-@using Stemmesystem.Shared.Interfaces
-@using Stemmesystem.Shared.Models
-@using Stemmesystem.Shared
+﻿@inject IStemmeService StemmeService
+@inject ISakService SakService
+@using Stemmesystem.Core.Interfaces
+@using Stemmesystem.Core.Models
+@using Stemmesystem.Core
 @using Stemmesystem.Client.SignalR
 @implements IAsyncDisposable
 @inherits OwningComponentBase<Stemmesystem.Client.SignalR.IAdminNotifierService>
 
-<div class="row" @onclick="@(_ => _expanded=!_expanded)">
+<div class="row" @onclick="@(_ => _expanded = !_expanded)">
     <h4>Saker</h4>
     <span class="ml-2 mt-1 oi @(_expanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
 </div>
 @if (_expanded)
 {
-    if(!_saker.Any())
+    if (!_saker.Any())
     {
-        <tr><td class="text-danger">Ingen saker</td></tr>
+        <tr>
+            <td class="text-danger">Ingen saker</td>
+        </tr>
     }
     else
     {
         foreach (var sak in _saker.OrderBy(s => s.Nummer))
         {
             <h5>@sak.Nummer - @sak.Tittel</h5>
-            <p><small>@sak.Beskrivelse</small></p>
-            foreach (var votering in sak.Voteringer){
+            <p>
+                <small>@sak.Beskrivelse</small>
+            </p>
+            foreach (var votering in sak.Voteringer)
+            {
                 <SakslisteLinje Votering="@votering" ArrangementId="@ArrangementId" Notifier="Notifier"></SakslisteLinje>
             }
         }
@@ -31,17 +36,18 @@
 }
 
 @code {
+
     [Parameter]
     public int ArrangementId { get; set; }
+
     private IAdminNotifierService Notifier => Service;
     private ICollection<AdminSakDto> _saker = null!;
     private bool _expanded;
-    private bool _inconsistentState;
-    private readonly List<IDisposable?> _subscriptions = new() ;
+    private readonly List<IDisposable?> _subscriptions = new();
 
     protected override async Task OnInitializedAsync()
     {
-        _saker = await _sakService.HentSaker(new SakerRequest(ArrangementId));
+        _saker = await SakService.HentSaker(new SakerRequest(ArrangementId));
 
         _subscriptions.AddRange(new[]
         {
@@ -61,13 +67,9 @@
     {
         var (voteringId, stemme) = e;
         var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
-        if (votering is {Stemmer: { } })
+        if (votering is {Stemmer: not null })
         {
             votering.Stemmer.Add(stemme);
-        }
-        else
-        {
-            _inconsistentState = true;
         }
         StateHasChanged();
     }
@@ -76,14 +78,7 @@
     {
         var (voteringId, stemmeId) = e;
         var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
-        if (votering != null)
-        {
-            votering.Stemmer.RemoveAll(s=> s.Id == stemmeId);
-        }
-        else
-        {
-            _inconsistentState = true;
-        }
+        votering?.Stemmer.RemoveAll(s => s.Id == stemmeId);
         StateHasChanged();
     }
 
@@ -96,43 +91,31 @@
             votering.Aktiv = false;
             votering.SluttTid = time;
         }
-        else
-        {
-            _inconsistentState = true;
-        }
         StateHasChanged();
     }
 
     private void OnVoteringStartet(VoteringStartetEvent e)
     {
         var sak = _saker.FirstOrDefault(s => s.Id == e.Votering.SakId);
-        if (sak != null)
-        {
-            var index =  sak.Voteringer.FindIndex(v => v.Id == e.Votering.Id);
-            if (index >= 0)
-            {
-                sak.Voteringer[index] = sak.Voteringer[index] with{ Aktiv = true, StartTid = e.Votering.StartTid};
-                StateHasChanged();
-                return;
-            }
-        }
-        _inconsistentState = true;
+        if (sak == null) return;
+
+        var index = sak.Voteringer.FindIndex(v => v.Id == e.Votering.Id);
+        if (index < 0) return;
+
+        sak.Voteringer[index] = sak.Voteringer[index] with{ Aktiv = true, StartTid = e.Votering.StartTid};
+        StateHasChanged();
     }
 
     private void OnVoteringLukket(VoteringLukketEvent e)
     {
         var sak = _saker.FirstOrDefault(s => s.Id == e.SakId);
-        if (sak != null)
-        {
-            var index =  sak.Voteringer.FindIndex(v => v.Id == e.VoteringId);
-            if (index >= 0)
-            {
-                sak.Voteringer[index] = sak.Voteringer[index] with{ Lukket = true};
-                StateHasChanged();
-                return;
-            }
-        }
-        _inconsistentState = true;
+        if (sak == null) return;
+
+        var index = sak.Voteringer.FindIndex(v => v.Id == e.VoteringId);
+        if (index < 0) return;
+
+        sak.Voteringer[index] = sak.Voteringer[index] with{ Lukket = true};
+        StateHasChanged();
     }
 
     private void OnVoteringPublisert(VoteringPublisertEvent e)
@@ -141,31 +124,20 @@
         if (arrangementId != ArrangementId)
             return;
         var sak = _saker.FirstOrDefault(s => s.Id == sakId);
-        if (sak != null)
-        {
-            var index =  sak.Voteringer.FindIndex(v => v.Id == voteringId);
-            if (index >= 0)
-            {
-                sak.Voteringer[index] = sak.Voteringer[index] with { Publisert = true };
-                StateHasChanged();
-                return;
-            }
-        }
-        _inconsistentState = true;
+        if (sak == null) return;
+
+        var index = sak.Voteringer.FindIndex(v => v.Id == voteringId);
+        if (index < 0) return;
+
+        sak.Voteringer[index] = sak.Voteringer[index] with { Publisert = true };
+        StateHasChanged();
     }
 
     private void NyVotering(NyVoteringEvent e)
     {
         var votering = e.Votering;
         var sak = _saker.FirstOrDefault(s => s.Id == votering.SakId);
-        if (sak != null)
-        {
-            sak.Voteringer.Add(votering);
-        }
-        else
-        {
-            _inconsistentState = true;
-        }
+        sak?.Voteringer.Add(votering);
         StateHasChanged();
     }
 
@@ -178,4 +150,5 @@
             s?.Dispose();
         }
     }
+
 }

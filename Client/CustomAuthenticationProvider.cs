@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
-using Stemmesystem.Shared;
+using Stemmesystem.Core;
 
 namespace Stemmesystem.Client;
 
@@ -15,7 +15,7 @@ public class CustomAuthenticationProvider : RemoteAuthenticationService<RemoteAu
 {
     private readonly ISessionStorageService _sessionStorage;
 
-    public CustomAuthenticationProvider(IJSRuntime jsRuntime, IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> options, NavigationManager navigation, AccountClaimsPrincipalFactory<RemoteUserAccount> accountClaimsPrincipalFactory, ISessionStorageService sessionStorage) : base(jsRuntime, options, navigation, accountClaimsPrincipalFactory )
+    public CustomAuthenticationProvider(IJSRuntime jsRuntime, IOptionsSnapshot<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> options, NavigationManager navigation, AccountClaimsPrincipalFactory<RemoteUserAccount> accountClaimsPrincipalFactory, ILogger<CustomAuthenticationProvider>? logger, ISessionStorageService sessionStorage) : base(jsRuntime, options, navigation, accountClaimsPrincipalFactory, logger)
     {
         _sessionStorage = sessionStorage;
     }
@@ -50,7 +50,8 @@ public class CustomAuthenticationProvider : RemoteAuthenticationService<RemoteAu
         var token = await GetToken();
         if (token == null)
             return await base.RequestAccessToken();
-        return new AccessTokenResult(AccessTokenResultStatus.Success, new AccessToken {Expires = token.ValidTo, Value = token.RawData, GrantedScopes = token.Audiences.ToList()}, "");
+        var accessToken = new AccessToken {Expires = token.ValidTo, Value = token.RawData, GrantedScopes = token.Audiences.ToList()};
+        return new AccessTokenResult(AccessTokenResultStatus.Success, accessToken, "", null);
     }
 
     public override async ValueTask<AccessTokenResult> RequestAccessToken(AccessTokenRequestOptions options)
@@ -58,7 +59,8 @@ public class CustomAuthenticationProvider : RemoteAuthenticationService<RemoteAu
         var token = await GetToken();
         if (token == null)
             return await base.RequestAccessToken(options);
-        return new AccessTokenResult(AccessTokenResultStatus.Success, new AccessToken {Expires = token.ValidTo, Value = token.RawData, GrantedScopes = token.Audiences.ToList()}, "");
+        var accessToken = new AccessToken {Expires = token.ValidTo, Value = token.RawData, GrantedScopes = token.Audiences.ToList()};
+        return new AccessTokenResult(AccessTokenResultStatus.Success, accessToken, "", null);
     }
 
 

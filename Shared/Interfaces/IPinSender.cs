@@ -1,6 +1,6 @@
 using ProtoBuf.Grpc.Configuration;
 
-namespace Stemmesystem.Shared.Interfaces;
+namespace Stemmesystem.Core.Interfaces;
 
 [Service]
 public interface IPinSender

@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
-namespace Stemmesystem.Shared.Tools
+namespace Stemmesystem.Core.Tools
 {
     public interface IKeyHasher
     {
@@ -49,18 +49,12 @@ namespace Stemmesystem.Shared.Tools
             buffer[offset + 3] = (byte)(value >> 0);
         }
 
-        public virtual bool VerifyHash(string hashedKey, string providedKey)
+        public virtual bool VerifyHash(string hashedPassword, string providedPassword)
         {
-            if (hashedKey == null)
-            {
-                throw new ArgumentNullException(nameof(hashedKey));
-            }
-            if (providedKey == null)
-            {
-                throw new ArgumentNullException(nameof(providedKey));
-            }
+            ArgumentNullException.ThrowIfNull(hashedPassword);
+            ArgumentNullException.ThrowIfNull(providedPassword);
 
-            byte[] decodedHashedPassword = Convert.FromBase64String(hashedKey);
+            byte[] decodedHashedPassword = Convert.FromBase64String(hashedPassword);
 
             // read the format marker from the hashed password
             if (decodedHashedPassword.Length == 0)
@@ -69,7 +63,7 @@ namespace Stemmesystem.Shared.Tools
             }
             return (decodedHashedPassword[0]) switch
             {
-                0x01 => VerifyHashedKey(decodedHashedPassword, providedKey, out _),
+                0x01 => VerifyHashedKey(decodedHashedPassword, providedPassword, out _),
                 _ => false,// unknown format marker
             };
         }

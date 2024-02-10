@@ -1,8 +1,8 @@
 ﻿@inject IAdminDelegatService _delegatService
 @inject IPinSender _pinSender
 @inject NavigationManager _navigation
-@using Stemmesystem.Shared.Interfaces
-@using Stemmesystem.Shared.Models
+@using Stemmesystem.Core.Interfaces
+@using Stemmesystem.Core.Models
 @implements IDisposable 
 
 <div class="row" @onclick="@(_ => _expanded=!_expanded)">

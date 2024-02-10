@@ -2,7 +2,7 @@
 using ProtoBuf.Grpc;
 using ProtoBuf.Grpc.Configuration;
 
-namespace Stemmesystem.Shared;
+namespace Stemmesystem.Core;
 
 [ProtoContract]
 public class HelloReply

@@ -6,7 +6,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Server", "Serv
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Client", "Client\Stemmesystem.Client.csproj", "{B107025D-D877-4F98-8F19-C78A639F364F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Shared", "Shared\Stemmesystem.Shared.csproj", "{26186DAD-A390-4012-96FA-42348AA3736B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Core", "Shared\Stemmesystem.Core.csproj", "{26186DAD-A390-4012-96FA-42348AA3736B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostgresMigrations", "Migrations\PostgresMigrations\PostgresMigrations.csproj", "{4F068BEB-BFBE-4185-ADD9-AB5E21B48F73}"
 EndProject

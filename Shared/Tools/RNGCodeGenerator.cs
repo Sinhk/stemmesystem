@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Stemmesystem.Shared.Tools
+namespace Stemmesystem.Core.Tools
 {
     public enum KeyType{SimpleAlphanumeric,FullAlphanumeric}
     public interface IKeyGenerator

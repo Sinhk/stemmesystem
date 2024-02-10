@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Stemmesystem.Client.SignalR;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
 
 namespace Stemmesystem.Client.Pages
 {

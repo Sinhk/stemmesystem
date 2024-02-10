@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ProtoBuf;
 
-namespace Stemmesystem.Shared.Models
+namespace Stemmesystem.Core.Models
 {
     [ProtoContract]
     public record SakDto
@@ -10,13 +10,13 @@ namespace Stemmesystem.Shared.Models
         public int Id { get; internal init; }
         [ProtoMember(2)]
         public string? Nummer { get; init; }
-        [ProtoMember(3), Required]
+        [ProtoMember(3, IsRequired = true), Required]
         public string Tittel { get; init; } = null!;
 
         [ProtoMember(4)]
         public string? Beskrivelse { get; set; }
 
-        [ProtoMember(5)] 
+        [ProtoMember(5, IsRequired = true)] 
         public List<VoteringDto> Voteringer { get; internal init; } = new();
         [ProtoMember(6)]
         public int ArrangementId { get; set; }
@@ -34,7 +34,7 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(4)]
         public string? Beskrivelse { get; set; }
 
-        [ProtoMember(5)] public List<AdminVoteringDto> Voteringer { get; init; } = new();
+        [ProtoMember(5, IsRequired = true)] public List<AdminVoteringDto> Voteringer { get; init; } = new();
         [ProtoMember(6)]
         public int ArrangementId { get; set; }
     }
@@ -51,7 +51,7 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(4)]
         public string? Beskrivelse { get; set; }
 
-        [ProtoMember(5)] public List<VoteringDto> Voteringer { get; internal init; } = new();
+        [ProtoMember(5, IsRequired = true)] public List<VoteringDto> Voteringer { get; internal init; } = new();
         [ProtoMember(6)]
         public int ArrangementId { get; set; }
     }
@@ -76,7 +76,7 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(4)]
         public string? Beskrivelse { get; set; }
         
-        [ProtoMember(5)]
+        [ProtoMember(5, IsRequired = true)]
         public ICollection<VoteringInputModel> Voteringer { get; set; } = new List<VoteringInputModel>();
     }
     /*

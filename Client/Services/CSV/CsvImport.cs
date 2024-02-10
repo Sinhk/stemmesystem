@@ -2,23 +2,16 @@
 using AutoMapper;
 using CsvHelper;
 using CsvHelper.Configuration;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core.Models;
 using Stemmesystem.Web.Services.CSV;
 
 namespace Stemmesystem.Client.Services.CSV
 {
-    public class CsvImport
+    public class CsvImport(IMapper mapper)
     {
-        private readonly IMapper _mapper;
-
-        public CsvImport(IMapper mapper)
-        {
-            _mapper = mapper;
-        }
-        
         private readonly CsvConfiguration _csvConfiguration = new(CultureInfo.InvariantCulture)
         {
-            PrepareHeaderForMatch = args => args.Header.ToLower(),
+            PrepareHeaderForMatch = args => args.Header.ToLowerInvariant(),
             HeaderValidated = null,
             MissingFieldFound = null
         };
@@ -33,7 +26,7 @@ namespace Stemmesystem.Client.Services.CSV
                 list.Add(delegat);
             }
 
-            return _mapper.Map<List<DelegatInputModel>>(list);
+            return mapper.Map<List<DelegatInputModel>>(list);
         }
 
         public async Task<IEnumerable<SakInputModel>> LesSaker(TextReader reader, int arrangementId)
@@ -80,7 +73,7 @@ namespace Stemmesystem.Client.Services.CSV
                 csv.Context.RegisterClassMap<CsvSakMap>();
                 csv.WriteHeader<CsvSak>();
                 csv.NextRecord();
-                csv.WriteRecord(new CsvSak()
+                csv.WriteRecord(new CsvSak
                 {
                     Tittel = "Import sak",
                     Beskrivelse = "beskrivelse",
