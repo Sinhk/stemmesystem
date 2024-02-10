@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using StemmeSystem.Data.Entities;
 using Stemmesystem.Server.Data.Entities;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core.Models;
 
 namespace Stemmesystem.Api;
 

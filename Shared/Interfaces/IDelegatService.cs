@@ -19,7 +19,9 @@ public record HentDelegatResult(DelegatDto? Delegat);
 [Service]
 public interface IAdminDelegatService
 {
+#pragma warning disable PBN2008
     Task<AdminDelegatDto?> HentDelegat(HentDelegatRequest request);
+#pragma warning restore PBN2008
     Task<ICollection<AdminDelegatDto>> HentDelegater(HentDelegatRequest request);
     // Task<bool> IsValidNo(int arrangement, int number);
     Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel model);

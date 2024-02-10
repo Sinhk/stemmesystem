@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Stemmesystem.Shared;
+using Stemmesystem.Core;
 
 namespace Stemmesystem.Server.Controllers;
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Stemmesystem.Server.InternalServices
 {
+    [SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates")]
     public class ClickSendSender : ISmsSender
     {
         private readonly HttpClient _client;
@@ -28,17 +30,17 @@ namespace Stemmesystem.Server.InternalServices
             _client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(authValue);
         }
         
-        public async Task<bool> SendSms(string to, string message)
+        public async Task<bool> SendSms(string receiver, string message)
         {
             PrepeareRequest();
             var request = new ClickSendSmsRequest();
-            request.Messages.Add(new ClickSendMessage("RomNorKrets", to, message));
+            request.Messages.Add(new ClickSendMessage("RomNorKrets", receiver, message));
             
             var response = await _client.PostAsJsonAsync("https://rest.clicksend.com/v3/sms/send", request, JsonSerializerOptions);
             
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("Sending message to {To} with ClickSend failed with code {StatusCode}", to, response.StatusCode);
+                _logger.LogError("Sending message to {To} with ClickSend failed with code {StatusCode}", receiver, response.StatusCode);
                 try
                 {
                     //var errorResponse = await response.Content.ReadFromJsonAsync<ClickSendSmsResponse>(JsonSerializerOptions);
@@ -58,12 +60,12 @@ namespace Stemmesystem.Server.InternalServices
         }
     }
 
-    internal record ClickSendSmsRequest
+    internal sealed record ClickSendSmsRequest
     {
         public IList<ClickSendMessage> Messages { get; init; } = new List<ClickSendMessage>();
     }
 
-    internal record ClickSendMessage(string From, string To, string Body)
+    internal sealed record ClickSendMessage(string From, string To, string Body)
     {
         public string? Source { get; set; }
         public string Country { get; set; } = "NO";

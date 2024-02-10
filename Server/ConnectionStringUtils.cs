@@ -18,7 +18,6 @@ public class ConnectionStringUtils
             Username = userInfo[0],
             Password = userInfo[1],
             Database = databaseUri.LocalPath.TrimStart('/'),
-            TrustServerCertificate = true,
             SslMode = SslMode.Prefer
         };
         var connectionString = builder.ToString();

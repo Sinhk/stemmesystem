@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
 using Stemmesystem.Server.InternalServices;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
 
 namespace Stemmesystem.Server.Services;
 

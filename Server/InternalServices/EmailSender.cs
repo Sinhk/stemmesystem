@@ -29,15 +29,15 @@ namespace Stemmesystem.Server.InternalServices
             _logger = logger;
             _options = optionsAccessor.Value;
         }
-        public async Task SendEmailAsync(string email, string subject, string message)
+        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             var client = new SendGridClient(_options.ApiKey);
             var msg = new SendGridMessage
             {
                 From = new EmailAddress(_options.FromEmail, _options.FromName),
                 Subject = subject,
-                PlainTextContent = message,
-                HtmlContent = message
+                PlainTextContent = htmlMessage,
+                HtmlContent = htmlMessage
             };
             msg.AddTo(new EmailAddress(email));
 
@@ -49,7 +49,7 @@ namespace Stemmesystem.Server.InternalServices
             var result = await client.SendEmailAsync(msg);
             if (!result.IsSuccessStatusCode)
             {
-                _logger.LogError("Failed sending email: {message}", await result.Body.ReadAsStringAsync());
+                _logger.LogError("Failed sending email: {Message}", await result.Body.ReadAsStringAsync());
             }
         }
 
@@ -63,7 +63,7 @@ namespace Stemmesystem.Server.InternalServices
             var result = await client.SendEmailAsync(msg);
             if (!result.IsSuccessStatusCode)
             {
-                _logger.LogError("Failed sending email: {message}", await result.Body.ReadAsStringAsync());
+                _logger.LogError("Failed sending email: {Message}", await result.Body.ReadAsStringAsync());
             }
             return result.IsSuccessStatusCode;
         }
@@ -78,7 +78,7 @@ namespace Stemmesystem.Server.InternalServices
             var result = await client.SendEmailAsync(msg);
             if (!result.IsSuccessStatusCode)
             {
-                _logger.LogError("Failed sending email: {message}", await result.Body.ReadAsStringAsync());
+                _logger.LogError("Failed sending email: {Message}", await result.Body.ReadAsStringAsync());
             }
             return result.IsSuccessStatusCode;
         }
@@ -87,10 +87,10 @@ namespace Stemmesystem.Server.InternalServices
     public class SendMailOptions
     {
         [Required]
-        public string? ApiKey { get; set; }
+        public string? ApiKey { get; init; }
 
-        [Required] public string? FromEmail { get; set; } = "noreply@romnorkrets.no";
+        [Required] public string? FromEmail { get; init; } = "noreply@romnorkrets.no";
 
-        public string? FromName { get; set; } = "Romsdal og Nordmøre krets";
+        public string? FromName { get; init; } = "Romsdal og Nordmøre krets";
     }
 }

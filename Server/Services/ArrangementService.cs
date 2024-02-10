@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
 using Stemmesystem.Server.Data.Entities;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
 
 namespace Stemmesystem.Server.Services
 {
@@ -15,9 +15,7 @@ namespace Stemmesystem.Server.Services
     public class ArrangementService : IArrangementService
     {
         private readonly StemmesystemContext _context;
-
         private readonly IMapper _mapper;
-
         private readonly IAppCache _cache;
 
         public ArrangementService(StemmesystemContext context, IMapper mapper, IAppCache cache)
@@ -44,11 +42,11 @@ namespace Stemmesystem.Server.Services
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<ArrangementDto> NyttArrangement(ArrangementInputModel model)
+        public async Task<ArrangementDto> NyttArrangement(ArrangementInputModel input)
         {
-            if (!await IsNameAvailable(model.Navn!))
-                throw new StemmeException($"Det finnes allered et arrangement med navn {model.Navn}");
-            var entity = _mapper.Map<Arrangement>(model);
+            if (!await IsNameAvailable(input.Navn!))
+                throw new StemmeException($"Det finnes allered et arrangement med navn {input.Navn}");
+            var entity = _mapper.Map<Arrangement>(input);
             _context.Arrangement.Add(entity);
             await _context.SaveChangesAsync();
             return _mapper.Map<ArrangementDto>(entity);
@@ -59,7 +57,7 @@ namespace Stemmesystem.Server.Services
             return await _context.Arrangement.AllAsync(a => a.Navn != name);
         }
 
-        private IQueryable<Arrangement> GetSingleQuery(StemmesystemContext context)
+        private static IQueryable<Arrangement> GetSingleQuery(StemmesystemContext context)
         {
             return context.Arrangement
                 .AsSingleQuery()
@@ -99,17 +97,17 @@ namespace Stemmesystem.Server.Services
             return arr;
         }
 
-        public async Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel model)
+        public async Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel input)
         {
             var arrangement = await _context.Arrangement
-                .Where(a => a.Id == model.Id)
+                .Where(a => a.Id == input.Id)
                 .FirstOrDefaultAsync();
             if (arrangement == null)
-                throw new StemmeException($"Fant ingen arrangement med id {model.Id} å oppdatere");
+                throw new StemmeException($"Fant ingen arrangement med id {input.Id} å oppdatere");
 
-            arrangement.Beskrivelse = model.Beskrivelse;
-            arrangement.Startdato = model.Startdato;
-            arrangement.Sluttdato = model.Sluttdato;
+            arrangement.Beskrivelse = input.Beskrivelse;
+            arrangement.Startdato = input.Startdato;
+            arrangement.Sluttdato = input.Sluttdato;
             
             await _context.SaveChangesAsync();
             return (await HentArrangementAsync(arrangement.Id))!;

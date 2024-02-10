@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
 using StemmeSystem.Data.Entities;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
 
 namespace Stemmesystem.Server.Services;
 
@@ -68,23 +68,23 @@ public class SakService : ISakService
     }
 
     [Authorize(Roles = "admin")]
-    public async Task<LagreResult<SakDto>> LagreNySak(SakInputModel model)
+    public async Task<LagreResult<SakDto>> LagreNySak(SakInputModel input)
     {
         var errors = new Dictionary<string, List<string>>();
         var arrangement = await _context.Arrangement
-            .Where(a => a.Id == model.ArrangementId)
+            .Where(a => a.Id == input.ArrangementId)
             .Include(a => a.Saker)
             .FirstOrDefaultAsync();
         if (arrangement == null)
-            throw new StemmeException($"Arrangement med id {model.ArrangementId} ble ikke funnet");
+            throw new StemmeException($"Arrangement med id {input.ArrangementId} ble ikke funnet");
             
-        if ( await ErNummerBrukt(model.ArrangementId, model.Nummer))
+        if ( await ErNummerBrukt(input.ArrangementId, input.Nummer))
         {
-            errors.Add(nameof(model.Nummer), new List<string>{"Saknummer er allerede brukt"});
+            errors.Add(nameof(input.Nummer), new List<string>{"Saknummer er allerede brukt"});
             return new LagreResult<SakDto>(null, errors);
         }
         
-        var sak = _mapper.Map<Sak>(model);
+        var sak = _mapper.Map<Sak>(input);
         arrangement.LeggTil(sak);
         await _context.SaveChangesAsync();
         var dto = _mapper.Map<SakDto>(sak);
@@ -92,33 +92,33 @@ public class SakService : ISakService
     }
 
     [Authorize(Roles = "admin")]
-    public async Task<SakDto> OppdaterSak(SakInputModel model)
+    public async Task<SakDto> OppdaterSak(SakInputModel input)
     {
         var sak = await _context.Arrangement
-            .Where(a => a.Id == model.ArrangementId)
+            .Where(a => a.Id == input.ArrangementId)
             .SelectMany(a => a.Saker)
-            .Where(s => s.Id == model.Id)
+            .Where(s => s.Id == input.Id)
             .FirstAsync();
 
-        sak.Nummer = model.Nummer!;
-        sak.Tittel = model.Tittel!;
-        sak.Beskrivelse = model.Beskrivelse;
+        sak.Nummer = input.Nummer!;
+        sak.Tittel = input.Tittel!;
+        sak.Beskrivelse = input.Beskrivelse;
 
         await _context.SaveChangesAsync();
         return _mapper.Map<SakDto>(sak);
     }
     [Authorize(Roles = "admin")]
-    public async Task<LagreResult<VoteringDto>> LagreNyVotering(VoteringInputModel model)
+    public async Task<LagreResult<VoteringDto>> LagreNyVotering(VoteringInputModel input)
     {
         var errors = new Dictionary<string, List<string>>();
         var sak = await _context.Sak
-            .Where(a => a.Id == model.SakId)
+            .Where(a => a.Id == input.SakId)
             .Include(a => a.Voteringer)
             .FirstOrDefaultAsync();
         if (sak == null)
-            throw new StemmeException($"Sak med id {model.SakId} ble ikke funnet");
+            throw new StemmeException($"Sak med id {input.SakId} ble ikke funnet");
 
-        var votering = _mapper.Map<Votering>(model);
+        var votering = _mapper.Map<Votering>(input);
         sak.LeggTil(votering);
         await _context.SaveChangesAsync();
         var nyVotering = _mapper.Map<AdminVoteringDto>(votering);
@@ -127,14 +127,14 @@ public class SakService : ISakService
     }
 
     [Authorize(Roles = "admin")]
-    public async Task<LagreResult<VoteringDto>> OppdaterVotering(VoteringInputModel model)
+    public async Task<LagreResult<VoteringDto>> OppdaterVotering(VoteringInputModel input)
     {
         var votering = await _context.Votering
-            .Where(a => a.Id == model.Id)
+            .Where(a => a.Id == input.Id)
             .FirstOrDefaultAsync();
         if (votering == null)
-            return LagreResult<VoteringDto>.Error("Fant ikke votering å oppdatere");
-        _mapper.Map(model, votering);
+            return LagreResult.Error<VoteringDto>("Fant ikke votering å oppdatere");
+        _mapper.Map(input, votering);
         await _context.SaveChangesAsync();
         return LagreResult.Success(_mapper.Map<VoteringDto>(votering));
     }

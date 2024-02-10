@@ -7,10 +7,10 @@ namespace Stemmesystem.Server.InternalServices;
 
     public interface ISmsSender
     {
-        Task<bool> SendSms(string to, string message);
+        Task<bool> SendSms(string receiver, string message);
     }
 
-    internal class SveveSmsSender : ISmsSender
+    internal sealed class SveveSmsSender : ISmsSender
     {
         private readonly HttpClient _httpClient;
         private readonly IOptionsMonitor<SveveOptions> _optionsMonitor;
@@ -38,20 +38,20 @@ namespace Stemmesystem.Server.InternalServices;
             return QueryHelpers.AddQueryString(_baseUrl, param);
         }
 
-        public async Task<bool> SendSms(string to, string message)
+        public async Task<bool> SendSms(string receiver, string message)
         {
             var url = PrepeareRequest();
 
-            url = QueryHelpers.AddQueryString(url, "to", to);
+            url = QueryHelpers.AddQueryString(url, "to", receiver);
             url = QueryHelpers.AddQueryString(url, "msg", message);
 
             var httpResponse = await _httpClient.GetAsync(url);
             if (!httpResponse.IsSuccessStatusCode)
             {
-                _logger.LogError($"Got response code {httpResponse.StatusCode} from sveve.");
+                _logger.LogError("Got response code {StatusCode} from sveve.", httpResponse.StatusCode);
                 try
                 {
-                    _logger.LogError(await httpResponse.Content.ReadAsStringAsync());
+                    _logger.LogError("Error response: {Response}",await httpResponse.Content.ReadAsStringAsync());
                 }
                 catch (Exception)
                 {
@@ -67,24 +67,24 @@ namespace Stemmesystem.Server.InternalServices;
                 return false;
 
             if(!string.IsNullOrEmpty(response.FatalError))
-                _logger.LogError(response.FatalError);
+                _logger.LogError("Error: {Error}", response.FatalError);
             if(response.Errors != null)
                 foreach (var error in response.Errors)
                 {
-                    _logger.LogError($"{error.Number}: {error.Message}");    
+                    _logger.LogError("{ErrorNumber}: {ErrorMessage}", error.Number, error.Message);    
                 }
             
             //TODO: Error handling and more detailed response 
-            return string.IsNullOrEmpty(response.FatalError) && (!response.Errors?.Any() ?? true);
+            return string.IsNullOrEmpty(response.FatalError) && response.Errors is null or {Count: 0};
         }
     }
 
-    internal record SveveResponseContainer
+    internal sealed record SveveResponseContainer
     {
         [JsonPropertyName("response")]
         public SveveResponse Response { get; init; } = null!;
     }
-    internal record SveveResponse
+    internal sealed record SveveResponse
     {
         [JsonPropertyName("msgOkCount")]
         public int MsgOkCount { get; init; }
@@ -99,14 +99,14 @@ namespace Stemmesystem.Server.InternalServices;
 
     }
 
-    internal class SveveError
+    internal sealed class SveveError
     {
         [JsonPropertyName("number")]
         public string Number { get; init; } = null!;
         [JsonPropertyName("message")]
         public string Message { get; init; } = null!;
     }
-    internal class SveveOptions
+    internal sealed class SveveOptions
     {
         [Required]
         public string? User { get; set; }

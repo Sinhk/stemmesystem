@@ -7,11 +7,10 @@ using ProtoBuf.Grpc;
 using StemmeSystem.Data;
 using StemmeSystem.Data.Entities;
 using StemmeSystem.Data.Repositories;
-using Stemmesystem.Server.Data.Repositories;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
-using Stemmesystem.Shared.Tools;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
+using Stemmesystem.Core.Tools;
 
 namespace Stemmesystem.Server.Services;
 
@@ -70,7 +69,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         
         await _context.SaveChangesAsync(cancellationToken);
         
-        if(fjernes != null && fjernes.Any())
+        if(fjernes is {Count:>0})
             await Parallel.ForEachAsync(fjernes, cancellationToken, async (s, token) => await notifier.StemmeFjernet(new StemmeFjernetEvent(votering.Id, s.Id), token));
         await Parallel.ForEachAsync(stemmer, cancellationToken, async (s, token) => await notifier.NyStemme(new NyStemmeEvent(votering.Id, new StemmeDto(s.Id, s.ValgId)), token));
         await notifier.HarStemt(new HarStemtEvent(votering.Id, delegat.Id), cancellationToken);

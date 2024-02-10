@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using Duende.IdentityServer.EntityFramework.Storage;
@@ -19,12 +20,11 @@ using StemmeSystem.Data;
 using StemmeSystem.Data.Models;
 using StemmeSystem.Data.Repositories;
 using Stemmesystem.Server;
-using Stemmesystem.Server.Data.Repositories;
 using Stemmesystem.Server.Hubs;
 using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Tools;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Tools;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 using Secret = Duende.IdentityServer.Models.Secret;
 
@@ -78,13 +78,19 @@ builder.Services.RemoveAll(typeof(ISigningCredentialStore));
 builder.Services.AddTransient<ISigningCredentialStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
 builder.Services.AddTransient<IValidationKeysStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
 
-builder.Services.AddAuthentication()
+var authenticationBuilder = builder.Services.AddAuthentication()
+    .AddIdentityServerJwt();
+
+var googleAuth = builder.Configuration.GetSection("Authentication:Google");
+if (googleAuth.Exists())
+{
+    authenticationBuilder
     .AddGoogle("Google", options =>
     {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    })
-    .AddIdentityServerJwt();
+        options.ClientId = googleAuth["ClientId"] ?? throw new InvalidOperationException("Missing Google ClientId");
+        options.ClientSecret = googleAuth["ClientSecret"] ?? throw new InvalidOperationException("Missing Google ClientSecret");
+    });
+}
 
 builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>());
 
@@ -93,8 +99,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddResponseCompression(opts =>
 {
-    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-        new[] { "application/octet-stream" });
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat( ["application/octet-stream"]);
 });
 
 builder.Services.AddCodeFirstGrpc();
@@ -125,7 +130,7 @@ builder.Services.AddLazyCache();
 
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
-    builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Any, int.Parse(port)));
+    builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Any, int.Parse(port, CultureInfo.InvariantCulture)));
 
 var app = builder.Build();
 
@@ -197,5 +202,5 @@ void ConfigureDb(DbContextOptionsBuilder dbContextOptionsBuilder) =>
         "Sqlite" => dbContextOptionsBuilder.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly("SqliteMigrations")),
         "SqlServer" => dbContextOptionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection") ?? "not-provided", x => x.MigrationsAssembly("SqlServerMigrations")),
         "Postgres" => dbContextOptionsBuilder.UseNpgsql(ConnectionStringUtils.ParseHerokuPostgresString() ?? "not-provided", x=> x.MigrationsAssembly("PostgresMigrations")),
-        _ => throw new Exception($"Unsupported provider: {provider}")
+        _ => throw new InvalidOperationException($"Unsupported provider: {provider}")
     };

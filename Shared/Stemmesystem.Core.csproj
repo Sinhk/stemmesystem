@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <NoWarn>$(NoWarn);PBN2008</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,8 @@
-﻿using Duende.IdentityServer.Extensions;
+﻿using System.Globalization;
+using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Stemmesystem.Shared.SignalR;
+using Stemmesystem.Core.SignalR;
 
 namespace Stemmesystem.Server.Hubs;
 
@@ -10,11 +11,11 @@ public class AdminHub : Hub<IAdminHubClient>
 {
     public async Task KobleTilArrangement(int arrangementId)
     {
-        await Groups.AddToGroupAsync(Context.ConnectionId, arrangementId.ToString());
+        await Groups.AddToGroupAsync(Context.ConnectionId, arrangementId.ToString(CultureInfo.InvariantCulture));
     }
     public async Task KobleFraArrangement(int arrangementId)
     {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, arrangementId.ToString());
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, arrangementId.ToString(CultureInfo.InvariantCulture));
     }
     
     public override async Task OnConnectedAsync()

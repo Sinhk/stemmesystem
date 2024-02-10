@@ -1,8 +1,9 @@
 ﻿using System.Collections.Concurrent;
+using System.Globalization;
 using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.SignalR;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.SignalR;
+using Stemmesystem.Core;
+using Stemmesystem.Core.SignalR;
 
 namespace Stemmesystem.Server.Hubs;
 
@@ -31,7 +32,7 @@ public class DelegatHub : Hub<IDelegatHubClient>
                     var x = Tracker.AddOrUpdate(Context.User.GetSubjectId(), _ => 1, (_, i) => i + 1);
                     if (x == 1)
                     {
-                        var arrangemntId = int.Parse(arrangement.Value);
+                        var arrangemntId = int.Parse(arrangement.Value, CultureInfo.InvariantCulture);
                         Counts.AddOrUpdate(arrangemntId, _ => 1, (_, i) => i+1);
                         await CountChanged(arrangemntId);
                     }
@@ -72,7 +73,7 @@ public class DelegatHub : Hub<IDelegatHubClient>
                     {
                         if (x == 1)
                         {
-                            var arrangemntId = int.Parse(arrangement.Value);
+                            var arrangemntId = int.Parse(arrangement.Value, CultureInfo.InvariantCulture);
                             Counts.AddOrUpdate(arrangemntId, _ => 0, (_, i) => i-1);
                             await CountChanged(arrangemntId);
                         }

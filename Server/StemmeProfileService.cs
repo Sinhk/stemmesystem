@@ -3,8 +3,10 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Identity;
+using Stemmesystem.Core;
 using StemmeSystem.Data.Models;
-using Stemmesystem.Shared;
+
+namespace Stemmesystem.Server;
 
 public class StemmeProfileService : ProfileService<ApplicationUser>
 {

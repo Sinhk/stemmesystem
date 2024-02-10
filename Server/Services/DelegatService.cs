@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Globalization;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Duende.IdentityServer.Extensions;
 using Grpc.Core;
@@ -7,10 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using ProtoBuf.Grpc;
 using StemmeSystem.Data;
 using StemmeSystem.Data.Entities;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
-using Stemmesystem.Shared.Tools;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
+using Stemmesystem.Core.Tools;
 
 namespace Stemmesystem.Server.Services;
 
@@ -57,21 +58,21 @@ public class DelegatService : IDelegatService, IAdminDelegatService
             .FirstOrDefaultAsync();
     }
     [Authorize(Roles = "admin")]
-    public async Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel dto)
+    public async Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel model)
     {
         var delegat = await _context.Delegat
-            .Where(d => d.ArrangementId == dto.ArrangementId)
-            .Where(d => d.Id == dto.Id)
+            .Where(d => d.ArrangementId == model.ArrangementId)
+            .Where(d => d.Id == model.Id)
             .FirstOrDefaultAsync();
         if (delegat == null)
-            throw new StemmeException($"Fant ingen delegat med id {dto.Id} å oppdatere");
+            throw new StemmeException($"Fant ingen delegat med id {model.Id} å oppdatere");
 
-        if(dto.Delegatnummer.HasValue)
-            delegat.Delegatnummer = dto.Delegatnummer.Value;
-        delegat.Navn = dto.Navn;
-        delegat.Gruppe = dto.Gruppe;
-        delegat.Epost = dto.Epost;
-        delegat.Telefon = dto.Telefon;
+        if(model.Delegatnummer.HasValue)
+            delegat.Delegatnummer = model.Delegatnummer.Value;
+        delegat.Navn = model.Navn;
+        delegat.Gruppe = model.Gruppe;
+        delegat.Epost = model.Epost;
+        delegat.Telefon = model.Telefon;
             
         await _context.SaveChangesAsync();
         return _mapper.Map<AdminDelegatDto>(delegat);
@@ -103,13 +104,13 @@ public class DelegatService : IDelegatService, IAdminDelegatService
     }
     
     [Authorize(Roles = "admin")]
-    public async Task<AdminDelegatDto> RegistrerNyDelegat(DelegatInputModel dto)
+    public async Task<AdminDelegatDto> RegistrerNyDelegat(DelegatInputModel model)
     {
-        if (!await IsValidNo(dto.ArrangementId, dto.Delegatnummer!.Value))
+        if (!await IsValidNo(model.ArrangementId, model.Delegatnummer!.Value))
             throw new StemmeException("Delegatnummer er allerede brukt");
 
-        var delegat = _mapper.Map<Delegat>(dto);
-        delegat.ArrangementId = dto.ArrangementId;
+        var delegat = _mapper.Map<Delegat>(model);
+        delegat.ArrangementId = model.ArrangementId;
         delegat.Delegatkode = _keyGenerator.GenerateKey(4);
         _context.Delegat.Add(delegat);
         await _context.SaveChangesAsync();
@@ -118,7 +119,7 @@ public class DelegatService : IDelegatService, IAdminDelegatService
 
     public async Task<DelegatDto?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default)
     {
-        delegatKode = delegatKode.ToUpper();
+        delegatKode = delegatKode.ToUpper(CultureInfo.InvariantCulture);
         var delegat = await _context.Delegat
             .Include(d => d.Arrangement)
             .Where(d => d.Delegatkode == delegatKode)

@@ -16,8 +16,8 @@ public interface IArrangementService
     IAsyncEnumerable<VoteringDto> FinnAktiveVoteringer(ArrangementRequest request);
 
 
-    Task<ArrangementDto> NyttArrangement(ArrangementInputModel dto);
-    Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel dto);
+    Task<ArrangementDto> NyttArrangement(ArrangementInputModel input);
+    Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel input);
 }
 
 [ProtoContract]
