@@ -1,29 +1,48 @@
-image: mcr.microsoft.com/dotnet/sdk:6.0
+image: mcr.microsoft.com/dotnet/sdk:latest
 
-stages:
-  - test
-  - deploy
+# ### Define variables
+#
+variables:
+  # 1) Name of directory where restore and build objects are stored.
+  OBJECTS_DIRECTORY: 'obj'
+  # 2) Name of directory used for keeping restored dependencies.
+  NUGET_PACKAGES_DIRECTORY: '.nuget'
+  # 3) A relative path to the source code from project repository root.
+  # NOTE: Please edit this path so it matches the structure of your project!
+  SOURCE_CODE_PATH: '*/*/'
 
 cache:
-  key: "$CI_COMMIT_REF_SLUG"
+  # Per-stage and per-branch caching.
+  key: "$CI_JOB_STAGE-$CI_COMMIT_REF_SLUG"
   paths:
-    - .nuget
+    # Specify three paths that should be cached:
+    #
+    # 1) Main JSON file holding information about package dependency tree, packages versions,
+    # frameworks etc. It also holds information where to the dependencies were restored.
+    - '$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/project.assets.json'
+    # 2) Other NuGet and MSBuild related files. Also needed.
+    - '$SOURCE_CODE_PATH$OBJECTS_DIRECTORY/*.csproj.nuget.*'
+    # 3) Path to the directory where restored dependencies are kept.
+    - '$NUGET_PACKAGES_DIRECTORY'
 
-test:
+before_script:
+  - 'dotnet restore --packages $NUGET_PACKAGES_DIRECTORY'
+
+build:
+  stage: build
+  script:
+    - 'dotnet build --no-restore'
+
+tests:
   stage: test
   script:
-    - dotnet restore --packages .nuget
-    - dotnet test --no-restore
-production:
+    - 'dotnet test --no-restore'
+
+deploy:
   stage: deploy
-  image: docker:latest
-  services:
-    - docker:dind
-  script:
-    - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main/ npm
-    - npm i -g heroku
-    - heroku container:login
-    - heroku container:push web -a stemmesystem
-    - heroku container:release web -a stemmesystem
-  only:
-    - master 
+  tags:
+    - speiding-stemme
+  script: 
+    - 'dotnet release --no-restore'
+    - echo "Define your deployment script!"
+  environment: production
