@@ -42,6 +42,8 @@ tests:
 deploy:
   stage: deploy
   cache: []
+  services:
+    - name: docker:dind
   before_script: 
     - export GOOGLE_CLOUD_CREDENTIALS=$(echo $BASE64_GOOGLE_CLOUD_CREDENTIALS | base64 -d)
     - echo $GOOGLE_CLOUD_CREDENTIALS > service-account-key.json 
