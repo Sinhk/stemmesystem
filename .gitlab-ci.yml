@@ -42,7 +42,12 @@ tests:
 deploy:
   stage: deploy
   cache: []
-  before_script: []
+  before_script: 
+    - export GOOGLE_CLOUD_CREDENTIALS=$(echo $BASE64_GOOGLE_CLOUD_CREDENTIALS | base64 -d)
+    - echo $GOOGLE_CLOUD_CREDENTIALS > service-account-key.json 
+    - gcloud auth activate-service-account --key-file=google-creds.json
+    - gcloud config set project avstemming-speidertinget
+    - gcloud auth configure-docker 
   environment: production
   image: google/cloud-sdk:latest
   variables:
@@ -50,14 +55,7 @@ deploy:
     IMAGE: gcr.io/$PROJECT_ID/stemme:$CI_COMMIT_SHA
   script: 
     - docker build . -f Server/Dockerfile -t $IMAGE
-    
-    - export GOOGLE_CLOUD_CREDENTIALS=$(echo $BASE64_GOOGLE_CLOUD_CREDENTIALS | base64 -d)
-    - echo $GOOGLE_CLOUD_CREDENTIALS > service-account-key.json 
-    - gcloud auth activate-service-account --key-file=google-creds.json
-    - gcloud config set project avstemming-speidertinget
-    - gcloud auth configure-docker 
     - docker push $IMAGE
-
     - gcloud run deploy avstemming-st24 --image=$IMAGE --platform=managed --region=europe-north1 --allow-unauthenticated
   only:
     - master 
