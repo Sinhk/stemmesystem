@@ -1,15 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
-using SendGrid;
-using SendGrid.Helpers.Mail;
+using MimeKit;
 
 namespace Stemmesystem.Server.InternalServices
 {
     public interface IEpostSender
     {
         Task<bool> SendEmailAsync(EpostModel epostModel);
-        Task<bool> SendEmailTemplateAsync(string tilEpost, string? tilNavn, string templateId, object data);
     }
 
     public record EpostModel(string TilEpost, string Subject)
@@ -21,76 +20,78 @@ namespace Stemmesystem.Server.InternalServices
 
     public class EmailSender : IEmailSender, IEpostSender
     {
-        private readonly SendMailOptions _options;
+        private readonly EmailSettings _options;
         private readonly ILogger<EmailSender> _logger;
 
-        public EmailSender(IOptions<SendMailOptions> optionsAccessor, ILogger<EmailSender> logger)
+        public EmailSender(IOptions<EmailSettings> optionsAccessor, ILogger<EmailSender> logger)
         {
             _logger = logger;
             _options = optionsAccessor.Value;
         }
         public async Task SendEmailAsync(string email, string subject, string message)
         {
-            var client = new SendGridClient(_options.ApiKey);
-            var msg = new SendGridMessage
-            {
-                From = new EmailAddress(_options.FromEmail, _options.FromName),
-                Subject = subject,
-                PlainTextContent = message,
-                HtmlContent = message
-            };
-            msg.AddTo(new EmailAddress(email));
+            var msg = new MimeMessage();
+            msg.From.Add(new MailboxAddress(_options.FromName, _options.FromEmail));
+            msg.To.Add(InternetAddress.Parse(email));
+            msg.Subject = subject;
+            msg.Body = new TextPart("plain") { Text = message };
 
-            //var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-            // Disable click tracking.
-            // See https://sendgrid.com/docs/User_Guide/Settings/tracking.html
-            msg.SetClickTracking(false, false);
+            using var client = await GetAuthenticatedClient();
+            await client.SendAsync(msg);
+            await client.DisconnectAsync(true);
 
-            var result = await client.SendEmailAsync(msg);
-            if (!result.IsSuccessStatusCode)
+            /*if (!result.IsSuccessStatusCode)
             {
                 _logger.LogError("Failed sending email: {message}", await result.Body.ReadAsStringAsync());
-            }
+            }*/
         }
 
         public async Task<bool> SendEmailAsync(EpostModel epostModel)
         {
-            var client = new SendGridClient(_options.ApiKey);
-            var from = new EmailAddress(_options.FromEmail, _options.FromName);
-            var to = new EmailAddress(epostModel.TilEpost,epostModel.TilNavn);
-            var msg = MailHelper.CreateSingleEmail(from, to, epostModel.Subject, epostModel.PlainTextMessage, epostModel.HtmlMessage);
-            msg.SetClickTracking(false, false);
-            var result = await client.SendEmailAsync(msg);
-            if (!result.IsSuccessStatusCode)
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(_options.FromName, _options.FromEmail));
+            message.To.Add(new MailboxAddress(epostModel.TilNavn, epostModel.TilEpost));
+            message.Subject = epostModel.Subject;
+            
+            var bodyBuilder = new BodyBuilder
             {
-                _logger.LogError("Failed sending email: {message}", await result.Body.ReadAsStringAsync());
-            }
-            return result.IsSuccessStatusCode;
+                HtmlBody = epostModel.HtmlMessage,
+                TextBody = epostModel.PlainTextMessage
+            };
+            message.Body = bodyBuilder.ToMessageBody();
+
+            using var client = await GetAuthenticatedClient();
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+
+            return true;
         }
 
-        public async Task<bool> SendEmailTemplateAsync(string tilEpost, string? tilNavn, string templateId, object data)
+        private async Task<SmtpClient> GetAuthenticatedClient()
         {
-            var client = new SendGridClient(_options.ApiKey);
-            var from = new EmailAddress(_options.FromEmail, _options.FromName);
-            var to = new EmailAddress(tilEpost,tilNavn);
-            var msg = MailHelper.CreateSingleTemplateEmail(from, to, templateId, data);
-            msg.SetClickTracking(false, false);
-            var result = await client.SendEmailAsync(msg);
-            if (!result.IsSuccessStatusCode)
-            {
-                _logger.LogError("Failed sending email: {message}", await result.Body.ReadAsStringAsync());
-            }
-            return result.IsSuccessStatusCode;
+            var client = new SmtpClient();
+            await client.ConnectAsync(_options.Host, _options.Port, true);
+            await client.AuthenticateAsync(_options.Username, _options.Password);
+            return client;
         }
     }
 
-    public class SendMailOptions
+    public class EmailSettings
     {
-        [Required]
-        public string? ApiKey { get; set; }
+        private string? _fromEmail;
 
-        [Required] public string? FromEmail { get; set; } = "noreply@romnorkrets.no";
+        public string? FromEmail
+        {
+            get => _fromEmail ?? Username;
+            set => _fromEmail = value;
+        }
 
-        public string? FromName { get; set; } = "Romsdal og Nordmøre krets";
+        public string? FromName { get; set; }
+        [Required] public string Host { get; set; } = "smtp.gmail.com";
+        public int Port { get; set; } = 587;
+
+        [Required] public string Username { get; set; } = null!;
+
+        [Required]public string Password { get; set; } = null!;
     }
 }
