@@ -49,7 +49,7 @@ deploy:
     - echo $GOOGLE_CLOUD_CREDENTIALS > service-account-key.json 
     - gcloud auth activate-service-account --key-file=service-account-key.json
     - gcloud config set project avstemming-speidertinget
-    - gcloud auth configure-docker 
+    - gcloud auth configure-docker gcr.io
   environment: production
   image: google/cloud-sdk:latest
   variables:
