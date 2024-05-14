@@ -112,9 +112,10 @@ builder.Services.AddOptions<SveveOptions>()
     
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IEpostSender, EmailSender>();
-builder.Services.AddOptions<SendMailOptions>()
-    .BindConfiguration("SendGrid")
-    .ValidateDataAnnotations();
+builder.Services.AddOptions<EmailSettings>()
+    .BindConfiguration("EmailSettings")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 
 builder.Services.AddSingleton<IKeyGenerator, RngKeyGenerator>();

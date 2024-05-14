@@ -13,12 +13,14 @@ public class PinSender : IPinSender
     private readonly ISmsSender _smsSender;
     private readonly IEpostSender _emailSender;
     private readonly StemmesystemContext _context;
+    private readonly ILogger<PinSender> _logger;
 
-    public PinSender(ISmsSender smsSender, IEpostSender emailSender, StemmesystemContext context)
+    public PinSender(ISmsSender smsSender, IEpostSender emailSender, StemmesystemContext context, ILogger<PinSender> logger)
     {
         _smsSender = smsSender;
         _emailSender = emailSender;
         _context = context;
+        _logger = logger;
     }
 
     public async Task<SendPinResult> SendEmail(SendPinRequest request, CancellationToken cancellationToken = default)
@@ -33,15 +35,28 @@ public class PinSender : IPinSender
         if (string.IsNullOrEmpty(delegat.Epost))
             throw new StemmeException($"Delegat {delegat.Delegatnummer} ({delegat.Navn}) har ikke e-postadresse");
             
-        //var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {baseUri} for å avgi din stemme i de sakene der du har stemmerett. Du kan også bruke lenken: {baseUri}/pin/{delegat.Delegatkode}";
-        //await _emailSender.SendEmailAsync(delegat.Epost,$"PIN-kode til {delegat.Arrangement.Navn}",msg);
-        var success = await _emailSender.SendEmailTemplateAsync(delegat.Epost, delegat.Navn, "d-7ef5c7f364414018912680e37d24634a", new {navn = delegat.Navn,arrangement = delegat.Arrangement.Navn, pin = delegat.Delegatkode, url = baseUrl });
-        if (success)
+        var msg = $"Hei. {delegat.Navn} har PIN-kode {delegat.Delegatkode} i Romsdal og Nordmøre krets sitt system for elektronisk avstemning. Bruk PIN-koden på {baseUrl} for å avgi din stemme i de sakene der du har stemmerett. Du kan også bruke lenken: {baseUrl}/pin/{delegat.Delegatkode}";
+        var model = new EpostModel(delegat.Epost, $"PIN-kode til {delegat.Arrangement.Navn}")
         {
-            delegat.SendtEmailInternal = DateTimeOffset.UtcNow;
-            await _context.SaveChangesAsync(cancellationToken);    
+            TilNavn = delegat.Navn,
+            PlainTextMessage = msg
+        };
+        
+        
+        try
+        {
+            await _emailSender.SendEmailAsync(model);
         }
-        return new SendPinResult(success);
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Feil ved sending av e-post til {Delegat}", delegat.Navn);
+            return new SendPinResult(false);
+        }
+        
+        
+        delegat.SendtEmailInternal = DateTimeOffset.UtcNow;
+        await _context.SaveChangesAsync(cancellationToken);
+        return new SendPinResult(true);
     }
 
     public async Task<SendPinResult> SendSms(SendPinRequest request, CancellationToken cancellationToken = default)
