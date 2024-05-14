@@ -55,6 +55,8 @@ deploy:
   variables:
     PROJECT_ID: "avstemming-speidertinget"
     IMAGE: gcr.io/$PROJECT_ID/stemme:$CI_COMMIT_SHA
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
   script: 
     - docker build . -f Server/Dockerfile -t $IMAGE
     - docker push $IMAGE
