@@ -123,10 +123,6 @@ builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
 builder.Services.AddAutoMapper(typeof(ApiAutoMapperProfile));
 builder.Services.AddLazyCache();
 
-var port = Environment.GetEnvironmentVariable("PORT");
-if (!string.IsNullOrEmpty(port))
-    builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Any, int.Parse(port)));
-
 var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())
@@ -189,7 +185,9 @@ app.MapHub<DelegatHub>("/hubs/delegat");
 app.MapHub<AdminHub>("/hubs/admin");
 app.MapFallbackToFile("index.html");
 
-app.Run();
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var url = $"http://0.0.0.0:{port}";
+app.Run(url);
 
 void ConfigureDb(DbContextOptionsBuilder dbContextOptionsBuilder) =>
     _ = provider switch
