@@ -194,6 +194,6 @@ void ConfigureDb(DbContextOptionsBuilder dbContextOptionsBuilder) =>
     {
         "Sqlite" => dbContextOptionsBuilder.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly("SqliteMigrations")),
         "SqlServer" => dbContextOptionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection") ?? "not-provided", x => x.MigrationsAssembly("SqlServerMigrations")),
-        "Postgres" => dbContextOptionsBuilder.UseNpgsql(ConnectionStringUtils.ParseHerokuPostgresString() ?? "not-provided", x=> x.MigrationsAssembly("PostgresMigrations")),
+        "Postgres" => dbContextOptionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection") ?? "not-provided", x=> x.MigrationsAssembly("PostgresMigrations")),
         _ => throw new Exception($"Unsupported provider: {provider}")
     };
