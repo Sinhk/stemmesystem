@@ -39,11 +39,14 @@ tests:
   script:
     - 'dotnet test --no-restore'
 
+docker-build:
+  stage: build
+  script:
+    - 'dotnet build --no-restore'
+
 deploy:
   stage: deploy
   cache: []
-  services:
-    - name: docker:dind
   before_script: 
     - export GOOGLE_CLOUD_CREDENTIALS=$(echo $BASE64_GOOGLE_CLOUD_CREDENTIALS | base64 -d)
     - echo $GOOGLE_CLOUD_CREDENTIALS > service-account-key.json 
@@ -55,11 +58,8 @@ deploy:
   variables:
     PROJECT_ID: "avstemming-speidertinget"
     IMAGE: gcr.io/$PROJECT_ID/stemme:$CI_COMMIT_SHA
-    DOCKER_HOST: tcp://docker:2376
-    DOCKER_TLS_CERTDIR: "/certs"
   script: 
-    - docker build . -f Server/Dockerfile -t $IMAGE
-    - docker push $IMAGE
+    - gcloud builds submit --tag $IMAGE
     - gcloud run deploy avstemming-st24 --image=$IMAGE --platform=managed --region=europe-north1 --allow-unauthenticated
   only:
     - master 
