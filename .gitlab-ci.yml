@@ -46,3 +46,6 @@ deploy:
     - 'dotnet publish --no-restore'
     - echo "Define your deployment script!"
   environment: production
+  only:
+    - master 
+
