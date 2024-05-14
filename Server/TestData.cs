@@ -42,11 +42,8 @@ public static class TestData
             await roleManager.CreateAsync(new IdentityRole(AdminRoleName));
         }
 
-        var sindre = await CreateUser(userManager, "sindre.kroknes@gmail.com");
-        await userManager.AddPasswordAsync(sindre, "Jan2022!");
-        
-        await CreateUser(userManager, "patrickg@romnorkrets.no");
-        await CreateUser(userManager, "siljeth.kroknes@gmail.com");
+        await CreateUser(userManager, "sindre.kroknes@speiding.no");
+        await CreateUser(userManager, "tom.lantz@speiding.no");
     }
 
     internal static async Task<ApplicationUser> CreateUser(UserManager<ApplicationUser> userManager, string email)
