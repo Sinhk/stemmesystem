@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
 using MimeKit;
@@ -70,7 +71,7 @@ namespace Stemmesystem.Server.InternalServices
         private async Task<SmtpClient> GetAuthenticatedClient()
         {
             var client = new SmtpClient();
-            await client.ConnectAsync(_options.Host, _options.Port, true);
+            await client.ConnectAsync(_options.Host, _options.Port, SecureSocketOptions.StartTls);
             await client.AuthenticateAsync(_options.Username, _options.Password);
             return client;
         }
