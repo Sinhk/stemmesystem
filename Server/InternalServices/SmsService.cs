@@ -32,7 +32,7 @@ namespace Stemmesystem.Server.InternalServices;
                 {"user", options.User }, 
                 {"passwd",options.Password }, 
                 {"f","json" },
-                {"from", "ROMNORKRETS" }
+                {"from", "Speidern" }
             };
 
             return QueryHelpers.AddQueryString(_baseUrl, param);
