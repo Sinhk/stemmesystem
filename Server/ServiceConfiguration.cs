@@ -20,7 +20,7 @@ internal static class ServiceConfiguration
         services.AddDbContext<StemmesystemContext>((provider, builder) =>
         {
             var configuration = provider.GetRequiredService<IConfiguration>();
-            var dbProvider = configuration.GetValue("Provider", "Sqlite");
+            var dbProvider = configuration.GetValue("Provider", "Postgres");
             switch (dbProvider)
             {
                 case "Sqlite":

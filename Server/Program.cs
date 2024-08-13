@@ -182,6 +182,15 @@ app.MapHub<DelegatHub>("/hubs/delegat");
 app.MapHub<AdminHub>("/hubs/admin");
 app.MapFallbackToFile("index.html");
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-var url = $"http://0.0.0.0:{port}";
-app.Run(url);
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    var url = $"http://0.0.0.0:{port}";
+    app.Run(url);
+}
+else
+{
+    app.Run();
+}
+
+public partial class Program { }
