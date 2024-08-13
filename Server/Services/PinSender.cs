@@ -31,7 +31,7 @@ public class PinSender : IPinSender
             .Include(d=> d.Arrangement)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         if (delegat == null)
-            throw new StemmeException($"Fant ikke delegat med id{delegatId}");
+            throw new StemmeException($"Fant ikke delegat med id {delegatId}");
         if (string.IsNullOrEmpty(delegat.Epost))
             throw new StemmeException($"Delegat {delegat.Delegatnummer} ({delegat.Navn}) har ikke e-postadresse");
             
@@ -41,7 +41,6 @@ public class PinSender : IPinSender
             TilNavn = delegat.Navn,
             PlainTextMessage = msg
         };
-        
         
         try
         {

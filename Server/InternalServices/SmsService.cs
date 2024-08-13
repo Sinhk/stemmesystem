@@ -48,10 +48,10 @@ namespace Stemmesystem.Server.InternalServices;
             var httpResponse = await _httpClient.GetAsync(url);
             if (!httpResponse.IsSuccessStatusCode)
             {
-                _logger.LogError($"Got response code {httpResponse.StatusCode} from sveve.");
+                _logger.LogError("Got response code {StatusCode} from sveve", httpResponse.StatusCode);
                 try
                 {
-                    _logger.LogError(await httpResponse.Content.ReadAsStringAsync());
+                    _logger.LogError("Error while sending SMS to Sveve: {SveveError}", await httpResponse.Content.ReadAsStringAsync());
                 }
                 catch (Exception)
                 {
