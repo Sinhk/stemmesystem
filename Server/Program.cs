@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using Duende.IdentityServer.EntityFramework.Storage;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services.KeyManagement;
@@ -31,9 +30,7 @@ using Secret = Duende.IdentityServer.Models.Secret;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var provider = builder.Configuration.GetValue("Provider", "Sqlite");
-
-builder.Services.AddDbContext<StemmesystemContext>(ConfigureDb);
+builder.Services.AddAppDbContext();
 builder.Services.AddOperationalDbContext<StemmesystemContext>(options =>
 {
     options.EnableTokenCleanup = true;
@@ -176,11 +173,7 @@ app.UseAuthorization();
 app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
 
 app.MapRazorPages();
-app.MapGrpcService<DelegatService>();
-app.MapGrpcService<SakService>();
-app.MapGrpcService<ArrangementService>();
-app.MapGrpcService<StemmeService>();
-app.MapGrpcService<PinSender>();
+app.MapGrpcServices();
 app.MapControllers();
 app.MapHub<DelegatHub>("/hubs/delegat");
 app.MapHub<AdminHub>("/hubs/admin");
@@ -189,12 +182,3 @@ app.MapFallbackToFile("index.html");
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 var url = $"http://0.0.0.0:{port}";
 app.Run(url);
-
-void ConfigureDb(DbContextOptionsBuilder dbContextOptionsBuilder) =>
-    _ = provider switch
-    {
-        "Sqlite" => dbContextOptionsBuilder.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly("SqliteMigrations")),
-        "SqlServer" => dbContextOptionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection") ?? "not-provided", x => x.MigrationsAssembly("SqlServerMigrations")),
-        "Postgres" => dbContextOptionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection") ?? "not-provided", x=> x.MigrationsAssembly("PostgresMigrations")),
-        _ => throw new Exception($"Unsupported provider: {provider}")
-    };
