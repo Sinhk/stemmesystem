@@ -10,10 +10,15 @@ namespace Stemmesystem.Client
         public WebAutoMapperProfile()
         {
             CreateMap<CsvDelegat, DelegatInputModel>()
-                .ForMember(d=> d.Id, o=> o.Ignore());
+                .ForMember(d=> d.Id, o=> o.Ignore())
+                .ForMember(d=> d.ArrangementId, o=> o.Ignore())
+                ;
             
             CreateMap<CsvSak, SakInputModel>()
-                .ForMember(d=> d.Id, o=> o.Ignore());
+                .ForMember(d=> d.Id, o=> o.Ignore())
+                .ForMember(d=> d.ArrangementId, o=> o.Ignore())
+                .ForMember(d=> d.Voteringer, o=> o.Ignore())
+                ;
 
             CreateMap<DelegatDto, DelegatInputModel>()
                 .ForMember(d => d.Id, opt => opt.Condition(s => s.Id != default));
