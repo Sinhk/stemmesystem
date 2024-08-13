@@ -1,13 +1,9 @@
 @page "/"
-@using System.Text.Json.Serialization
-@using System.Text.Json
 @using Stemmesystem.Shared
 @inject NavigationManager _navigation
 @inject IDelegatkodeAuthService _authService
 
-<PageTitle>Stemme</PageTitle>
-
-<h1>Romsdal og Nordmøre krets's stemmeside</h1>
+<PageTitle>Stemmesystem</PageTitle>
 
 <label>Skriv PIN her for å logge inn:</label>
 <form @onsubmit="DelegatLogin">
@@ -43,8 +39,6 @@
     private string? _error;
     
     private string? _greeting;
-    
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web){ReferenceHandler = ReferenceHandler.IgnoreCycles};
 
     protected override async Task OnInitializedAsync()
     {
