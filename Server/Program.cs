@@ -88,6 +88,7 @@ builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOpti
 builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddHealthChecks();
 builder.Services.AddResponseCompression(opts =>
 {
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
@@ -175,6 +176,8 @@ app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
 app.MapRazorPages();
 app.MapGrpcServices();
 app.MapControllers();
+app.MapHealthChecks("/healthz");
+    
 app.MapHub<DelegatHub>("/hubs/delegat");
 app.MapHub<AdminHub>("/hubs/admin");
 app.MapFallbackToFile("index.html");
