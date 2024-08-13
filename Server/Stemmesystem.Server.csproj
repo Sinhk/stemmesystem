@@ -10,11 +10,11 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
-    <PackageReference Include="Duende.IdentityServer" Version="6.3.10" />
-    <PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="6.3.10" />
-    <PackageReference Include="Duende.IdentityServer.EntityFramework" Version="6.3.10" />
-    <PackageReference Include="Duende.IdentityServer.EntityFramework.Storage" Version="6.3.10" />
-    <PackageReference Include="Duende.IdentityServer.Storage" Version="6.3.10" />
+    <PackageReference Include="Duende.IdentityServer" Version="6.0.5" />
+    <PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="6.0.5" />
+    <PackageReference Include="Duende.IdentityServer.EntityFramework" Version="6.0.5" />
+    <PackageReference Include="Duende.IdentityServer.EntityFramework.Storage" Version="6.0.5" />
+    <PackageReference Include="Duende.IdentityServer.Storage" Version="6.0.5" />
     <PackageReference Include="Grpc.AspNetCore.Server" Version="2.65.0" />
     <PackageReference Include="Grpc.AspNetCore.Web" Version="2.65.0" />
     <PackageReference Include="LazyCache.AspNetCore" Version="2.4.0" />
