@@ -50,11 +50,6 @@ tests:
   script:
     - 'dotnet test --no-restore'
 
-docker-build:
-  stage: build
-  script:
-    - 'dotnet build --no-restore'
-
 deploy:
   stage: deploy
   cache: []
