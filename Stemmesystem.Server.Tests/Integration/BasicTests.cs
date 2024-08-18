@@ -14,7 +14,7 @@ public class BasicTests : IClassFixture<ServerFactory>
     }
 
     [Theory]
-    [InlineData("/healthz", "text/html")]
+    [InlineData("/healthz", "text/plain")]
     public async Task Get_EndpointsReturnSuccessAndCorrectContentType(string url, string contentType)
     {
         // Arrange

@@ -112,9 +112,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IEpostSender, EmailSender>();
 builder.Services.AddOptions<EmailSettings>()
     .BindConfiguration("EmailSettings")
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
-
+    .ValidateDataAnnotations();
 
 builder.Services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
 builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
@@ -157,11 +155,10 @@ else
 {
     app.UseResponseCompression();
     app.UseExceptionHandler("/Error");
+    app.UseHttpsRedirection();
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
-app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();

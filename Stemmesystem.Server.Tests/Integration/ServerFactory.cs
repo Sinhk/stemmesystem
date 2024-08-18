@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -23,10 +24,26 @@ public class ServerFactory : WebApplicationFactory<Program>, IAsyncLifetime
         {
             {"ConnectionStrings:PostgresConnection", _dbContainer.GetConnectionString()}
         };
-        
+
         builder.ConfigureAppConfiguration(c => c.AddInMemoryCollection(data));
+
+        builder.ConfigureServices(services =>
+        {
+            RemoveGoogleAuth(services);
+
+            services.AddAuthentication(defaultScheme: "TestScheme")
+                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                        "TestScheme", options => { });
+        });
         
         builder.UseEnvironment("Development");
+    }
+
+    private static void RemoveGoogleAuth(IServiceCollection services)
+    {
+        services.RemoveAll<GoogleHandler>();
+        services.RemoveAll<IConfigureOptions<GoogleOptions>>();
+        services.RemoveAll<IValidateOptions<GoogleOptions>>();
     }
 
     /// <inheritdoc />
