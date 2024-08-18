@@ -1,9 +1,10 @@
-﻿using System.Security.Claims;
+﻿using System.Globalization;
+using System.Security.Claims;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Validation;
 using IdentityModel;
 using StemmeSystem.Data.Repositories;
-using Stemmesystem.Shared;
+using Stemmesystem.Core;
 
 namespace Stemmesystem.Server.Services;
 
@@ -35,7 +36,7 @@ public class KodeExtensionGrantValidator : IExtensionGrantValidator
         var claims = new List<Claim>
         {
             new(JwtClaimTypes.Role, "Delegat"),
-            new(AuthConstants.ArrangementClaimType, delegat.ArrangementId.ToString()),
+            new(AuthConstants.ArrangementClaimType, delegat.ArrangementId.ToString(CultureInfo.InvariantCulture)),
         };
         if (delegat.Navn != null) 
             claims.Add(new Claim(JwtClaimTypes.Name, delegat.Navn));

@@ -1,8 +1,7 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.SignalR;
 using Stemmesystem.Server.Hubs;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.SignalR;
+using Stemmesystem.Core.SignalR;
 
 namespace Stemmesystem.Server.Services;
 
@@ -20,14 +19,14 @@ public class NotificationManager
 
     public IDelegatHubClient ForArrangement(int arrangementId)
     {
-        var client = _delegatContext.Clients.Group(arrangementId.ToString());
+        var client = _delegatContext.Clients.Group(arrangementId.ToString(CultureInfo.InvariantCulture));
         return client;
     }
 
     public IAdminHubClient ForAdmin(int? arrangementId = null)
     {
-        if (arrangementId != null)
-            return _adminContext.Clients.Group(arrangementId.Value.ToString());
-        return _adminContext.Clients.All;
+        return arrangementId != null 
+            ? _adminContext.Clients.Group(arrangementId.Value.ToString(CultureInfo.InvariantCulture)) 
+            : _adminContext.Clients.All;
     }
 }

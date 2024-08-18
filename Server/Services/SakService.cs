@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using StemmeSystem.Data;
 using StemmeSystem.Data.Entities;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
 
 namespace Stemmesystem.Server.Services;
 
@@ -59,96 +59,96 @@ public class SakService : ISakService
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> ErNummerBrukt(int arrangementId, string? nummer)
+    public async Task<bool> ErNummerBrukt(int arrangementId, string? nummer, CancellationToken cancellationToken = default)
     {
         return await _context.Arrangement
             .Where(a => a.Id == arrangementId)
             .SelectMany(a => a.Saker)
-            .AnyAsync(s => s.Nummer == nummer);
+            .AnyAsync(s => s.Nummer == nummer, cancellationToken: cancellationToken);
     }
 
     [Authorize(Roles = "admin")]
-    public async Task<LagreResult<SakDto>> LagreNySak(SakInputModel model)
+    public async Task<LagreResult<SakDto>> LagreNySak(SakInputModel input, CancellationToken cancellationToken = default)
     {
         var errors = new Dictionary<string, List<string>>();
         var arrangement = await _context.Arrangement
-            .Where(a => a.Id == model.ArrangementId)
+            .Where(a => a.Id == input.ArrangementId)
             .Include(a => a.Saker)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         if (arrangement == null)
-            throw new StemmeException($"Arrangement med id {model.ArrangementId} ble ikke funnet");
+            throw new StemmeException($"Arrangement med id {input.ArrangementId} ble ikke funnet");
             
-        if ( await ErNummerBrukt(model.ArrangementId, model.Nummer))
+        if ( await ErNummerBrukt(input.ArrangementId, input.Nummer, cancellationToken))
         {
-            errors.Add(nameof(model.Nummer), new List<string>{"Saknummer er allerede brukt"});
+            errors.Add(nameof(input.Nummer), ["Saknummer er allerede brukt"]);
             return new LagreResult<SakDto>(null, errors);
         }
         
-        var sak = _mapper.Map<Sak>(model);
+        var sak = _mapper.Map<Sak>(input);
         arrangement.LeggTil(sak);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         var dto = _mapper.Map<SakDto>(sak);
         return new LagreResult<SakDto>(dto, errors);
     }
 
     [Authorize(Roles = "admin")]
-    public async Task<SakDto> OppdaterSak(SakInputModel model)
+    public async Task<SakDto> OppdaterSak(SakInputModel input, CancellationToken cancellationToken = default)
     {
         var sak = await _context.Arrangement
-            .Where(a => a.Id == model.ArrangementId)
+            .Where(a => a.Id == input.ArrangementId)
             .SelectMany(a => a.Saker)
-            .Where(s => s.Id == model.Id)
-            .FirstAsync();
+            .Where(s => s.Id == input.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
 
-        sak.Nummer = model.Nummer!;
-        sak.Tittel = model.Tittel!;
-        sak.Beskrivelse = model.Beskrivelse;
+        sak.Nummer = input.Nummer!;
+        sak.Tittel = input.Tittel!;
+        sak.Beskrivelse = input.Beskrivelse;
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<SakDto>(sak);
     }
     [Authorize(Roles = "admin")]
-    public async Task<LagreResult<VoteringDto>> LagreNyVotering(VoteringInputModel model)
+    public async Task<LagreResult<VoteringDto>> LagreNyVotering(VoteringInputModel input, CancellationToken cancellationToken = default)
     {
         var errors = new Dictionary<string, List<string>>();
         var sak = await _context.Sak
-            .Where(a => a.Id == model.SakId)
+            .Where(a => a.Id == input.SakId)
             .Include(a => a.Voteringer)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         if (sak == null)
-            throw new StemmeException($"Sak med id {model.SakId} ble ikke funnet");
+            throw new StemmeException($"Sak med id {input.SakId} ble ikke funnet");
 
-        var votering = _mapper.Map<Votering>(model);
+        var votering = _mapper.Map<Votering>(input);
         sak.LeggTil(votering);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         var nyVotering = _mapper.Map<AdminVoteringDto>(votering);
-        await _notificationManager.ForAdmin(sak.ArrangementId).NyVotering(new NyVoteringEvent(nyVotering));
+        await _notificationManager.ForAdmin(sak.ArrangementId).NyVotering(new NyVoteringEvent(nyVotering), cancellationToken);
         return new LagreResult<VoteringDto>(nyVotering, errors);
     }
 
     [Authorize(Roles = "admin")]
-    public async Task<LagreResult<VoteringDto>> OppdaterVotering(VoteringInputModel model)
+    public async Task<LagreResult<VoteringDto>> OppdaterVotering(VoteringInputModel input, CancellationToken cancellationToken = default)
     {
         var votering = await _context.Votering
-            .Where(a => a.Id == model.Id)
-            .FirstOrDefaultAsync();
+            .Where(a => a.Id == input.Id)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         if (votering == null)
-            return LagreResult<VoteringDto>.Error("Fant ikke votering å oppdatere");
-        _mapper.Map(model, votering);
-        await _context.SaveChangesAsync();
+            return LagreResult.Error<VoteringDto>("Fant ikke votering å oppdatere");
+        _mapper.Map(input, votering);
+        await _context.SaveChangesAsync(cancellationToken);
         return LagreResult.Success(_mapper.Map<VoteringDto>(votering));
     }
 
 
         
-    public async Task<ICollection<AdminSakDto>> HentSaker(SakerRequest request)
+    public async Task<ICollection<AdminSakDto>> HentSaker(SakerRequest request, CancellationToken cancellationToken = default)
     {
         return await _context.Arrangement
             .Where(a => a.Id == request.ArrangementId)
             .AsSplitQuery()
             .SelectMany(a => a.Saker)
             .ProjectTo<AdminSakDto>(_mapper.ConfigurationProvider)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: cancellationToken);
     }
 
     public Task<HentResult<SakInfoDto>> HentSakInfo(SakRequest request, CancellationToken cancellationToken = default)

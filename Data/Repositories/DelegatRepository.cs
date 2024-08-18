@@ -19,7 +19,7 @@ public class DelegatRepository : IDelegatRepository
 
     public async Task<Delegat?> ValiderKode(string delegatkode, CancellationToken cancellationToken = default)
     {
-        delegatkode = delegatkode.ToUpper();
+        delegatkode = delegatkode.ToUpperInvariant();
         var delegat = await _context.Delegat
             .Include(d => d.Arrangement)
             .Where(d => d.Delegatkode == delegatkode)

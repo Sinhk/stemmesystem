@@ -1,6 +1,6 @@
-﻿@using Stemmesystem.Shared
-@using Stemmesystem.Shared.Interfaces
-@using Stemmesystem.Shared.Models
+﻿@using Stemmesystem.Core
+@using Stemmesystem.Core.Interfaces
+@using Stemmesystem.Core.Models
 @inject IStemmeService _stemmeService
 @inject ISakService _sakService
 
@@ -54,7 +54,7 @@
     
     public SakInfoDto? Sak { get; set; }
     
-    internal List<StemmeDto>? Stemmer = new();
+    internal List<StemmeDto>? Stemmer = [];
     private bool _harStemmt;
     private bool Endre { get; set; } = false;
 

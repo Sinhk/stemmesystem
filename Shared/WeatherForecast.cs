@@ -1,4 +1,4 @@
-namespace Stemmesystem.Shared;
+namespace Stemmesystem.Core;
 
 public class WeatherForecast
 {

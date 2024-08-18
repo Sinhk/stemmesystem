@@ -1,8 +1,8 @@
 ﻿@page "/admin/arrangement/{arrangementId:int}/dashboard"
-@using Stemmesystem.Shared.Interfaces
-@using Stemmesystem.Shared.Models
+@using Stemmesystem.Core.Interfaces
+@using Stemmesystem.Core.Models
 @using Microsoft.AspNetCore.Authorization
-@using Stemmesystem.Shared
+@using Stemmesystem.Core
 @inject IArrangementService _arrangementService
 @implements IDisposable
 @inherits OwningComponentBase<Stemmesystem.Client.SignalR.IDelegatNotifierService>

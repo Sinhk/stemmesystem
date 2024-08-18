@@ -1,10 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Components
-@using Stemmesystem.Shared.Interfaces
-@using Stemmesystem.Shared.Models
+@using Stemmesystem.Core.Interfaces
+@using Stemmesystem.Core.Models
 @using Stemmesystem.Web.Components
 @using AutoMapper
-@inject ISakService _sakService
-@inject IMapper _mapper
+@inject ISakService SakService
+@inject IMapper Mapper
 
 
 @if (Votering.Startet)
@@ -73,22 +73,22 @@ else
         Votering.Valg.RemoveAll(v => string.IsNullOrEmpty(v.Navn));
         if (Votering.Id.GetValueOrDefault() != default)
         {
-            var (votering, errors) = await _sakService.OppdaterVotering(Votering);
+            var (votering, errors) = await SakService.OppdaterVotering(Votering);
 
-            if (errors?.Count > 0)
+            if (errors.Count > 0)
             {
                 _customValidator?.DisplayErrors(errors);
                 return;
             }
             if (votering != null)
             {
-                _mapper.Map(votering, Votering);  
+                Mapper.Map(votering, Votering);  
                 await OnSuccess.InvokeAsync();    
             }
         }
         else
         {
-            var (votering, errors) = await _sakService.LagreNyVotering(Votering);
+            var (votering, errors) = await SakService.LagreNyVotering(Votering);
             
             if (errors?.Count > 0)
             {
@@ -98,7 +98,7 @@ else
             
             if(votering != null)
             {
-                _mapper.Map(votering, Votering);
+                Mapper.Map(votering, Votering);
                 await OnSuccess.InvokeAsync();    
             }
         }
@@ -106,7 +106,7 @@ else
 
     private void LeggTilValg()
     {
-        Votering.Valg.Add(new ValgDto {Id = Guid.NewGuid(),SortId = Votering.Valg.Count});
+        Votering.Valg.Add(new ValgDto { Id = Guid.NewGuid(), SortId = Votering.Valg.Count, Navn = string.Empty });
     }
 
     private void TaVekkValg(Guid valgId)

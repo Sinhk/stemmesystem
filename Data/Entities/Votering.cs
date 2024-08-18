@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Stemmesystem.Server.Data.Entities;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Models;
-using Stemmesystem.Shared.Tools;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Tools;
 
 namespace StemmeSystem.Data.Entities
 {
@@ -17,7 +16,7 @@ namespace StemmeSystem.Data.Entities
         public string Tittel { get; set; }
         public string? Beskrivelse { get; set; }
         public bool Hemmelig { get; set; }
-        public bool Aktiv { get; set; } = false;
+        public bool Aktiv { get; set; }
 
         public int KanVelge { get; set; } = 1;
 
@@ -87,7 +86,7 @@ namespace StemmeSystem.Data.Entities
             List<Stemme>? fjernes = null;
             if (_avgitStemme.Any(d => d.Id == delegat.Id))
             {
-                fjernes = Hemmelig ? _stemmer.Where(s => keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
+                fjernes = Hemmelig ? _stemmer.Where(s => s.StemmeHash != null && keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
                 _stemmer.RemoveAll(s=>  fjernes.Contains(s));
             }
 

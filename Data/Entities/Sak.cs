@@ -1,10 +1,13 @@
-﻿using Stemmesystem.Server.Data.Entities;
+﻿
+using System.Globalization;
+using Stemmesystem.Server.Data.Entities;
 
 namespace StemmeSystem.Data.Entities
 {
     public class Sak
     {
-        private Arrangement? arrangement;
+        private Arrangement? _arrangement;
+        private readonly List<Votering> _voteringer = [];
 
         public int Id { get; internal set; }
         public string Nummer { get; set; }
@@ -12,15 +15,19 @@ namespace StemmeSystem.Data.Entities
 
         public string? Beskrivelse { get; set; }
         public int ArrangementId { get; internal set; }
-        public Arrangement Arrangement { get => arrangement ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Arrangement)); internal set => arrangement = value; }
-        public IList<Votering> Voteringer { get; set; } = new List<Votering>();
+        public Arrangement Arrangement { get => _arrangement ?? throw new InvalidOperationException("Uninitialized property: " + nameof(Arrangement)); internal set => _arrangement = value; }
 
+        public IReadOnlyList<Votering> Voteringer
+        {
+            get => _voteringer.AsReadOnly();
+            init => _voteringer = [..value];
+        }
 
         public void LeggTil(params Votering[] voteringer)
         {
             foreach (var votering in voteringer)
             {
-                Voteringer.Add(votering);
+                _voteringer.Add(votering);
             }
         }
 
@@ -30,7 +37,7 @@ namespace StemmeSystem.Data.Entities
             Tittel = tittel;
         }
 
-        public Sak(int nummer, string tittel) : this(nummer.ToString(), tittel)
+        public Sak(int nummer, string tittel) : this(nummer.ToString(CultureInfo.InvariantCulture), tittel)
         {
         }
     }

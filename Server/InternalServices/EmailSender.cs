@@ -29,13 +29,13 @@ namespace Stemmesystem.Server.InternalServices
             _logger = logger;
             _options = optionsAccessor.Value;
         }
-        public async Task SendEmailAsync(string email, string subject, string message)
+        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             var msg = new MimeMessage();
             msg.From.Add(new MailboxAddress(_options.FromName, _options.FromEmail));
             msg.To.Add(InternetAddress.Parse(email));
             msg.Subject = subject;
-            msg.Body = new TextPart("plain") { Text = message };
+            msg.Body = new TextPart("plain") { Text = htmlMessage };
 
             using var client = await GetAuthenticatedClient();
             await client.SendAsync(msg);

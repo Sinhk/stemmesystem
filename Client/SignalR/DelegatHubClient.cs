@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.SignalR.Client;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.SignalR;
+using Stemmesystem.Core;
+using Stemmesystem.Core.SignalR;
 
 namespace Stemmesystem.Client.SignalR;
 

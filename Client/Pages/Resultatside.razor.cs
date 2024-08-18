@@ -1,9 +1,10 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Stemmesystem.Client.SignalR;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
 
 namespace Stemmesystem.Client.Pages
 {
@@ -15,7 +16,7 @@ namespace Stemmesystem.Client.Pages
         private bool _disposed;
         private List<ArrangementInfo>? _arrangementer;
         private IDisposable? _subscription;
-        private bool _nyPublisert = false;
+        private bool _nyPublisert;
 
         protected override async Task OnInitializedAsync()
         {
@@ -25,8 +26,11 @@ namespace Stemmesystem.Client.Pages
                 return;
             if (authState.User.IsInRole("admin"))
             {
-                var arrangement = await _arrangementService.HentArrangementerAsync();
-                _arrangementer = arrangement;
+                _arrangementer = [];
+                await foreach (var arrangementInfo in _arrangementService.HentArrangementerAsync())
+                {
+                    _arrangementer.Add(arrangementInfo);
+                }
 
                 var notifier = ScopedServices.GetRequiredService<IAdminNotifierService>();
                 _subscription = notifier.OnVoteringPublisert(OnVoteringPublisert);
@@ -37,7 +41,7 @@ namespace Stemmesystem.Client.Pages
                 var arrangementClaim = authState.User.FindFirst(AuthConstants.ArrangementClaimType);
                 if (arrangementClaim?.Value != null)
                 {
-                    var id = int.Parse(arrangementClaim.Value);
+                    var id = int.Parse(arrangementClaim.Value, CultureInfo.InvariantCulture);
                     var arrangement = await _arrangementService.HentArrangementInfoAsync(new ArrangementRequest {ArrangementId = id});
                     if (arrangement != null) _arrangementer = new List<ArrangementInfo> { arrangement };
                     var notifier = ScopedServices.GetRequiredService<IDelegatNotifierService>();
@@ -53,10 +57,9 @@ namespace Stemmesystem.Client.Pages
             StateHasChanged();
         }
 
-        public void Dispose() => Dispose(true);
-
-        private void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
             if (_disposed)
                 return;
             _subscription?.Dispose();

@@ -23,8 +23,11 @@ namespace Stemmesystem.Client.Services.CSV
             Map(s => s.Valg).Convert(args =>
             {
                 if (args.Row.TryGetField<string>("valg", out var valg))
-                    return valg.Split(',').ToList();
-                return new List<string>();
+                {
+                    return valg?.Split(',',StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).ToList() ?? [];
+                }
+
+                return [];
             });
         }
     } 

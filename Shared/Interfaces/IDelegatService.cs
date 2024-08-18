@@ -1,10 +1,12 @@
-﻿using ProtoBuf.Grpc;
+﻿using System.Diagnostics.CodeAnalysis;
+using ProtoBuf.Grpc;
 using ProtoBuf.Grpc.Configuration;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core.Models;
 
-namespace Stemmesystem.Shared.Interfaces;
+namespace Stemmesystem.Core.Interfaces;
 
 [Service]
+[SuppressMessage("Usage", "PBN2008:ServiceContractAnalyzer.PossiblyNotSerializable")]
 public interface IDelegatService
 {
     // Task<DelegatDto?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default);
@@ -16,13 +18,14 @@ public interface IDelegatService
 public record HentDelegatResult(DelegatDto? Delegat);
 
 [Service]
+[SuppressMessage("Usage", "PBN2008:ServiceContractAnalyzer.PossiblyNotSerializable")]
 public interface IAdminDelegatService
 {
-    Task<AdminDelegatDto?> HentDelegat(HentDelegatRequest request);
-    Task<ICollection<AdminDelegatDto>> HentDelegater(HentDelegatRequest request);
+    Task<AdminDelegatDto?> HentDelegat(HentDelegatRequest request, CancellationToken cancellationToken = default);
+    Task<ICollection<AdminDelegatDto>> HentDelegater(HentDelegatRequest request, CancellationToken cancellationToken = default);
     // Task<bool> IsValidNo(int arrangement, int number);
-    Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel model);
-    Task<AdminDelegatDto> RegistrerNyDelegat(DelegatInputModel model);
+    Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel model, CancellationToken cancellationToken = default);
+    Task<AdminDelegatDto> RegistrerNyDelegat(DelegatInputModel model, CancellationToken cancellationToken = default);
 }
 
 public record HentDelegatRequest(int ArrangementId, int? DelgatId = null);

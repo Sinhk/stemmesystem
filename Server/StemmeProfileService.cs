@@ -3,10 +3,12 @@ using Duende.IdentityServer.Extensions;
 using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Identity;
+using Stemmesystem.Core;
 using StemmeSystem.Data.Models;
-using Stemmesystem.Shared;
 
-public class StemmeProfileService : ProfileService<ApplicationUser>
+namespace Stemmesystem.Server;
+
+public sealed class StemmeProfileService : ProfileService<ApplicationUser>
 {
     public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
     {
@@ -43,6 +45,4 @@ public class StemmeProfileService : ProfileService<ApplicationUser>
     public StemmeProfileService(UserManager<ApplicationUser> userManager, IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory, ILogger<ProfileService<ApplicationUser>> logger) : base(userManager, claimsFactory, logger)
     {
     }
-    
-    
 }

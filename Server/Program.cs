@@ -18,12 +18,11 @@ using StemmeSystem.Data;
 using StemmeSystem.Data.Models;
 using StemmeSystem.Data.Repositories;
 using Stemmesystem.Server;
-using Stemmesystem.Server.Data.Repositories;
 using Stemmesystem.Server.Hubs;
 using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Tools;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Tools;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 using Secret = Duende.IdentityServer.Models.Secret;
 
@@ -75,13 +74,19 @@ builder.Services.RemoveAll(typeof(ISigningCredentialStore));
 builder.Services.AddTransient<ISigningCredentialStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
 builder.Services.AddTransient<IValidationKeysStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
 
-builder.Services.AddAuthentication()
+var authenticationBuilder = builder.Services.AddAuthentication()
+    .AddIdentityServerJwt();
+
+var googleAuth = builder.Configuration.GetSection("Authentication:Google");
+if (googleAuth.Exists())
+{
+    authenticationBuilder
     .AddGoogle("Google", options =>
     {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    })
-    .AddIdentityServerJwt();
+        options.ClientId = googleAuth["ClientId"] ?? throw new InvalidOperationException("Missing Google ClientId");
+        options.ClientSecret = googleAuth["ClientSecret"] ?? throw new InvalidOperationException("Missing Google ClientSecret");
+    });
+}
 
 builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>());
 
@@ -146,7 +151,7 @@ if (app.Environment.IsDevelopment())
 {
     var mapperConfig = app.Services.GetRequiredService<IConfigurationProvider>();
     mapperConfig.AssertConfigurationIsValid();
-    
+
     app.UseMigrationsEndPoint();
     app.UseWebAssemblyDebugging();
 }
@@ -172,7 +177,7 @@ app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
 app.MapRazorPages();
 app.MapGrpcServices();
 app.MapControllers();
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/healthz").ShortCircuit();
     
 app.MapHub<DelegatHub>("/hubs/delegat");
 app.MapHub<AdminHub>("/hubs/admin");
@@ -189,4 +194,4 @@ else
     app.Run();
 }
 
-public partial class Program { }
+public partial class Program;

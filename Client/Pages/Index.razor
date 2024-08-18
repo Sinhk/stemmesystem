@@ -1,5 +1,5 @@
 @page "/"
-@using Stemmesystem.Shared
+@using Stemmesystem.Core
 @inject NavigationManager _navigation
 @inject IDelegatkodeAuthService _authService
 
@@ -20,14 +20,6 @@
         </div>
     </div>
     
-    <AuthorizeView>
-        <Authorized>
-            <div>
-                @_greeting
-            </div>    
-        </Authorized>
-    </AuthorizeView>
-    
 </form>
 
 @code {
@@ -37,8 +29,6 @@
     
     private string? _pin;
     private string? _error;
-    
-    private string? _greeting;
 
     protected override async Task OnInitializedAsync()
     {
@@ -52,17 +42,7 @@
                 _navigation.NavigateTo($"/arrangement/{arrangementClaim.Value}");    
             }
         }
-
-    /*
-        if (DelegatStateProvider?.Delegatkode != null)
-        {
-            var delegat = await DelegatStateProvider.GetDelegat();
-            if (delegat != null)
-            {
-                _navigation.NavigateTo($"/arrangement/{delegat.ArrangementId}");    
-            }
-        }
-        */
+        
     }
 
     private async Task DelegatLogin(){

@@ -30,6 +30,7 @@ public abstract class SignalRClientBase : ISignalRClient, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await HubConnection.DisposeAsync();
+        GC.SuppressFinalize(this); 
     }
 
     public async Task Start()

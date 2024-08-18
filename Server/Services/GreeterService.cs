@@ -3,7 +3,7 @@ using Duende.IdentityServer.Extensions;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using ProtoBuf.Grpc;
-using Stemmesystem.Shared;
+using Stemmesystem.Core;
 
 namespace Stemmesystem.Server.Services;
 

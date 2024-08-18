@@ -1,4 +1,4 @@
-﻿@using Stemmesystem.Shared.Interfaces
+﻿@using Stemmesystem.Core.Interfaces
 @inherits SendPinBaseComponent
 
 <button class="btn btn-primary" @onclick="@(_ => SendPin())" disabled="@(State != SendState.NotSent)">

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ProtoBuf;
 
-namespace Stemmesystem.Shared.Models
+namespace Stemmesystem.Core.Models
 {
     [ProtoContract]
     [ProtoInclude(8,typeof(AdminDelegatDto))]

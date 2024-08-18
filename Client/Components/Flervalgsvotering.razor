@@ -1,6 +1,6 @@
-﻿@using Stemmesystem.Shared.Interfaces
-@using Stemmesystem.Shared
-@inject IStemmeService _stemmeService
+﻿@using Stemmesystem.Core.Interfaces
+@using Stemmesystem.Core
+@inject IStemmeService StemmeService
 
 <h6>Du har valgt @_valg.Count, du kan velge @Base.Votering.KanVelge</h6>
 <div class="btn-group-toggle btn-group-vertical btn-block" data-toggle="buttons">
@@ -11,10 +11,13 @@
         </label>
     }
 </div>
-<div class="row mt-2 justify-content-around">
-    <button class="btn col-4 @(Base.Stemmer.Any(s => s.ValgId == Konstanter.BlankStemme) ? "btn-primary" : "btn-outline-primary")" @onclick="@(async e => await Base.RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
-    <button class="btn col-4 @(Base.Stemmer.Any() && Base.Stemmer.All(s => s.ValgId != Konstanter.BlankStemme) ? "btn-success" : "btn-outline-success")" @onclick="@(async e => await Base.RegistrerStemme(_valg))">Stem</button>
-</div>
+@if (Base.Stemmer != null)
+{
+    <div class="row mt-2 justify-content-around">
+        <button class="btn col-4 @(Base.Stemmer.Any(s => s.ValgId == Konstanter.BlankStemme) ? "btn-primary" : "btn-outline-primary")" @onclick="@(async e => await Base.RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
+        <button class="btn col-4 @(Base.Stemmer.Any() && Base.Stemmer.All(s => s.ValgId != Konstanter.BlankStemme) ? "btn-success" : "btn-outline-success")" @onclick="@(async e => await Base.RegistrerStemme(_valg))">Stem</button>
+    </div>
+}
 
 @code {
 
@@ -26,10 +29,12 @@
     [Parameter]
     public EventCallback<string> ErrorChanged { get; set; }
 
-    private HashSet<Guid> _valg = new();
+    private HashSet<Guid> _valg = [];
 
     protected override void OnInitialized()
     {
+        if(Base.Stemmer == null)
+            return;
         foreach (var stemme in Base.Stemmer)
         {
             _valg.Add(stemme.ValgId);

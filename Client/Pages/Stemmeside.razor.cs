@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Stemmesystem.Client.SignalR;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
 
 namespace Stemmesystem.Client.Pages
 {
@@ -45,17 +45,18 @@ namespace Stemmesystem.Client.Pages
             /*
              _notifier = Notifications.ForArrangement(_arrangement.Id);
             */
-            
-            _voteringer = await ArrangementService.FinnAktiveVoteringer(new ArrangementRequest {ArrangementId = _arrangement.Id});
+
+            await foreach (var votering in ArrangementService.FinnAktiveVoteringer(new ArrangementRequest { ArrangementId = _arrangement.Id }))
+            {
+                _voteringer.Add(votering);
+            }
 
             Notifier.OnVoteringStartet(VoteringStartet);
             Notifier.OnVoteringStoppet(VoteringStoppet);
             await Notifier.Start();
         }
-        
-        public void Dispose() => Dispose(true);
 
-        private void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (_disposed)
                 return;
@@ -73,6 +74,7 @@ namespace Stemmesystem.Client.Pages
                     Tracker.RegisterInactive(_arrangement.Id, _delegat.Id);
             }
 */
+            base.Dispose(disposing);
             _disposed = true;
         }
 

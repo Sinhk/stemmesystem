@@ -1,31 +1,29 @@
 using AutoMapper;
 using Stemmesystem.Client.Services.CSV;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core.Models;
 using Stemmesystem.Web.Services.CSV;
 
-namespace Stemmesystem.Client
+namespace Stemmesystem.Client;
+
+internal sealed class WebAutoMapperProfile : Profile
 {
-    internal class WebAutoMapperProfile : Profile
+    public WebAutoMapperProfile()
     {
-        public WebAutoMapperProfile()
-        {
-            CreateMap<CsvDelegat, DelegatInputModel>()
-                .ForMember(d=> d.Id, o=> o.Ignore())
-                .ForMember(d=> d.ArrangementId, o=> o.Ignore())
-                ;
-            
-            CreateMap<CsvSak, SakInputModel>()
-                .ForMember(d=> d.Id, o=> o.Ignore())
-                .ForMember(d=> d.ArrangementId, o=> o.Ignore())
-                .ForMember(d=> d.Voteringer, o=> o.Ignore())
-                ;
+        CreateMap<CsvDelegat, DelegatInputModel>()
+            .ForMember(d => d.Id, o => o.Ignore())
+            .ForMember(d => d.ArrangementId, o => o.Ignore())
+            ;
 
-            CreateMap<DelegatDto, DelegatInputModel>()
-                .ForMember(d => d.Id, opt => opt.Condition(s => s.Id != default));
-            CreateMap<ArrangementDto, ArrangementInputModel>();
-            CreateMap<SakDto, SakInputModel>();
-            CreateMap<VoteringDto, VoteringInputModel>();
+        CreateMap<CsvSak, SakInputModel>()
+            .ForMember(d => d.Id, o => o.Ignore())
+            .ForMember(d => d.ArrangementId, o => o.Ignore())
+            .ForMember(d => d.Voteringer, o => o.Ignore())
+            ;
 
-        }
+        CreateMap<DelegatDto, DelegatInputModel>()
+            .ForMember(d => d.Id, opt => opt.Condition(s => s.Id != default));
+        CreateMap<ArrangementDto, ArrangementInputModel>();
+        CreateMap<SakDto, SakInputModel>();
+        CreateMap<VoteringDto, VoteringInputModel>();
     }
 }

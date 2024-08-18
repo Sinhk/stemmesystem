@@ -1,23 +1,23 @@
 ﻿using ProtoBuf;
 using ProtoBuf.Grpc.Configuration;
-using Stemmesystem.Shared.Models;
+using Stemmesystem.Core.Models;
 
 [assembly: CompatibilityLevel(CompatibilityLevel.Level300)]
 
-namespace Stemmesystem.Shared.Interfaces;
+namespace Stemmesystem.Core.Interfaces;
 
 [Service]
 public interface IArrangementService
 {
     Task<ArrangementDto?> HentArrangementAsync(HentArrangementRequest request, CancellationToken cancellationToken = default);
-    Task<List<ArrangementInfo>> HentArrangementerAsync(CancellationToken cancellationToken = default);
-    Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request);
-    Task<List<VoteringResultatDto>> HentResultater(ArrangementRequest request);
-    Task<List<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request);
+    IAsyncEnumerable<ArrangementInfo> HentArrangementerAsync(CancellationToken cancellationToken = default);
+    Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<VoteringResultatDto> HentResultater(ArrangementRequest request);
+    IAsyncEnumerable<VoteringDto> FinnAktiveVoteringer(ArrangementRequest request);
 
 
-    Task<ArrangementDto> NyttArrangement(ArrangementInputModel dto);
-    Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel dto);
+    Task<ArrangementDto> NyttArrangement(ArrangementInputModel input, CancellationToken cancellationToken = default);
+    Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel input, CancellationToken cancellationToken = default);
 }
 
 [ProtoContract]

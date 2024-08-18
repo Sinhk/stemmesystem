@@ -1,11 +1,11 @@
 ﻿@inject IAdminDelegatService _delegatService
 @inject IPinSender _pinSender
 @inject NavigationManager _navigation
-@using Stemmesystem.Shared.Interfaces
-@using Stemmesystem.Shared.Models
+@using Stemmesystem.Core.Interfaces
+@using Stemmesystem.Core.Models
 @implements IDisposable 
 
-<div class="row" @onclick=@(_ => _expanded=!_expanded)>
+<div class="row" @onclick="@(_ => _expanded=!_expanded)">
     <h4>Delegater</h4>
     <span class="ml-2 mt-1 oi @(_expanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
 </div>
@@ -53,11 +53,11 @@
                         
                         @if (!string.IsNullOrEmpty(delegat.Telefon))
                         {
-                            <SendPinSmsComponent DelegatId="delegat.Id" OnSendt="@(() => SmsSendt(delegat.Id))"/>
+                            <SendPinSmsComponent DelegatId="delegat.Id" OnSent="@(() => SmsSendt(delegat.Id))"/>
                         }
                         @if (!string.IsNullOrEmpty(delegat.Epost))
                         {
-                            <SendPinEmailComponent DelegatId="delegat.Id" OnSendt="@(() => EpostSendt(delegat.Id))"/>
+                            <SendPinEmailComponent DelegatId="delegat.Id" OnSent="@(() => EpostSendt(delegat.Id))"/>
                         }
                     </td>
                     <td>

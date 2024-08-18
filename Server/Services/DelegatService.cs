@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Globalization;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Duende.IdentityServer.Extensions;
 using Grpc.Core;
@@ -7,34 +8,28 @@ using Microsoft.EntityFrameworkCore;
 using ProtoBuf.Grpc;
 using StemmeSystem.Data;
 using StemmeSystem.Data.Entities;
-using Stemmesystem.Shared;
-using Stemmesystem.Shared.Interfaces;
-using Stemmesystem.Shared.Models;
-using Stemmesystem.Shared.Tools;
+using Stemmesystem.Core;
+using Stemmesystem.Core.Interfaces;
+using Stemmesystem.Core.Models;
+using Stemmesystem.Core.Tools;
 
 namespace Stemmesystem.Server.Services;
 
 [Authorize]
-public class DelegatService : IDelegatService, IAdminDelegatService
+public class DelegatService(IKeyGenerator keyGenerator, StemmesystemContext context, IMapper mapper) : IDelegatService, IAdminDelegatService
 {
-    private readonly StemmesystemContext _context;
-    private readonly IMapper _mapper;
-    private readonly IKeyGenerator _keyGenerator;
-
-    public DelegatService(IKeyGenerator keyGenerator, StemmesystemContext context, IMapper mapper)
-    {
-        _keyGenerator = keyGenerator;
-        _context = context;
-        _mapper = mapper;
-    }
+    private readonly StemmesystemContext _context = context;
+    private readonly IMapper _mapper = mapper;
+    private readonly IKeyGenerator _keyGenerator = keyGenerator;
 
     public async Task<HentDelegatResult> HentDelegatInfo(CallContext context = default)
     {
+        var cancellationToken = context.CancellationToken;
         var user = context.ServerCallContext?.GetHttpContext().User;
         if (user == null || !user.IsInRole("Delegat"))
             return new HentDelegatResult(null);
         
-        return new HentDelegatResult(await ValiderKode(user.GetSubjectId()));
+        return new HentDelegatResult(await ValiderKode(user.GetSubjectId(), cancellationToken));
     }
     
     public async Task<DelegatDto?> HentDelegat(int arrangementId, int delegatId)
@@ -46,7 +41,7 @@ public class DelegatService : IDelegatService, IAdminDelegatService
     }
 
     [Authorize(Roles = "admin")]
-    async Task<AdminDelegatDto?> IAdminDelegatService.HentDelegat(HentDelegatRequest request)
+    async Task<AdminDelegatDto?> IAdminDelegatService.HentDelegat(HentDelegatRequest request, CancellationToken cancellationToken)
     {
         var (arrangementId, delgatId) = request;
         if (delgatId == null)
@@ -54,26 +49,27 @@ public class DelegatService : IDelegatService, IAdminDelegatService
         return await _context.Delegat
             .Where(d => d.ArrangementId == arrangementId && d.Id == delgatId)
             .ProjectTo<AdminDelegatDto>(_mapper.ConfigurationProvider)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
     [Authorize(Roles = "admin")]
-    public async Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel dto)
+    public async Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel model,
+        CancellationToken cancellationToken = default)
     {
         var delegat = await _context.Delegat
-            .Where(d => d.ArrangementId == dto.ArrangementId)
-            .Where(d => d.Id == dto.Id)
-            .FirstOrDefaultAsync();
+            .Where(d => d.ArrangementId == model.ArrangementId)
+            .Where(d => d.Id == model.Id)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         if (delegat == null)
-            throw new StemmeException($"Fant ingen delegat med id {dto.Id} å oppdatere");
+            throw new StemmeException($"Fant ingen delegat med id {model.Id} å oppdatere");
 
-        if(dto.Delegatnummer.HasValue)
-            delegat.Delegatnummer = dto.Delegatnummer.Value;
-        delegat.Navn = dto.Navn;
-        delegat.Gruppe = dto.Gruppe;
-        delegat.Epost = dto.Epost;
-        delegat.Telefon = dto.Telefon;
+        if(model.Delegatnummer.HasValue)
+            delegat.Delegatnummer = model.Delegatnummer.Value;
+        delegat.Navn = model.Navn;
+        delegat.Gruppe = model.Gruppe;
+        delegat.Epost = model.Epost;
+        delegat.Telefon = model.Telefon;
             
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<AdminDelegatDto>(delegat);
     }
 
@@ -86,12 +82,12 @@ public class DelegatService : IDelegatService, IAdminDelegatService
             .ToListAsync();
     }
 
-    async Task<ICollection<AdminDelegatDto>> IAdminDelegatService.HentDelegater(HentDelegatRequest request)
+    async Task<ICollection<AdminDelegatDto>> IAdminDelegatService.HentDelegater(HentDelegatRequest request, CancellationToken cancellationToken)
     {
         return await _context.Delegat
             .Where(d => d.ArrangementId == request.ArrangementId)
             .ProjectTo<AdminDelegatDto>(_mapper.ConfigurationProvider)
-            .ToListAsync();
+            .ToListAsync(cancellationToken: cancellationToken);
 
     }
 
@@ -103,22 +99,23 @@ public class DelegatService : IDelegatService, IAdminDelegatService
     }
     
     [Authorize(Roles = "admin")]
-    public async Task<AdminDelegatDto> RegistrerNyDelegat(DelegatInputModel dto)
+    public async Task<AdminDelegatDto> RegistrerNyDelegat(DelegatInputModel model,
+        CancellationToken cancellationToken = default)
     {
-        if (!await IsValidNo(dto.ArrangementId, dto.Delegatnummer!.Value))
+        if (!await IsValidNo(model.ArrangementId, model.Delegatnummer!.Value))
             throw new StemmeException("Delegatnummer er allerede brukt");
 
-        var delegat = _mapper.Map<Delegat>(dto);
-        delegat.ArrangementId = dto.ArrangementId;
+        var delegat = _mapper.Map<Delegat>(model);
+        delegat.ArrangementId = model.ArrangementId;
         delegat.Delegatkode = _keyGenerator.GenerateKey(4);
         _context.Delegat.Add(delegat);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<AdminDelegatDto>(delegat);
     }
 
     public async Task<DelegatDto?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default)
     {
-        delegatKode = delegatKode.ToUpper();
+        delegatKode = delegatKode.ToUpper(CultureInfo.InvariantCulture);
         var delegat = await _context.Delegat
             .Include(d => d.Arrangement)
             .Where(d => d.Delegatkode == delegatKode)

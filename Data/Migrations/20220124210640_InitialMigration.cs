@@ -194,7 +194,7 @@ namespace PostgresMigrations
                 name: "IX_Delegat_ArrangementId_Delegatnummer",
                 schema: "stemme",
                 table: "Delegat",
-                columns: new[] { "ArrangementId", "Delegatnummer" },
+                columns: ["ArrangementId", "Delegatnummer"],
                 unique: true);
 
             migrationBuilder.CreateIndex(

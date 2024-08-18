@@ -1,19 +1,18 @@
-﻿@using Microsoft.AspNetCore.Components
-@using Stemmesystem.Shared.Interfaces
-@using Stemmesystem.Shared.Models
+﻿@using Stemmesystem.Core.Interfaces
+@using Stemmesystem.Core.Models
 @using Stemmesystem.Web.Components
 @using AutoMapper
-@inject ISakService _sakService
-@inject NavigationManager _nav
-@inject IMapper _mapper
+@inject ISakService SakService
+@inject NavigationManager Nav
+@inject IMapper Mapper
 
 <EditForm EditContext="EditContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
-    <CustomValidator @ref="customValidator" />
+    <CustomValidator @ref="_customValidator" />
     <ValidationSummary />
     <div class="form-row">
         <div class="col-2">
-            <FocusableInputText @ref="firstInput" class="form-control" placeholder="Saknummer" @bind-Value="Sak.Nummer"/>
+            <FocusableInputText @ref="_firstInput" class="form-control" placeholder="Saknummer" @bind-Value="Sak.Nummer"/>
         </div>
         <div class="col-8">
             <InputText class="form-control" placeholder="Tittel" @bind-Value="Sak.Tittel"/>
@@ -23,8 +22,8 @@
         </div>
         
         <div class="col-auto">
-            <button type="submit" class="btn btn-primary" disabled="@(Sak?.Id != null && !context.IsModified())">Lagre</button>
-            <button class="btn btn-secondary" disabled="@(Sak?.Id == null && _voteringer?.Any() == false)" @onclick:preventDefault @onclick="@OnVoteringExpandClick"><i class="oi @(_voteringExpanded ? "oi-chevron-top":"oi-chevron-bottom")"></i></button>
+            <button type="submit" class="btn btn-primary" disabled="@(!context.IsModified())">Lagre</button>
+            <button class="btn btn-secondary" @onclick:preventDefault @onclick="@OnVoteringExpandClick"><i class="oi @(_voteringExpanded ? "oi-chevron-top":"oi-chevron-bottom")"></i></button>
         </div>
     </div>
     @if (_voteringExpanded)
@@ -34,13 +33,13 @@
         {
             <em>Ingen voteringer</em>
         }
-        else if(Sak?.Id != null)
+        else
         {
             foreach (var votering in _voteringer)
             {
                 <VoteringFormInline Votering="@votering" />
             }
-            <button class="btn-sm btn-success" @onclick:preventDefault @onclick="@(() => _voteringer.Add(new VoteringInputModel {SakId = Sak.Id}))">Legg til votering</button>
+            <button class="btn-sm btn-success" @onclick:preventDefault @onclick="@(() => _voteringer.Add(new VoteringInputModel { SakId = Sak.Id, Tittel = string.Empty }))">Legg til votering</button>
         }
         
     }
@@ -53,8 +52,8 @@
     public SakInputModel Sak {get;set;} = null!;
 
     public EditContext? EditContext { get; set; }
-    private CustomValidator? customValidator;
-    private FocusableInputText? firstInput;
+    private CustomValidator? _customValidator;
+    private FocusableInputText? _firstInput;
     private bool _voteringExpanded;
     private ICollection<VoteringInputModel>? _voteringer;
 
@@ -65,8 +64,8 @@
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && firstInput != null)
-            await firstInput.FocusAsync();
+        if (firstRender && _firstInput != null)
+            await _firstInput.FocusAsync();
     }
 
     private async Task OnVoteringExpandClick()
@@ -74,32 +73,32 @@
         _voteringExpanded = !_voteringExpanded;
         if (_voteringExpanded && _voteringer == null)
         {
-            var voteringer = await _sakService.HentVoteringer(new HentVoteringerRequest(Sak.Id));
-            _voteringer = _mapper.Map<List<VoteringInputModel>>(voteringer);
+            var voteringer = await SakService.HentVoteringer(new HentVoteringerRequest(Sak.Id));
+            _voteringer = Mapper.Map<List<VoteringInputModel>>(voteringer);
         }
     }
 
     internal async Task<bool> HandleValidSubmit(EditContext context){
-        customValidator?.ClearErrors();
+        _customValidator?.ClearErrors();
 
         Sak.ArrangementId = ArrangementId;
         
         if (Sak.Id != default)
         {
-            var sak = await _sakService.OppdaterSak(Sak);
-            _mapper.Map(sak, Sak);
+            var sak = await SakService.OppdaterSak(Sak);
+            Mapper.Map(sak, Sak);
         }
         else
         {
-            var (sakDto, errors) = await _sakService.LagreNySak(Sak);
-            if (errors?.Count > 0)
+            var (sakDto, errors) = await SakService.LagreNySak(Sak);
+            if (errors.Count > 0)
             {
-                customValidator?.DisplayErrors(errors);
+                _customValidator?.DisplayErrors(errors);
                 context.MarkAsUnmodified();
                 return false;
             }
             
-            _mapper.Map(sakDto, Sak);
+            Mapper.Map(sakDto, Sak);
         }
         context.MarkAsUnmodified();
         return true;

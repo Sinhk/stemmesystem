@@ -1,8 +1,6 @@
-﻿@inject IArrangementService _arrangementService
-@using Stemmesystem.Shared
-@using Stemmesystem.Shared.Models
-@using System.Linq
-@using Stemmesystem.Shared.Interfaces
+﻿@inject IArrangementService ArrangementService
+@using Stemmesystem.Core.Models
+@using Stemmesystem.Core.Interfaces
 @using System.ComponentModel.DataAnnotations
 
 <div class="row" @onclick="@OnTitleClick">
@@ -26,7 +24,6 @@
     
     private List<VoteringResultatDto>? _voteringer;
 
-    private bool _nyPublisert = false;
     private bool _expanded;
 
     private async Task OnTitleClick()
@@ -34,8 +31,11 @@
         _expanded = !_expanded;
         if (_voteringer == null)
         {
-            var resultater = await _arrangementService.HentResultater(new ArrangementRequest { ArrangementId = Arrangement.Id });
-            _voteringer = resultater;
+            _voteringer = [];
+            await foreach (var resulat in ArrangementService.HentResultater(new ArrangementRequest { ArrangementId = Arrangement.Id }))
+            {
+                _voteringer.Add(resulat);
+            }
         }
     }
 

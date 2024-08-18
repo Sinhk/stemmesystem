@@ -6,6 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>Stemmesystem.Server-87576B76-4FFB-40D8-B482-78D68AB51D05</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <NoWarn>$(NoWarn);CA1848</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +43,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Client\Stemmesystem.Client.csproj" />
     <ProjectReference Include="..\Data\StemmeSystem.Data.csproj" />
-    <ProjectReference Include="..\Shared\Stemmesystem.Shared.csproj" />
+    <ProjectReference Include="..\Shared\Stemmesystem.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
