@@ -25,8 +25,7 @@ namespace StemmeSystem.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            if (!Database.IsSqlite())
-                modelBuilder.HasDefaultSchema("stemme");
+            modelBuilder.HasDefaultSchema("stemme");
 
             modelBuilder.Entity<Arrangement>(e =>{});
 

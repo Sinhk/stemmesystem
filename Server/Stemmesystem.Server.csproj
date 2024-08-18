@@ -30,7 +30,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="7.0.20" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -41,9 +40,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Client\Stemmesystem.Client.csproj" />
     <ProjectReference Include="..\Data\StemmeSystem.Data.csproj" />
-    <ProjectReference Include="..\Migrations\PostgresMigrations\PostgresMigrations.csproj" />
-    <ProjectReference Include="..\Migrations\SqliteMigrations\SqliteMigrations.csproj" />
-    <ProjectReference Include="..\Migrations\SqlServerMigrations\SqlServerMigrations.csproj" />
     <ProjectReference Include="..\Shared\Stemmesystem.Shared.csproj" />
   </ItemGroup>
 

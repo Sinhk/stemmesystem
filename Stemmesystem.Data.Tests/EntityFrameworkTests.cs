@@ -16,8 +16,6 @@ public class EntityFrameworkTests
         var sut = new StemmesystemContext(options, null!);
         
         // Act & Assert
-#if NET8_0_OR_GREATER
         sut.Database.HasPendingModelChanges().Should().BeFalse();
-#endif
     }
 }
