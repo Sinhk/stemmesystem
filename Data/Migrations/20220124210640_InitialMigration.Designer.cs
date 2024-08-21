@@ -4,7 +4,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using StemmeSystem.Data;
+using Stemmesystem.Data;
 using Stemmesystem.Server.Data;
 
 #nullable disable

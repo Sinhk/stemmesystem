@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using StemmeSystem.Data.Entities;
-using StemmeSystem.Data.Models;
+using Stemmesystem.Data.Entities;
+using Stemmesystem.Data.Models;
 using Stemmesystem.Server.Data.Entities;
 
-namespace StemmeSystem.Data;
+namespace Stemmesystem.Data;
 
 public class StemmesystemContext : ApiAuthorizationDbContext<ApplicationUser>, IDataProtectionKeyContext
 {

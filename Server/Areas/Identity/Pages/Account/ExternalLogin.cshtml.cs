@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using StemmeSystem.Data.Models;
+using Stemmesystem.Data.Models;
 
 namespace Stemmesystem.Server.Areas.Identity.Pages.Account
 {

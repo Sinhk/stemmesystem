@@ -42,7 +42,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Client\Stemmesystem.Client.csproj" />
-    <ProjectReference Include="..\Data\StemmeSystem.Data.csproj" />
+    <ProjectReference Include="..\Data\Stemmesystem.Data.csproj" />
     <ProjectReference Include="..\Shared\Stemmesystem.Core.csproj" />
   </ItemGroup>
 

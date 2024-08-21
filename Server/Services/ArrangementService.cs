@@ -3,7 +3,7 @@ using AutoMapper.QueryableExtensions;
 using LazyCache;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using StemmeSystem.Data;
+using Stemmesystem.Data;
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Core;
 using Stemmesystem.Core.Interfaces;

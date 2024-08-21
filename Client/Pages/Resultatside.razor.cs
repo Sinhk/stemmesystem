@@ -12,7 +12,7 @@ namespace Stemmesystem.Client.Pages
     {
         [CascadingParameter]
         private Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
-        
+
         private bool _disposed;
         private List<ArrangementInfo>? _arrangementer;
         private IDisposable? _subscription;

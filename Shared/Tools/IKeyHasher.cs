@@ -113,7 +113,7 @@ namespace Stemmesystem.Core.Tools
             return ((uint)(buffer[offset + 0]) << 24)
                 | ((uint)(buffer[offset + 1]) << 16)
                 | ((uint)(buffer[offset + 2]) << 8)
-                | ((uint)(buffer[offset + 3]));
+                | ((uint)buffer[offset + 3]);
         }
     }
 }

@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Data\StemmeSystem.Data.csproj" />
+    <ProjectReference Include="..\Data\Stemmesystem.Data.csproj" />
   </ItemGroup>
 
 </Project>

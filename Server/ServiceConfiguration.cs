@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StemmeSystem.Data;
+using Stemmesystem.Data;
 using Stemmesystem.Server.Services;
 
 namespace Stemmesystem.Server;

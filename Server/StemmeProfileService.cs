@@ -4,7 +4,7 @@ using Duende.IdentityServer.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Identity;
 using Stemmesystem.Core;
-using StemmeSystem.Data.Models;
+using Stemmesystem.Data.Models;
 
 namespace Stemmesystem.Server;
 

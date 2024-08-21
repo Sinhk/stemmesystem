@@ -8,7 +8,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Client", "Clie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Core", "Shared\Stemmesystem.Core.csproj", "{26186DAD-A390-4012-96FA-42348AA3736B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StemmeSystem.Data", "Data\StemmeSystem.Data.csproj", "{CABEAA4A-664B-492E-8BD2-898CF857E42D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stemmesystem.Data", "Data\Stemmesystem.Data.csproj", "{CABEAA4A-664B-492E-8BD2-898CF857E42D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{CACD0C2C-CB1C-4C4E-8A2C-23961806A1FE}"
 EndProject

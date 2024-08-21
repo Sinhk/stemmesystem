@@ -2,7 +2,7 @@
 using System.Globalization;
 using Stemmesystem.Server.Data.Entities;
 
-namespace StemmeSystem.Data.Entities
+namespace Stemmesystem.Data.Entities
 {
     public class Sak
     {

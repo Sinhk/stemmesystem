@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using StemmeSystem.Data;
+using Stemmesystem.Data;
 
 #nullable disable
 
@@ -336,7 +336,7 @@ namespace PostgresMigrations
                     b.ToTable("AspNetUserTokens", "stemme");
                 });
 
-            modelBuilder.Entity("StemmeSystem.Data.Models.ApplicationUser", b =>
+            modelBuilder.Entity("Stemmesystem.Data.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -606,7 +606,7 @@ namespace PostgresMigrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("StemmeSystem.Data.Models.ApplicationUser", null)
+                    b.HasOne("Stemmesystem.Data.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -615,7 +615,7 @@ namespace PostgresMigrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("StemmeSystem.Data.Models.ApplicationUser", null)
+                    b.HasOne("Stemmesystem.Data.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -630,7 +630,7 @@ namespace PostgresMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("StemmeSystem.Data.Models.ApplicationUser", null)
+                    b.HasOne("Stemmesystem.Data.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -639,7 +639,7 @@ namespace PostgresMigrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("StemmeSystem.Data.Models.ApplicationUser", null)
+                    b.HasOne("Stemmesystem.Data.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

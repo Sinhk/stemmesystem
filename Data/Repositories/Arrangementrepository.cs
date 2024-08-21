@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StemmeSystem.Data.Entities;
+using Stemmesystem.Data.Entities;
 using Stemmesystem.Server.Data.Entities;
 
-namespace StemmeSystem.Data.Repositories;
+namespace Stemmesystem.Data.Repositories;
 
 public interface IArrangementRepository
 {
