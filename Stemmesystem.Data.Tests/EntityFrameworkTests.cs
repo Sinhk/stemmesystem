@@ -13,7 +13,7 @@ public class EntityFrameworkTests
         var options = new DbContextOptionsBuilder<StemmesystemContext>()
             .UseNpgsql()
             .Options;
-        var sut = new StemmesystemContext(options, null!);
+        var sut = new StemmesystemContext(options);
         
         // Act & Assert
         sut.Database.HasPendingModelChanges().Should().BeFalse();

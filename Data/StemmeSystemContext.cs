@@ -1,15 +1,12 @@
-﻿using Duende.IdentityServer.EntityFramework.Options;
-using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
-using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Stemmesystem.Data.Entities;
-using Stemmesystem.Data.Models;
 using Stemmesystem.Server.Data.Entities;
 
 namespace Stemmesystem.Data;
 
-public class StemmesystemContext : ApiAuthorizationDbContext<ApplicationUser>, IDataProtectionKeyContext
+public class StemmesystemContext : DbContext, IDataProtectionKeyContext
 {
     public DbSet<Delegat> Delegat => Set<Delegat>();
     public DbSet<Arrangement> Arrangement => Set<Arrangement>();
@@ -18,7 +15,7 @@ public class StemmesystemContext : ApiAuthorizationDbContext<ApplicationUser>, I
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
-    public StemmesystemContext(DbContextOptions<StemmesystemContext> options, IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options,operationalStoreOptions)
+    public StemmesystemContext(DbContextOptions<StemmesystemContext> options) : base(options)
     {
     }
 
