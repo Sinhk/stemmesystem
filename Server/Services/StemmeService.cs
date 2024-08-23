@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Duende.IdentityServer.Extensions;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +10,7 @@ using Stemmesystem.Core;
 using Stemmesystem.Core.Interfaces;
 using Stemmesystem.Core.Models;
 using Stemmesystem.Core.Tools;
+using Stemmesystem.Server.Auth;
 
 namespace Stemmesystem.Server.Services;
 
@@ -38,7 +38,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     public async Task<List<StemmeDto>> AvgiStemmeAsync(AvgiStemmeRequest request, CallContext context = default)
     {
         var cancellationToken = context.CancellationToken;
-        var delegatkode =  context.ServerCallContext?.GetHttpContext().User.GetSubjectId();
+        var delegatkode =  context.ServerCallContext?.GetHttpContext().User.GetDelegatkode();
         if (delegatkode == null)
             throw new StemmeException($"Fant ikke delegatkode");
 
@@ -129,7 +129,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
 
     private async Task<Delegat> FinnDelegat(CallContext context, CancellationToken cancellationToken)
     {
-        var delegatkode = context.ServerCallContext?.GetHttpContext().User.GetSubjectId();
+        var delegatkode = context.ServerCallContext?.GetHttpContext().User.GetDelegatkode();
         if (delegatkode == null)
             throw new StemmeException($"Fant ikke delegatkode");
             

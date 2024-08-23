@@ -36,7 +36,7 @@ public static class TestData
 
     }
 
-    public static async Task CreateAdminUsers(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+    public static async Task CreateAdminUsers(UserManager<StemmeUser> userManager, RoleManager<IdentityRole> roleManager)
     {
         if (!await roleManager.RoleExistsAsync(AdminRoleName)) {
             await roleManager.CreateAsync(new IdentityRole(AdminRoleName));
@@ -46,9 +46,9 @@ public static class TestData
         await CreateUser(userManager, "tom.lantz@speiding.no");
     }
 
-    internal static async Task<ApplicationUser> CreateUser(UserManager<ApplicationUser> userManager, string email)
+    internal static async Task<StemmeUser> CreateUser(UserManager<StemmeUser> userManager, string email)
     {
-        var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
+        var user = new StemmeUser { UserName = email, Email = email, EmailConfirmed = true };
         await userManager.CreateAsync(user);
         await userManager.AddToRoleAsync(user, AdminRoleName);
         return user;

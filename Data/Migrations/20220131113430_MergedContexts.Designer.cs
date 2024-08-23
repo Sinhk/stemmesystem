@@ -9,7 +9,7 @@ using Stemmesystem.Data;
 
 #nullable disable
 
-namespace PostgresMigrations
+namespace Stemmesystem.Data.Migrations
 {
     [DbContext(typeof(StemmesystemContext))]
     [Migration("20220131113430_MergedContexts")]

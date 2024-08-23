@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace PostgresMigrations
+namespace Stemmesystem.Data.Migrations
 {
     public partial class MergedContexts : Migration
     {

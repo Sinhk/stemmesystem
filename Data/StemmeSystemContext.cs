@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Stemmesystem.Data.Entities;
+using Stemmesystem.Data.Models;
 using Stemmesystem.Server.Data.Entities;
 
 namespace Stemmesystem.Data;
 
-public class StemmesystemContext : DbContext, IDataProtectionKeyContext
+public class StemmesystemContext(DbContextOptions<StemmesystemContext> options)
+    : IdentityDbContext<StemmeUser>(options), IDataProtectionKeyContext
 {
     public DbSet<Delegat> Delegat => Set<Delegat>();
     public DbSet<Arrangement> Arrangement => Set<Arrangement>();
@@ -14,10 +16,6 @@ public class StemmesystemContext : DbContext, IDataProtectionKeyContext
     public DbSet<Votering> Votering => Set<Votering>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
-
-    public StemmesystemContext(DbContextOptions<StemmesystemContext> options) : base(options)
-    {
-    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -43,7 +43,7 @@ internal sealed class DelegatkodeAuthService : IDelegatkodeAuthService
         if (response.IsError) return false;
         
         await _sessionStorage.SetItemAsStringAsync("token", response.AccessToken);
-        ((CustomAuthenticationProvider)_authenticationStateProvider).Notify();
+        //(_authenticationStateProvider).Notify();
         return true;
 
     }

@@ -1,98 +1,23 @@
-using System.IdentityModel.Tokens.Jwt;
-using Duende.IdentityServer.EntityFramework.Storage;
-using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Services.KeyManagement;
-using Duende.IdentityServer.Stores;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using ProtoBuf.Grpc.Server;
 using Stemmesystem.Api;
 using Stemmesystem.Data;
 using Stemmesystem.Data.Models;
-using Stemmesystem.Data.Repositories;
 using Stemmesystem.Server;
 using Stemmesystem.Server.Hubs;
-using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
-using Stemmesystem.Core;
-using Stemmesystem.Core.Tools;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
-using Secret = Duende.IdentityServer.Models.Secret;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddAppDbContext();
-builder.Services.AddOperationalDbContext<StemmesystemContext>(options =>
-{
-    options.EnableTokenCleanup = true;
-    options.RemoveConsumedTokens = true;
-    options.TokenCleanupInterval = 3600; // interval in seconds (default is 3600)
-});
-builder.Services.AddDataProtection()
-    .PersistKeysToDbContext<StemmesystemContext>();
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>()    
-    .AddEntityFrameworkStores<StemmesystemContext>()
-   ;
-
-
-JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
-
-builder.Services.AddIdentityServer()
-    .AddExtensionGrantValidator<KodeExtensionGrantValidator>()
-    .AddApiAuthorization<ApplicationUser, StemmesystemContext>(options =>
-    {
-        options.IdentityResources["openid"].UserClaims.Add("name");
-        options.ApiResources.Single().UserClaims.Add("name");
-        options.IdentityResources["openid"].UserClaims.Add("role");
-        options.ApiResources.Single().UserClaims.Add("role");
-        options.Clients.Add(new Client
-        {
-            ClientId = AuthConstants.DelegatkodeClientId, 
-            ClientSecrets = new List<Secret>
-            {
-                new("passord".Sha256())
-            },
-            AllowedGrantTypes = {AuthConstants.DelegatkodeGrantType}
-        });
-    })
-    .AddProfileService<StemmeProfileService>()
-    .AddInMemoryCaching();
-
-builder.Services.RemoveAll(typeof(IValidationKeysStore));
-builder.Services.RemoveAll(typeof(ISigningCredentialStore));
-builder.Services.AddTransient<ISigningCredentialStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
-builder.Services.AddTransient<IValidationKeysStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
-
-var authenticationBuilder = builder.Services.AddAuthentication()
-    .AddIdentityServerJwt();
-
-var googleAuth = builder.Configuration.GetSection("Authentication:Google");
-if (googleAuth.Exists())
-{
-    authenticationBuilder
-    .AddGoogle("Google", options =>
-    {
-        options.ClientId = googleAuth["ClientId"] ?? throw new InvalidOperationException("Missing Google ClientId");
-        options.ClientSecret = googleAuth["ClientSecret"] ?? throw new InvalidOperationException("Missing Google ClientSecret");
-    });
-}
-
-builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>());
+builder.Services.AddAuthServices(builder.Configuration);
+builder.Services.AddApplicationServices();
 
 builder.Services.AddSignalR();
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
 builder.Services.AddHealthChecks();
 builder.Services.AddResponseCompression(opts =>
 {
@@ -100,26 +25,6 @@ builder.Services.AddResponseCompression(opts =>
 });
 
 builder.Services.AddCodeFirstGrpc();
-
-
-builder.Services.AddScoped<IDelegatRepository, DelegatRepository>();
-builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
-builder.Services.AddScoped<DelegatService>();
-builder.Services.AddScoped<NotificationManager>();
-
-builder.Services.AddHttpClient<ISmsSender, SveveSmsSender>();
-builder.Services.AddOptions<SveveOptions>()
-    .BindConfiguration("Sveve")
-    .ValidateDataAnnotations();
-    
-builder.Services.AddTransient<IEmailSender, EmailSender>();
-builder.Services.AddTransient<IEpostSender, EmailSender>();
-builder.Services.AddOptions<EmailSettings>()
-    .BindConfiguration("EmailSettings")
-    .ValidateDataAnnotations();
-
-builder.Services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
-builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
 
 builder.Services.AddAutoMapper(typeof(ApiAutoMapperProfile));
 builder.Services.AddLazyCache();
@@ -138,7 +43,7 @@ await using (var scope = app.Services.CreateAsyncScope())
         await TestData.SeedData(db, delegatService);
     }
 
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<StemmeUser>>();
     if (!await userManager.Users.AnyAsync())
     {
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -169,16 +74,16 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseIdentityServer();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapIdentityApi<StemmeUser>();
+
 app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
 
-app.MapRazorPages();
 app.MapGrpcServices();
-app.MapControllers();
 app.MapHealthChecks("/healthz").ShortCircuit();
-    
+
 app.MapHub<DelegatHub>("/hubs/delegat");
 app.MapHub<AdminHub>("/hubs/admin");
 app.MapFallbackToFile("index.html");
@@ -193,5 +98,4 @@ else
 {
     app.Run();
 }
-
 public partial class Program;

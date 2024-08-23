@@ -1,14 +1,7 @@
-﻿using System.Globalization;
-using System.Security.Claims;
-using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Validation;
-using IdentityModel;
-using Stemmesystem.Data.Repositories;
-using Stemmesystem.Core;
+﻿namespace Stemmesystem.Server.Services;
 
-namespace Stemmesystem.Server.Services;
-
-public class KodeExtensionGrantValidator : IExtensionGrantValidator
+//TODO needs to be rewritten to work with the new system
+/*public class KodeExtensionGrantValidator : IExtensionGrantValidator
 {
     private readonly IDelegatRepository _delegatRepository;
 
@@ -51,4 +44,4 @@ public class KodeExtensionGrantValidator : IExtensionGrantValidator
     }
 
     public string GrantType => AuthConstants.DelegatkodeGrantType;
-}
+}*/

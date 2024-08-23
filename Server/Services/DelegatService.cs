@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Duende.IdentityServer.Extensions;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +11,7 @@ using Stemmesystem.Core;
 using Stemmesystem.Core.Interfaces;
 using Stemmesystem.Core.Models;
 using Stemmesystem.Core.Tools;
+using Stemmesystem.Server.Auth;
 
 namespace Stemmesystem.Server.Services;
 
@@ -26,10 +26,10 @@ public class DelegatService(IKeyGenerator keyGenerator, StemmesystemContext cont
     {
         var cancellationToken = context.CancellationToken;
         var user = context.ServerCallContext?.GetHttpContext().User;
-        if (user == null || !user.IsInRole("Delegat"))
+        if (user is null || !user.IsInRole("Delegat"))
             return new HentDelegatResult(null);
         
-        return new HentDelegatResult(await ValiderKode(user.GetSubjectId(), cancellationToken));
+        return new HentDelegatResult(await ValiderKode(user.GetDelegatkode(), cancellationToken));
     }
     
     public async Task<DelegatDto?> HentDelegat(int arrangementId, int delegatId)

@@ -9,7 +9,7 @@ using Stemmesystem.Server.Data;
 
 #nullable disable
 
-namespace PostgresMigrations
+namespace Stemmesystem.Data.Migrations
 {
     [DbContext(typeof(StemmesystemContext))]
     [Migration("20220124210640_InitialMigration")]

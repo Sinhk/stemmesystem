@@ -8,7 +8,7 @@ using Stemmesystem.Data;
 
 #nullable disable
 
-namespace PostgresMigrations
+namespace Stemmesystem.Data.Migrations
 {
     [DbContext(typeof(StemmesystemContext))]
     partial class StemmesystemContextModelSnapshot : ModelSnapshot
@@ -18,7 +18,7 @@ namespace PostgresMigrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("stemme")
-                .HasAnnotation("ProductVersion", "6.0.1")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -36,147 +36,6 @@ namespace PostgresMigrations
                     b.HasIndex("HarStemmtIId");
 
                     b.ToTable("DelegatVotering", "stemme");
-                });
-
-            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.DeviceFlowCodes", b =>
-                {
-                    b.Property<string>("UserCode")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("ClientId")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasMaxLength(50000)
-                        .HasColumnType("character varying(50000)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("DeviceCode")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("Expiration")
-                        .IsRequired()
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SessionId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("SubjectId")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.HasKey("UserCode");
-
-                    b.HasIndex("DeviceCode")
-                        .IsUnique();
-
-                    b.HasIndex("Expiration");
-
-                    b.ToTable("DeviceCodes", "stemme");
-                });
-
-            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.Key", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Algorithm")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("DataProtected")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsX509Certificate")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Use")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Use");
-
-                    b.ToTable("Keys", "stemme");
-                });
-
-            modelBuilder.Entity("Duende.IdentityServer.EntityFramework.Entities.PersistedGrant", b =>
-                {
-                    b.Property<string>("Key")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("ClientId")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("ConsumedTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasMaxLength(50000)
-                        .HasColumnType("character varying(50000)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("Expiration")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SessionId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("SubjectId")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("Key");
-
-                    b.HasIndex("ConsumedTime");
-
-                    b.HasIndex("Expiration");
-
-                    b.HasIndex("SubjectId", "ClientId", "Type");
-
-                    b.HasIndex("SubjectId", "SessionId", "Type");
-
-                    b.ToTable("PersistedGrants", "stemme");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -277,12 +136,10 @@ namespace PostgresMigrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("text");
@@ -319,12 +176,10 @@ namespace PostgresMigrations
                         .HasColumnType("text");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Value")
                         .HasColumnType("text");
@@ -334,7 +189,158 @@ namespace PostgresMigrations
                     b.ToTable("AspNetUserTokens", "stemme");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Data.Models.ApplicationUser", b =>
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Delegat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArrangementId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Delegatkode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Delegatnummer")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Epost")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Gruppe")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Navn")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("SendtEmailInternal")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("SendtEmail");
+
+                    b.Property<DateTimeOffset?>("SendtSmsInternal")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("SendtSms");
+
+                    b.Property<string>("Telefon")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Delegatkode")
+                        .IsUnique();
+
+                    b.HasIndex("ArrangementId", "Delegatnummer")
+                        .IsUnique();
+
+                    b.ToTable("Delegat", "stemme");
+                });
+
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Sak", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArrangementId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Nummer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tittel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArrangementId");
+
+                    b.ToTable("Sak", "stemme");
+                });
+
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Stemme", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("DelegatId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StemmeHash")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ValgId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("VoteringId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DelegatId");
+
+                    b.HasIndex("VoteringId");
+
+                    b.ToTable("Stemme", "stemme");
+                });
+
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Votering", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Aktiv")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Beskrivelse")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Hemmelig")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("KanVelge")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Lukket")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Publisert")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("SakId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("SluttTid")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("StartTid")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Tittel")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SakId");
+
+                    b.ToTable("Votering", "stemme");
+                });
+
+            modelBuilder.Entity("Stemmesystem.Data.Models.StemmeUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -427,166 +433,15 @@ namespace PostgresMigrations
                     b.ToTable("Arrangement", "stemme");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Delegat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ArrangementId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Delegatkode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Delegatnummer")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Epost")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Gruppe")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Navn")
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("SendtEmailInternal")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("SendtEmail");
-
-                    b.Property<DateTimeOffset?>("SendtSmsInternal")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("SendtSms");
-
-                    b.Property<string>("Telefon")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Delegatkode")
-                        .IsUnique();
-
-                    b.HasIndex("ArrangementId", "Delegatnummer")
-                        .IsUnique();
-
-                    b.ToTable("Delegat", "stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ArrangementId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Beskrivelse")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Nummer")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Tittel")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ArrangementId");
-
-                    b.ToTable("Sak", "stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Stemme", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("DelegatId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("StemmeHash")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ValgId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("VoteringId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DelegatId");
-
-                    b.HasIndex("VoteringId");
-
-                    b.ToTable("Stemme", "stemme");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Aktiv")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Beskrivelse")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("Hemmelig")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("KanVelge")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("Lukket")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("Publisert")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("SakId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("SluttTid")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("StartTid")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Tittel")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SakId");
-
-                    b.ToTable("Votering", "stemme");
-                });
-
             modelBuilder.Entity("DelegatVotering", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Delegat", null)
+                    b.HasOne("Stemmesystem.Data.Entities.Delegat", null)
                         .WithMany()
                         .HasForeignKey("AvgitStemmeId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Votering", null)
+                    b.HasOne("Stemmesystem.Data.Entities.Votering", null)
                         .WithMany()
                         .HasForeignKey("HarStemmtIId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -604,7 +459,7 @@ namespace PostgresMigrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Stemmesystem.Data.Models.ApplicationUser", null)
+                    b.HasOne("Stemmesystem.Data.Models.StemmeUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -613,7 +468,7 @@ namespace PostgresMigrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Stemmesystem.Data.Models.ApplicationUser", null)
+                    b.HasOne("Stemmesystem.Data.Models.StemmeUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -628,7 +483,7 @@ namespace PostgresMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Stemmesystem.Data.Models.ApplicationUser", null)
+                    b.HasOne("Stemmesystem.Data.Models.StemmeUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -637,14 +492,14 @@ namespace PostgresMigrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Stemmesystem.Data.Models.ApplicationUser", null)
+                    b.HasOne("Stemmesystem.Data.Models.StemmeUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Delegat", b =>
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Delegat", b =>
                 {
                     b.HasOne("Stemmesystem.Server.Data.Entities.Arrangement", "Arrangement")
                         .WithMany("Delegater")
@@ -655,7 +510,7 @@ namespace PostgresMigrations
                     b.Navigation("Arrangement");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Sak", b =>
                 {
                     b.HasOne("Stemmesystem.Server.Data.Entities.Arrangement", "Arrangement")
                         .WithMany("Saker")
@@ -666,22 +521,22 @@ namespace PostgresMigrations
                     b.Navigation("Arrangement");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Stemme", b =>
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Stemme", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Delegat", "Delegat")
+                    b.HasOne("Stemmesystem.Data.Entities.Delegat", "Delegat")
                         .WithMany()
                         .HasForeignKey("DelegatId");
 
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Votering", null)
+                    b.HasOne("Stemmesystem.Data.Entities.Votering", null)
                         .WithMany("Stemmer")
                         .HasForeignKey("VoteringId");
 
                     b.Navigation("Delegat");
                 });
 
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Votering", b =>
                 {
-                    b.HasOne("Stemmesystem.Server.Data.Entities.Sak", "Sak")
+                    b.HasOne("Stemmesystem.Data.Entities.Sak", "Sak")
                         .WithMany("Voteringer")
                         .HasForeignKey("SakId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -716,21 +571,21 @@ namespace PostgresMigrations
                     b.Navigation("Valg");
                 });
 
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Sak", b =>
+                {
+                    b.Navigation("Voteringer");
+                });
+
+            modelBuilder.Entity("Stemmesystem.Data.Entities.Votering", b =>
+                {
+                    b.Navigation("Stemmer");
+                });
+
             modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Arrangement", b =>
                 {
                     b.Navigation("Delegater");
 
                     b.Navigation("Saker");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Sak", b =>
-                {
-                    b.Navigation("Voteringer");
-                });
-
-            modelBuilder.Entity("Stemmesystem.Server.Data.Entities.Votering", b =>
-                {
-                    b.Navigation("Stemmer");
                 });
 #pragma warning restore 612, 618
         }
