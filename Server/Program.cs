@@ -10,13 +10,15 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using ProtoBuf.Grpc.Server;
 using Stemmesystem.Api;
-using StemmeSystem.Data;
-using StemmeSystem.Data.Models;
-using StemmeSystem.Data.Repositories;
+using Stemmesystem.Data;
+using Stemmesystem.Data.Models;
+using Stemmesystem.Data.Repositories;
 using Stemmesystem.Server;
 using Stemmesystem.Server.Data.Repositories;
 using Stemmesystem.Server.Hubs;
@@ -121,26 +123,7 @@ builder.Services.AddAutoMapper(typeof(ApiAutoMapperProfile));
 builder.Services.AddLazyCache();
 
 var app = builder.Build();
-
-await using (var scope = app.Services.CreateAsyncScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<StemmesystemContext>();
-
-    await db.Database.MigrateAsync();
-    
-    if (!db.Arrangement.Any())
-    {
-        var delegatService = scope.ServiceProvider.GetRequiredService<DelegatService>();
-        await TestData.SeedData(db, delegatService);
-    }
-
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    if (!await userManager.Users.AnyAsync())
-    {
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        await TestData.CreateAdminUsers(userManager, roleManager);
-    }
-}
+await MigrateDatabase(app);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -188,6 +171,29 @@ if (!string.IsNullOrEmpty(port))
 else
 {
     app.Run();
+}
+
+return;
+
+async Task MigrateDatabase(WebApplication webApplication)
+{
+    await using var scope = webApplication.Services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<StemmesystemContext>();
+
+    await db.Database.MigrateAsync();
+
+    if (!db.Arrangement.Any())
+    {
+        var delegatService = scope.ServiceProvider.GetRequiredService<DelegatService>();
+        await TestData.SeedData(db, delegatService);
+    }
+
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    if (!await userManager.Users.AnyAsync())
+    {
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        await TestData.CreateAdminUsers(userManager, roleManager);
+    }
 }
 
 public partial class Program { }

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using StemmeSystem.Data.Models;
+using Stemmesystem.Data.Models;
 
 namespace Stemmesystem.Server.Controllers;
 

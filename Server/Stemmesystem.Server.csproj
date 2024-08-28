@@ -25,13 +25,11 @@
     <PackageReference Include="MailKit" Version="4.7.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.33" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.33" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.17" />
     <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.33" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.33" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.33" />
     <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="6.0.33" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.33" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.33">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -42,18 +40,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Client\Stemmesystem.Client.csproj" />
     <ProjectReference Include="..\Data\StemmeSystem.Data.csproj" />
-    <ProjectReference Include="..\Migrations\PostgresMigrations\PostgresMigrations.csproj" />
-    <ProjectReference Include="..\Migrations\SqliteMigrations\SqliteMigrations.csproj" />
-    <ProjectReference Include="..\Migrations\SqlServerMigrations\SqlServerMigrations.csproj" />
     <ProjectReference Include="..\Shared\Stemmesystem.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\Admin" />
-  </ItemGroup>
-
 </Project>

@@ -19,15 +19,6 @@
             <button type="submit" class="btn btn-primary mb-2">Logg inn</button>
         </div>
     </div>
-    
-    <AuthorizeView>
-        <Authorized>
-            <div>
-                @_greeting
-            </div>    
-        </Authorized>
-    </AuthorizeView>
-    
 </form>
 
 @code {
@@ -37,8 +28,6 @@
     
     private string? _pin;
     private string? _error;
-    
-    private string? _greeting;
 
     protected override async Task OnInitializedAsync()
     {
