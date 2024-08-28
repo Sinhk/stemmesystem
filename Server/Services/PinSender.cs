@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using StemmeSystem.Data;
+using Stemmesystem.Data;
 using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;

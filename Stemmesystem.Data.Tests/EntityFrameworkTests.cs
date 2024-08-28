@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using StemmeSystem.Data;
+using Stemmesystem.Data;
 
 namespace Stemmesystem.Data.Tests;
 

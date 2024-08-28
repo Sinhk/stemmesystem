@@ -1,4 +1,4 @@
-﻿namespace StemmeSystem.Data.Entities
+﻿namespace Stemmesystem.Data.Entities
 {
     public class Gruppe
     {

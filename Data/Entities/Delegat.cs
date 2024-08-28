@@ -2,7 +2,7 @@
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared.Tools;
 
-namespace StemmeSystem.Data.Entities
+namespace Stemmesystem.Data.Entities
 {
     public class Delegat
     {

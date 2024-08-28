@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace StemmeSystem.Data.Models;
+namespace Stemmesystem.Data.Models;
 
 public class ApplicationUser : IdentityUser
 {

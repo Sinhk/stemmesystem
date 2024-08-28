@@ -4,7 +4,7 @@ using Stemmesystem.Shared;
 using Stemmesystem.Shared.Models;
 using Stemmesystem.Shared.Tools;
 
-namespace StemmeSystem.Data.Entities
+namespace Stemmesystem.Data.Entities
 {
     public class Votering
     {

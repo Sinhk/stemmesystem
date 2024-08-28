@@ -4,11 +4,8 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Server/Stemmesystem.Server.csproj", "Server/"]
-COPY ["Migrations/SqlServerMigrations/SqlServerMigrations.csproj", "SqlServerMigrations/"]
 COPY ["Data/StemmeSystem.Data.csproj", "Data/"]
 COPY ["Shared/Stemmesystem.Shared.csproj", "Shared/"]
-COPY ["Migrations/SqliteMigrations/SqliteMigrations.csproj", "SqliteMigrations/"]
-COPY ["Migrations/PostgresMigrations/PostgresMigrations.csproj", "PostgresMigrations/"]
 COPY ["Client/Stemmesystem.Client.csproj", "Client/"]
 RUN dotnet restore "Server/Stemmesystem.Server.csproj"
 COPY . .
