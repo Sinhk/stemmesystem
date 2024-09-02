@@ -15,9 +15,7 @@ namespace Stemmesystem.Server.Services
     public class ArrangementService : IArrangementService
     {
         private readonly StemmesystemContext _context;
-
         private readonly IMapper _mapper;
-
         private readonly IAppCache _cache;
 
         public ArrangementService(StemmesystemContext context, IMapper mapper, IAppCache cache)
@@ -147,6 +145,15 @@ namespace Stemmesystem.Server.Services
                     .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
                     .SingleOrDefaultAsync();
             },  DateTimeOffset.Now.AddSeconds(60));
+        }
+
+        public async Task<TilstedeCountResponse> GetTilstedeCount(TilstedeCountRequest request, CancellationToken cancellationToken = default)
+        {
+            var count = await _context.Arrangement.Where(a => a.Id == request.ArrangementId)
+                .Select(a => a.Delegater.Count(d => d.TilStede))
+                .SingleOrDefaultAsync(cancellationToken);
+
+            return new(count);
         }
     }
 }

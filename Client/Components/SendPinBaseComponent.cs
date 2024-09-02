@@ -10,14 +10,12 @@ namespace Stemmesystem.Client.Components
         
         [Inject] protected IPinSender PinSender { get; set; }
         protected SendState State = SendState.NotSent;
-        private CancellationTokenSource _cancelation;
         
         [Parameter]
         public EventCallback OnSendt { get; set; }
         
         protected async Task SendPin()
         {
-            _cancelation?.Cancel();
             State = SendState.Sending;
             StateHasChanged();
             var success = await DoSend();
@@ -28,7 +26,7 @@ namespace Stemmesystem.Client.Components
                 await OnSendt.InvokeAsync();
 
             StateHasChanged();
-            _cancelation = new CancellationTokenSource();
+            
             await Task.Delay(TimeSpan.FromSeconds(1));
             State = SendState.NotSent;
         }

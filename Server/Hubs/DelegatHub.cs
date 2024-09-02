@@ -48,11 +48,8 @@ public class DelegatHub : Hub<IDelegatHubClient>
 
     private async Task CountChanged(int arrangemntId)
     {
-        Console.WriteLine("Count Changed");
-
         var count = Counts[arrangemntId];
-        Console.WriteLine($"count {count}");
-        await Clients.Groups("admin").CountChanged(new ActiveCountChangedEvent(arrangemntId,count));
+        await Clients.Groups("admin").ActiveCountChanged(new ActiveCountChangedEvent(arrangemntId,count));
     }
 
     

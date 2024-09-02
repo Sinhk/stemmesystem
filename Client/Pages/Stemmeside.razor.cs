@@ -13,10 +13,13 @@ namespace Stemmesystem.Client.Pages
 
         private ArrangementInfo? _arrangement;
         private DelegatDto? _delegat;
-        private List<VoteringDto> _voteringer = new List<VoteringDto>();
+        private List<VoteringDto> _voteringer = new();
         private IDelegatNotifierService Notifier => Service;
 
         private bool _disposed;
+        private List<IDisposable> _subscriptions = new();
+        private IDisposable? _startetSubscription;
+        private IDisposable? _stoppetSubscription;
 
         protected override async Task OnInitializedAsync()
         {
@@ -48,8 +51,8 @@ namespace Stemmesystem.Client.Pages
             
             _voteringer = await ArrangementService.FinnAktiveVoteringer(new ArrangementRequest {ArrangementId = _arrangement.Id});
 
-            Notifier.OnVoteringStartet(VoteringStartet);
-            Notifier.OnVoteringStoppet(VoteringStoppet);
+            _startetSubscription = Notifier.OnVoteringStartet(VoteringStartet);
+            _stoppetSubscription = Notifier.OnVoteringStoppet(VoteringStoppet);
             await Notifier.Start();
         }
         
@@ -59,13 +62,10 @@ namespace Stemmesystem.Client.Pages
         {
             if (_disposed)
                 return;
-/*
-            if (_notifier != null)
-            {
-                _notifier.VoteringStartet -= VoteringStartet;
-                _notifier.VoteringStoppet -= VoteringStoppet;
-            }
-            */
+            
+            _startetSubscription?.Dispose();
+            _stoppetSubscription?.Dispose();
+            
 /*
             if (disposing)
             {
@@ -76,13 +76,13 @@ namespace Stemmesystem.Client.Pages
             _disposed = true;
         }
 
-        public void VoteringStartet(VoteringStartetEvent e)
+        private void VoteringStartet(VoteringStartetEvent e)
         {
             _voteringer.Add(e.Votering);
                 StateHasChanged();
         }
 
-        public void VoteringStoppet(VoteringStoppetEvent e)
+        private void VoteringStoppet(VoteringStoppetEvent e)
         {
             _voteringer.RemoveAll(v => v.Id == e.VoteringId);
             StateHasChanged();

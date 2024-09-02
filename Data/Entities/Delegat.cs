@@ -27,6 +27,8 @@ namespace Stemmesystem.Data.Entities
         public DateTime? SendtEmail => SendtEmailInternal?.UtcDateTime;
         [Column(nameof(SendtEmail))]
         public DateTimeOffset? SendtEmailInternal { get; set; }
+        
+        public bool TilStede { get; set; }
 
         internal Delegat(int delegatnummer, string? navn, string? delegatkode = null)
         {
