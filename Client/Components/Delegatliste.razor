@@ -1,17 +1,16 @@
-﻿@inject IAdminDelegatService _delegatService
-@inject IPinSender _pinSender
-@inject NavigationManager _navigation
+﻿@inject IAdminDelegatService DelegatService
+@inject IPinSender PinSender
+@inject NavigationManager Navigation
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
-@implements IDisposable 
 
-<div class="row" @onclick=@(_ => _expanded=!_expanded)>
+<div class="row" @onclick="@(_ => _expanded=!_expanded)">
     <h4>Delegater</h4>
     <span class="ml-2 mt-1 oi @(_expanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
 </div>
 @if (_expanded)
 {
-    <table class="table">
+    <table class="table table-hover">
         <thead>
         <tr>
             <th @ondblclick=@(_ => _showPin=!_showPin)>Delegat</th>
@@ -19,7 +18,8 @@
             {
                 <th>Pin</th>    
             }
-            <th>Active</th>
+            <th>Til stede</th>
+            @* <th>Aktiv</th> *@
             <th>Send PIN</th>
             <th>PIN sendt</th>
         </tr>
@@ -31,7 +31,7 @@
         else
         {
             <tbody>
-            @foreach (var delegat in _delegater.OrderBy(s => s.Delegatnummer))
+            @foreach (var delegat in _delegater.Values.OrderBy(s => s.Delegatnummer))
             {
                 <tr>
                     <td>@delegat.Delegatnummer: @delegat.Navn</td>
@@ -40,14 +40,7 @@
                         <td>@delegat.Delegatkode</td>
                     }
                     <td>
-                        @*@if (_tracker.IsActive(ArrangementId, delegat.Id))
-                        {
-                            <span class="oi oi-check text-success"></span>
-                        }
-                        else
-                        {
-                            <span class="oi oi-x text-danger"></span>
-                        }*@
+                        <ToggleInput Label="@delegat.Navn" Value="delegat.TilStede" ValueChanged="@(b => SetTilstede(delegat.Id, b))"/>
                     </td>
                     <td>
                         
@@ -82,6 +75,12 @@
             </tbody>
         }
     </table>
+    <div class="row">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="() => SetTilstede(true)">Set alle til stede</button>
+            <button class="btn btn-secondary" @onclick="() => SetTilstede(false)">Set ingen til stede</button>
+        </div>
+    </div>
 }
 @code {
 
@@ -91,23 +90,18 @@
     private bool _expanded;
     private bool _showPin;
 
-    private ICollection<AdminDelegatDto> _delegater = null!;
+    private Dictionary<int, AdminDelegatDto> _delegater = null!;
 
 
     protected override async Task OnInitializedAsync()
     {
-        _delegater = await _delegatService.HentDelegater(new HentDelegatRequest(ArrangementId));
-    //_tracker.CountChanged += NewCount;
+        var delegater = await DelegatService.HentDelegater(new HentDelegatRequest(ArrangementId));
+        _delegater = delegater.ToDictionary(d => d.Id);
     }
-
-    /*private void NewCount(ActiveTrackerEvent e)
-    {
-        InvokeAsync(StateHasChanged);
-    }*/
 
     private void SmsSendt(int delegatId)
     {
-        var delegat = _delegater.FirstOrDefault(d => d.Id == delegatId);
+        var delegat = _delegater.GetValueOrDefault(delegatId);
         if (delegat != null)
         {
             delegat.SendtSms = DateTime.Now;
@@ -115,16 +109,24 @@
     }
     private void EpostSendt(int delegatId)
     {
-        var delegat = _delegater.FirstOrDefault(d => d.Id == delegatId);
+        var delegat = _delegater.GetValueOrDefault(delegatId);
         if (delegat != null)
         {
             delegat.SendtEmail = DateTime.Now;
         }
     }
 
-    public void Dispose()
+    private async Task SetTilstede(int delegatId, bool tilStede)
     {
-        //_tracker.CountChanged -= NewCount;
+        await DelegatService.SetTilStede(new SetTilstedeRequest(delegatId, tilStede));
     }
-
+    
+    private async Task SetTilstede(bool tilStede)
+    {
+        await DelegatService.SetTilStedeForAll(new SetTilstedeForAllRequest(ArrangementId, tilStede));
+        foreach (var delegat in _delegater.Values)
+        {
+            delegat.TilStede = tilStede;
+        }
+    }
 }

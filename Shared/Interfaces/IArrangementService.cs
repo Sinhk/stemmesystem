@@ -18,7 +18,11 @@ public interface IArrangementService
 
     Task<ArrangementDto> NyttArrangement(ArrangementInputModel dto);
     Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel dto);
+    Task<TilstedeCountResponse> GetTilstedeCount(TilstedeCountRequest request, CancellationToken cancellationToken = default);
 }
+
+public record TilstedeCountRequest(int ArrangementId);
+public record TilstedeCountResponse(int Count);
 
 [ProtoContract]
 public record HentArrangementRequest

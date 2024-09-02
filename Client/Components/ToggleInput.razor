@@ -1,0 +1,19 @@
+﻿<div class="form-check form-switch">
+    <input class="form-check-input" type="checkbox" id="@GetHashCode()" checked="@Value" @onchange="@OnChange" />
+    <label class="form-check-label" for="@GetHashCode()">@Label</label>
+</div>
+@code {
+    [Parameter]
+    public bool Value { get; set; }
+    [Parameter]
+    public EventCallback<bool> ValueChanged { get; set; }
+    
+    [Parameter]
+    public string? Label { get; set; }
+
+    private async Task OnChange(ChangeEventArgs args)
+    {
+        Value = (bool) (args.Value ?? false);
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

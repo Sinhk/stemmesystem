@@ -2,8 +2,10 @@
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Microsoft.AspNetCore.Authorization
+@using Stemmesystem.Client.SignalR
 @using Stemmesystem.Shared
-@inject IArrangementService _arrangementService
+@inject IArrangementService ArrangementService
+@inject IAdminNotifierService AdminNotifier
 @implements IDisposable
 @inherits OwningComponentBase<Stemmesystem.Client.SignalR.IDelegatNotifierService>
 @attribute [Authorize]
@@ -15,47 +17,58 @@
 </div>
 <div class="row">
     <div class="col">Delegater: @_arrangement?.Delegater.Count</div>
+    <div class="col">Delegater til stede: @_delegaterTilstede</div>
     <div class="col">Aktive delegater: @_aktiveDelegater</div>
 </div>
-<CascadingValue Name="Delegater" Value="_arrangement?.Delegater.Count ?? 0">
-    <Saksliste ArrangementId="ArrangementId" />
-    <Delegatliste ArrangementId="ArrangementId" />
-</CascadingValue>
+
+<Saksliste ArrangementId="ArrangementId" />
+<Delegatliste ArrangementId="ArrangementId" />
 
 @code {
     [Parameter]
-    public int ArrangementId {get;set;}
-
+    public int ArrangementId { get; set; }
     private ArrangementDto? _arrangement;
     private int _aktiveDelegater;
+    private int _delegaterTilstede;
+
+    private IDisposable? _countSubscription;
+    private IDisposable? _tilstedeSubscription;
 
 
     protected override async Task OnInitializedAsync()
     {
-        var arrangement = await _arrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId});
+        var arrangement = await ArrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId});
         if(arrangement != null)
             _arrangement = arrangement;
         
-        
-        Service.OnCountChanged(ActiveCountChanged);
+        _countSubscription = Service.OnActiveCountChanged(ActiveCountChanged);
         await Service.Start();
         _aktiveDelegater = await Service.GetActiveCount(ArrangementId);
-
+        
+        _tilstedeSubscription = AdminNotifier.OnTilstedeCountChanged(TilstedeCountChanged);
+        await AdminNotifier.Start();
+        var tilstedeResponse = await ArrangementService.GetTilstedeCount(new (ArrangementId));
+        _delegaterTilstede = tilstedeResponse.Count;
     }
 
-    
+    private void TilstedeCountChanged(TilstedeCountChangedEvent e)
+    {
+        if (e.ArrangementId != ArrangementId) return;
+        _delegaterTilstede = e.Count;
+        StateHasChanged();
+    }
+
     private void ActiveCountChanged(ActiveCountChangedEvent e)
     {
-        if (e.ArrangementId == ArrangementId)
-        {
-            _aktiveDelegater = e.NewCount;
-            StateHasChanged();
-        }
+        if (e.ArrangementId != ArrangementId) return;
+        _aktiveDelegater = e.NewCount;
+        StateHasChanged();
     }
     
     public void Dispose()
     {
-        //_tracker.CountChanged -= ActiveCountChanged;
+        _countSubscription?.Dispose();
+        _tilstedeSubscription?.Dispose();
     }
 
 }

@@ -33,6 +33,9 @@ namespace Stemmesystem.Shared.Models
         public DateTime? SendtEmail { get; set; }
         [ProtoMember(11)]
         public DateTime? SendtSms { get; set; }
+        
+        [ProtoMember(12)]
+        public bool TilStede { get; set; }
     }
     
     [ProtoContract]

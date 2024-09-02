@@ -57,3 +57,4 @@ public record ActiveCountChangedEvent(int ArrangementId, int NewCount);
 public record NyVoteringEvent(AdminVoteringDto Votering);
 
 public record HarStemtEvent(int VoteringId, int DelegatId);
+public record TilstedeCountChangedEvent(int ArrangementId, int Count);

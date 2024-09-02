@@ -44,6 +44,8 @@ namespace Stemmesystem.Data
             {
                 e.HasIndex(x => new { x.ArrangementId, x.Delegatnummer }).IsUnique();
                 e.HasIndex(x => x.Delegatkode).IsUnique();
+                e.Property(x => x.TilStede).HasDefaultValue(true);
+                
                 e
                     .HasMany(d=> d.HarStemmtI)
                     .WithMany(v => v.AvgitStemme)

@@ -1,6 +1,9 @@
-﻿using AutoMapper;
+﻿using System.Diagnostics.CodeAnalysis;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Duende.IdentityServer.Extensions;
+using Google.Protobuf.WellKnownTypes;
+using Google.Rpc;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +13,7 @@ using Stemmesystem.Data.Entities;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
 using Stemmesystem.Shared.Models;
+using Stemmesystem.Shared.SignalR;
 using Stemmesystem.Shared.Tools;
 
 namespace Stemmesystem.Server.Services;
@@ -20,12 +24,18 @@ public class DelegatService : IDelegatService, IAdminDelegatService
     private readonly StemmesystemContext _context;
     private readonly IMapper _mapper;
     private readonly IKeyGenerator _keyGenerator;
+    private readonly ILogger<DelegatService> _logger;
+    private readonly NotificationManager _notificationManager;
 
-    public DelegatService(IKeyGenerator keyGenerator, StemmesystemContext context, IMapper mapper)
+    private int? _tilstedeCount;
+
+    public DelegatService(IKeyGenerator keyGenerator, StemmesystemContext context, IMapper mapper, ILogger<DelegatService> logger, NotificationManager notificationManager)
     {
         _keyGenerator = keyGenerator;
         _context = context;
         _mapper = mapper;
+        _logger = logger;
+        _notificationManager = notificationManager;
     }
 
     public async Task<HentDelegatResult> HentDelegatInfo(CallContext context = default)
@@ -114,6 +124,72 @@ public class DelegatService : IDelegatService, IAdminDelegatService
         _context.Delegat.Add(delegat);
         await _context.SaveChangesAsync();
         return _mapper.Map<AdminDelegatDto>(delegat);
+    }
+
+    /// <inheritdoc />
+    public async Task SetTilStede(SetTilstedeRequest request, CancellationToken cancellationToken = default)
+    {
+        var delegat = await _context.Delegat
+            .Where(d => d.Id == request.DelegatId)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (delegat == null) ThrowUkjentDelegat(request.DelegatId);
+        delegat.TilStede = request.TilStede;
+        await _context.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("Satt til stede for delegat {DelegatNavn} til {TilStede}", delegat.Navn, request.TilStede);
+
+        if (_tilstedeCount == null)
+        {
+            _tilstedeCount =  await _context.Arrangement
+                .Where(a => a.Id == delegat.ArrangementId)
+                .SelectMany(a => a.Delegater)
+                .CountAsync(d => d.TilStede, cancellationToken: cancellationToken);
+        }
+        else
+        {
+            _tilstedeCount += request.TilStede ? 1 : -1;
+        }
+        
+        await _notificationManager.ForAdmin()
+            .TilstedeCountChanged(new TilstedeCountChangedEvent(delegat.ArrangementId, _tilstedeCount.Value), cancellationToken);
+    }
+
+    public async Task SetTilStedeForAll(SetTilstedeForAllRequest request, CancellationToken cancellationToken = default)
+    {
+        var delegater = await _context.Delegat
+            .Where(d => d.ArrangementId == request.ArrangementId)
+            .ToListAsync(cancellationToken);
+
+        foreach (var delegat in delegater)
+        {
+            delegat.TilStede = request.TilStede;
+        }
+        
+        await _context.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("Satt til stede for alle delegater i arrangement {ArrangementId} til {TilStede}", request.ArrangementId, request.TilStede);
+        
+        _tilstedeCount = request.TilStede ? delegater.Count : 0;
+        await _notificationManager.ForAdmin()
+            .TilstedeCountChanged(new TilstedeCountChangedEvent(request.ArrangementId, _tilstedeCount.Value), cancellationToken);
+    }
+
+    [DoesNotReturn]
+    private static void ThrowUkjentDelegat(int DelegatId)
+    {
+        var status = new Google.Rpc.Status
+        {
+            Code = (int)Code.NotFound,
+            Details =
+            {
+                Any.Pack(new BadRequest
+                {
+                    FieldViolations =
+                    {
+                        new BadRequest.Types.FieldViolation { Field = "DelegatId", Description = $"Fant ingen delegat med id {DelegatId}" }
+                    }
+                })
+            }
+        };
+        throw status.ToRpcException();
     }
 
     public async Task<DelegatDto?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default)

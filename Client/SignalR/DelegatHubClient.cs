@@ -11,7 +11,7 @@ public interface IDelegatNotifierService : ISignalRClient
     IDisposable? OnVoteringStartet(Action<VoteringStartetEvent> action);
     IDisposable? OnVoteringStoppet(Action<VoteringStoppetEvent> action);
     IDisposable? OnVoteringPublisert(Action<VoteringPublisertEvent> action);
-    IDisposable OnCountChanged(Action<ActiveCountChangedEvent> action);
+    IDisposable OnActiveCountChanged(Action<ActiveCountChangedEvent> action);
     Task<int> GetActiveCount(int arrangementId, CancellationToken cancellationToken = default);
 }
 
@@ -27,6 +27,8 @@ public interface IAdminNotifierService : ISignalRClient
     IDisposable? OnVoteringPublisert(Action<VoteringPublisertEvent> action);
     IDisposable? OnNyVotering(Action<NyVoteringEvent> action);
     IDisposable? OnHarStemt(Action<HarStemtEvent> action);
+
+    IDisposable OnTilstedeCountChanged(Action<TilstedeCountChangedEvent> action);
 }
 
 public class DelegatNotifierService : SignalRClientBase, IDelegatNotifierService
@@ -56,8 +58,8 @@ public class DelegatNotifierService : SignalRClientBase, IDelegatNotifierService
         => HubConnection.On(nameof(IDelegatHubClient.VoteringStoppet), action);
     public IDisposable OnVoteringPublisert(Action<VoteringPublisertEvent> action)
         => HubConnection.On(nameof(IDelegatHubClient.VoteringPublisert), action);
-    public IDisposable OnCountChanged(Action<ActiveCountChangedEvent> action)
-        => HubConnection.On(nameof(IDelegatHubClient.CountChanged), action);
+    public IDisposable OnActiveCountChanged(Action<ActiveCountChangedEvent> action)
+        => HubConnection.On(nameof(IDelegatHubClient.ActiveCountChanged), action);
 }
 
 public class AdminNotifierService : SignalRClientBase, IAdminNotifierService
@@ -107,4 +109,6 @@ public class AdminNotifierService : SignalRClientBase, IAdminNotifierService
     public IDisposable OnNyVotering(Action<NyVoteringEvent> action) => HubConnection.On(nameof(IAdminHubClient.NyVotering), action);
 
     public IDisposable OnHarStemt(Action<HarStemtEvent> action) => HubConnection.On(nameof(IAdminHubClient.HarStemt), action);
+
+    public IDisposable OnTilstedeCountChanged(Action<TilstedeCountChangedEvent> action) => HubConnection.On(nameof(IAdminHubClient.TilstedeCountChanged), action);
 }
