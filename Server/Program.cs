@@ -21,6 +21,7 @@ using Stemmesystem.Data.Models;
 using Stemmesystem.Data.Repositories;
 using Stemmesystem.Server;
 using Stemmesystem.Server.Data.Repositories;
+using Stemmesystem.Server.Features.MinSpeiding;
 using Stemmesystem.Server.Hubs;
 using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
@@ -104,6 +105,7 @@ builder.Services.AddScoped<IDelegatRepository, DelegatRepository>();
 builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
 builder.Services.AddScoped<DelegatService>();
 builder.Services.AddScoped<NotificationManager>();
+builder.Services.AddScoped<MinSpeidingService>();
 
 builder.Services.AddHttpClient<ISmsSender, SveveSmsSender>();
 builder.Services.AddOptions<SveveOptions>()
@@ -121,6 +123,8 @@ builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
 
 builder.Services.AddAutoMapper(typeof(ApiAutoMapperProfile));
 builder.Services.AddLazyCache();
+
+builder.Services.AddAuthorizationCore(b => b.AddPolicy("admin", policyBuilder => policyBuilder.RequireRole("admin")));
 
 var app = builder.Build();
 await MigrateDatabase(app);
@@ -157,6 +161,8 @@ app.MapRazorPages();
 app.MapGrpcServices();
 app.MapControllers();
 app.MapHealthChecks("/healthz");
+
+MinSpeidingEndpoints.MapMinSpeidingEndpoints(app);
     
 app.MapHub<DelegatHub>("/hubs/delegat");
 app.MapHub<AdminHub>("/hubs/admin");

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Stemmesystem.Server.Data.Entities;
+using Stemmesystem.Shared.MinSpeiding;
 using Stemmesystem.Shared.Tools;
 
 namespace Stemmesystem.Data.Entities
@@ -7,7 +8,7 @@ namespace Stemmesystem.Data.Entities
     public class Delegat
     {
         private Arrangement? arrangement;
-        private List<Votering> harStemmtI = new List<Votering>();
+        private List<Votering> harStemmtI = new();
 
         public int Id { get; private set; }
         public string Delegatkode { get; set; }
@@ -29,6 +30,8 @@ namespace Stemmesystem.Data.Entities
         public DateTimeOffset? SendtEmailInternal { get; set; }
         
         public bool TilStede { get; set; }
+        
+        public int? MemberId { get; set; }
 
         internal Delegat(int delegatnummer, string? navn, string? delegatkode = null)
         {
@@ -38,5 +41,24 @@ namespace Stemmesystem.Data.Entities
             delegatkode ??= RngKeyGenerator.GenerateKey(4);
             Delegatkode = delegatkode;
         }
+    }
+    
+    public static class DelegatMapper
+    {
+        public static IReadOnlyCollection<Delegat> ToDelegates(this IReadOnlyCollection<Participant> participants,
+            bool importCheckIn)
+        {
+            return participants.Select(p => p.ToDelegate(importCheckIn)).ToList();
+        }
+    
+        public static Delegat ToDelegate(this Participant participant, bool importCheckIn) =>
+            new(0, participant.FullName)
+            {
+                 Epost = participant.PrimaryEmail,
+                 Telefon = participant.ContactInfo.GetValueOrDefault("Mobiltelefon"),
+                 Gruppe = participant.GroupName,
+                 MemberId = participant.MemberNo,
+                TilStede = importCheckIn && participant.CheckedIn.GetValueOrDefault(),
+            };
     }
 }

@@ -2,18 +2,20 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Stemmesystem.Data;
 
 #nullable disable
 
-namespace PostgresMigrations
+namespace Stemmesystem.Data.Migrations
 {
     [DbContext(typeof(StemmesystemContext))]
-    partial class StemmesystemContextModelSnapshot : ModelSnapshot
+    [Migration("20240902200447_MinSpeidingOptionsApiKeyLimit")]
+    partial class MinSpeidingOptionsApiKeyLimit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -357,9 +359,6 @@ namespace PostgresMigrations
 
                     b.Property<string>("Gruppe")
                         .HasColumnType("text");
-
-                    b.Property<int?>("MemberId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Navn")
                         .HasColumnType("text");
@@ -730,13 +729,6 @@ namespace PostgresMigrations
                         {
                             b1.Property<int>("ArrangementId")
                                 .HasColumnType("integer");
-
-                            b1.Property<string>("Filter")
-                                .HasMaxLength(200)
-                                .HasColumnType("character varying(200)");
-
-                            b1.Property<bool>("ImportCheckIn")
-                                .HasColumnType("boolean");
 
                             b1.Property<string>("MembersApiKey")
                                 .HasMaxLength(200)
