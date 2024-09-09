@@ -1,13 +1,12 @@
 ﻿@page "/admin/arrangement/nytt-arrangement"
 @page "/admin/arrangement/{arrangementId:int}"
-@using Microsoft.AspNetCore.Components
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
 @using Microsoft.AspNetCore.Authorization
 @using AutoMapper
-@inject IArrangementService _arrangementService
-@inject NavigationManager _navigation
+@inject IArrangementService ArrangementService
+@inject NavigationManager Navigation
 
 @attribute [Authorize(Roles = "admin")]
 
@@ -85,7 +84,14 @@ else
                 <button class="btn btn-success" @onclick="@(_ => Saker.Add(new SakInputModel()))">Legg til</button>
             </div>
         }
-        
+        <div class="row mt-2" @onclick=@(_ => _minSpeidingExpanded=!_minSpeidingExpanded)>
+            <h4>Min speiding</h4>
+            <span class="ml-2 mt-1 oi @(_minSpeidingExpanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
+        </div>
+        if (_minSpeidingExpanded)
+        {
+            <MinSpeidingImport ArrangementId="@_arrangement.Id.Value"/>
+        }
     }
 }
 
@@ -107,6 +113,8 @@ else
     [Inject]
     private IMapper Automapper { get; init; } = default!;
 
+    private bool _minSpeidingExpanded;
+    
     private bool _sakerExpanded;
     public ICollection<SakInputModel> Saker
     {
@@ -119,7 +127,7 @@ else
 
     protected override async Task OnInitializedAsync(){
         if(ArrangementId != null){
-            var arrangement = await _arrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId.Value});
+            var arrangement = await ArrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId.Value});
             if(arrangement != null)
             {
                 _arrangement = Automapper.Map<ArrangementInputModel>(arrangement);
@@ -151,7 +159,7 @@ else
     {
         if (errors.Count <= 0)
         {
-            var arrangement = await _arrangementService.OppdaterArrangement(_arrangement);
+            var arrangement = await ArrangementService.OppdaterArrangement(_arrangement);
             Automapper.Map(arrangement, _arrangement);
         }
     }
@@ -160,9 +168,9 @@ else
     {
         if (errors.Count <= 0)
         {
-            var arrangement = await _arrangementService.NyttArrangement(_arrangement);
+            var arrangement = await ArrangementService.NyttArrangement(_arrangement);
             Automapper.Map(arrangement, _arrangement);
-            _navigation.NavigateTo($"admin/arrangement/{arrangement.Id}");
+            Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}");
         }
     }
 

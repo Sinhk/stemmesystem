@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Stemmesystem.Data.Entities;
 using Stemmesystem.Data.Models;
 using Stemmesystem.Server.Data.Entities;
+using Stemmesystem.Shared.MinSpeiding;
 
 namespace Stemmesystem.Data
 {
@@ -27,7 +28,18 @@ namespace Stemmesystem.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.HasDefaultSchema("stemme");
 
-            modelBuilder.Entity<Arrangement>(e =>{});
+            modelBuilder.Entity<Arrangement>(e =>
+            {
+                e.OwnsOne(a => a.MinSpeidingOptions, ob =>
+                {
+                    ob.Property(o => o.Filter)
+                        .HasMaxLength(200)
+                        .HasConversion(
+                            v => v!.RawFilter,
+                            v => new ParticipantFilter(v)
+                        );
+                });
+            });
 
             modelBuilder.Entity<Sak>(e =>{});
             modelBuilder.Entity<Votering>(e =>

@@ -44,6 +44,7 @@ builder.Services.AddGrpcClient<IStemmeService>();
 builder.Services.AddGrpcClient<IAdminStemmeService>();
 builder.Services.AddGrpcClient<ISakService>();
 builder.Services.AddGrpcClient<IPinSender>();
+builder.Services.AddGrpcClient<IMinSpeidingOptionsRepository>();
 
 #endregion
 
