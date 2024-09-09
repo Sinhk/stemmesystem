@@ -47,7 +47,7 @@
         
         _tilstedeSubscription = AdminNotifier.OnTilstedeCountChanged(TilstedeCountChanged);
         await AdminNotifier.Start();
-        var tilstedeResponse = await ArrangementService.GetTilstedeCount(new (ArrangementId));
+        var tilstedeResponse = await ArrangementService.GetTilstedeCount(new TilstedeCountRequest(ArrangementId));
         _delegaterTilstede = tilstedeResponse.Count;
     }
 
