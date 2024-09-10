@@ -10,6 +10,12 @@
 </div>
 @if (_expanded)
 {
+    <div class="row">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="() => SetTilstede(true)">Set alle til stede</button>
+            <button class="btn btn-secondary" @onclick="() => SetTilstede(false)">Set ingen til stede</button>
+        </div>
+    </div>
     <table class="table table-hover">
         <thead>
         <tr>
@@ -75,12 +81,6 @@
             </tbody>
         }
     </table>
-    <div class="row">
-        <div class="col">
-            <button class="btn btn-primary" @onclick="() => SetTilstede(true)">Set alle til stede</button>
-            <button class="btn btn-secondary" @onclick="() => SetTilstede(false)">Set ingen til stede</button>
-        </div>
-    </div>
 }
 @code {
 
