@@ -36,7 +36,7 @@ else
         </div>
     </EditForm>
     <button class="btn btn-primary" @onclick=@(_ => LoadParticipants())>Hent deltakere</button>
-    <button class="btn btn-success" disabled="@(_participants != null)" @onclick="Import">Importer deltakere</button>
+    <button class="btn btn-success" disabled="@(_participants is null)" @onclick="Import">Importer deltakere</button>
 
     if (_participantError is not null)
     {
