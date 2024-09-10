@@ -56,6 +56,11 @@ public partial class MinSpeidingImport
                 _minSpeidingOptions.ImportCheckIn));
         }
 
+        if (arg.IsModified(() => _minSpeidingOptions.Filter!) && _minSpeidingOptions.Filter is not null)
+        {
+            await Repository.SetFilter(new SetFilterRequest(ArrangementId, _minSpeidingOptions.Filter));
+        }
+
         arg.MarkAsUnmodified();
     }
 

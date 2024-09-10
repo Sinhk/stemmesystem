@@ -21,11 +21,22 @@ else
         <div>
             <label>Importer innsjekk som til stede:<InputCheckbox @bind-Value="_minSpeidingOptions.ImportCheckIn"/></label>
         </div>
+        <div class="row">
+            <div class="col-auto">
+                <label>Filter<InputText @bind-Value=_minSpeidingOptions.Filter type="text" class="form-control" placeholder="Filtrer deltakere" title="Bruk felt fra json resultatet"/></label>
+            </div>
+            <div class="col-auto">
+                filtrer på ett felt: <code>fee_name=Delegat</code> <br/>filtrer på flere felt: <code>checked_in=true|org_name=Norges speiderforbund</code> 
+                <br/>Hent deltakere for å se hvilke felt som er tilgjengelig.
+            </div>
+        </div>
+        
         <div>
             <button type="submit" class="btn btn-primary">Lagre</button>
         </div>
     </EditForm>
     <button class="btn btn-primary" @onclick=@(_ => LoadParticipants())>Hent deltakere</button>
+    <button class="btn btn-success" disabled="@(_participants != null)" @onclick="Import">Importer deltakere</button>
 
     if (_participantError is not null)
     {
@@ -36,16 +47,6 @@ else
 
     if (_participants is not null)
     {
-        <br/>
-        <br/>
-        <div class="row">
-            <div class="col-auto">
-                <label>Filter:<input @bind=_minSpeidingOptions.Filter type="text" class="form-control" placeholder="Filtrer deltakere" title="Bruk felt fra json resultatet"/></label>
-            </div>
-            <div class="col-auto">
-                eksempel: <code>fee_name=Delegat</code><br/><code>checked_in=true|org_name=Norges speiderforbund</code>
-            </div>
-        </div>
         <div class="row">
             <div class="col-auto">
                 <button class="btn btn-primary" @onclick="FilterParticipants">Filtrer</button>
@@ -70,7 +71,7 @@ else
                 </select>
             </div>*@
         </div>
-        <button class="btn btn-success" @onclick="Import">Importer</button>
+        
         @if(_importResult is not null)
         {
             <div class="alert alert-success" role="alert">
