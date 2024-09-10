@@ -3,9 +3,9 @@
 public partial class ParticipantsProcessorTest
 {
     private static readonly string ParticipantsData = 
-        @"{
-  ""participants"": {
-    ""280349"": {
+        $@"{{
+  ""participants"": {{
+    ""280349"": {{
       ""checked_in"": true,
       ""attended"": true,
       ""cancelled"": false,
@@ -30,11 +30,11 @@ public partial class ParticipantsProcessorTest
       ""patrol_name"": null,
       ""fee_id"": 7036,
       ""questions"": [],
-      ""contact_info"": {
+      ""contact_info"": {{
         ""1"": ""11111111""
-      }
-    },
-    ""280607"": {
+      }}
+    }},
+    ""280607"": {{
       ""checked_in"": false,
       ""attended"": false,
       ""cancelled"": false,
@@ -58,13 +58,15 @@ public partial class ParticipantsProcessorTest
       ""district_name"": ""Romsdal og Nordmøre krets"",
       ""patrol_name"": null,
       ""fee_id"": 7036,
-      ""questions"": [],
-      ""contact_info"": {
+      ""questions"": {{
+        ""1123"": ""1235""
+      }},
+      ""contact_info"": {{
         ""1"": ""11111111"",
         ""12"": ""xx@xx.xx""
-      }
-    },
-    ""281363"": {
+      }}
+    }},
+    ""281363"": {{
       ""checked_in"": true,
       ""attended"": true,
       ""cancelled"": false,
@@ -89,15 +91,15 @@ public partial class ParticipantsProcessorTest
       ""patrol_name"": null,
       ""fee_id"": 7036,
       ""questions"": [],
-      ""contact_info"": {
+      ""contact_info"": {{
         ""1"": ""111111111111"",
         ""12"": ""xx.xx@xx.xx"",
         ""54"": ""yy@yy.yy""
-      }
-    }
-  },
-  ""labels"": {
-    ""member_status"": {
+      }}
+    }}
+  }},
+  ""labels"": {{
+    ""member_status"": {{
       ""1"": ""Utmeldt"",
       ""2"": ""Aktiv"",
       ""4"": ""Ny, ikke klar for fakturering"",
@@ -105,23 +107,23 @@ public partial class ParticipantsProcessorTest
       ""16"": ""Automatisk utmeldt"",
       ""32"": ""Aktiv ikke-medlem"",
       ""64"": ""Anonymisert""
-    },
-    ""sex"": {
+    }},
+    ""sex"": {{
       ""0"": ""Ukjent"",
       ""1"": ""Mann"",
       ""2"": ""Kvinne"",
       ""3"": ""Annet""
-    },
-    ""project_fee"": {
+    }},
+    ""project_fee"": {{
       ""7035"": ""Standardpris"",
       ""7036"": ""Per person for middag""
-    },
-    ""contact_type"": {
+    }},
+    ""contact_type"": {{
       ""1"": ""Mobiltelefon"",
       ""9"": ""E-post2"",
       ""12"": ""Foresatt 1 e-post"",
       ""54"": ""Foresatt 2 e-post""
-    }
-  }
-}";
+    }}
+  }}
+}}";
 }

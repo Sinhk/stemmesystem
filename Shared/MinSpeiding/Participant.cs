@@ -27,7 +27,7 @@ public record Participant(
     [property: JsonPropertyName("patrol_name")] object PatrolName,
     [property: JsonPropertyName("fee_id")] int? FeeId,
     [property: JsonPropertyName("fee_name")] string? FeeName,
-    [property: JsonPropertyName("questions")] IReadOnlyList<object> Questions,
+    [property: JsonPropertyName("questions")] IReadOnlyDictionary<string,string> Questions,
     [property: JsonPropertyName("contact_info")] IReadOnlyDictionary<string, string> ContactInfo
 )
 {

@@ -30,6 +30,7 @@ public class ParticipantsProcessor
             MapSex(participant);
             MapMemberStatus(participant);
             MapContactInfo(participant);
+            MapQuestions(participant);
 
             result.Add(participant);
         }
@@ -74,6 +75,19 @@ public class ParticipantsProcessor
                 contactInfo.Remove(key);
                 contactInfo.Add(name, value);
             }
+        }
+        void MapQuestions(JsonObject participant)
+        {
+            const string propertyName = "questions";
+            if (!participant.TryGetPropertyValue(propertyName, out var questionsRaw)) return;
+            if (questionsRaw is JsonArray)
+            {
+                // must be object for deserialization to work
+                participant.Remove(propertyName);
+                participant.Add(propertyName, new JsonObject());
+                return;
+            }
+            //TODO: Get questions from MinSpeiding
         }
     }
 }
