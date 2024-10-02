@@ -100,7 +100,7 @@ public class MinSpeidingOptionsRepository : IMinSpeidingOptionsRepository
 
         var updated = 0;
         var added = 0;
-        var delegatnummer = arrangement.Delegater.Max(d => d.Delegatnummer);
+        var delegatnummer = arrangement.Delegater.Count == 0 ?  0 : arrangement.Delegater.Max(d => d.Delegatnummer);
         foreach (var delegat in delegates)
         {
             if (existing.TryGetValue(delegat.MemberId!.Value, out var existingDelegat))
