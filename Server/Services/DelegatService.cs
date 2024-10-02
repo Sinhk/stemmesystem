@@ -126,6 +126,37 @@ public class DelegatService : IDelegatService, IAdminDelegatService
         return _mapper.Map<AdminDelegatDto>(delegat);
     }
 
+    public async Task SlettDelegat(SlettDelegatRequest request, CancellationToken cancellationToken = default)
+    {
+        var delegat = await _context.Delegat
+            .Where(d => d.Id == request.DelegatId)
+            .Include(d => d.HarStemmtI)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (delegat == null) ThrowUkjentDelegat(request.DelegatId);
+
+        if (delegat.HarStemmtI.Any())
+        {
+            var status = new Google.Rpc.Status
+            {
+                Code = (int)Code.FailedPrecondition,
+                Details =
+                {
+                    Any.Pack(new BadRequest
+                    {
+                        FieldViolations =
+                        {
+                            new BadRequest.Types.FieldViolation { Field = "DelegatId", Description = $"Delegat {delegat.Delegatnummer} har stemt i arrangementet og kan ikke slettes"}
+                        }
+                    })
+                }
+            };
+            throw status.ToRpcException();
+        }
+        
+        _context.Delegat.Remove(delegat);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     /// <inheritdoc />
     public async Task SetTilStede(SetTilstedeRequest request, CancellationToken cancellationToken = default)
     {

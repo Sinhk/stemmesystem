@@ -19,6 +19,7 @@
     @if (ArrangementId != null)
     {
         <button type="submit" class="btn btn-primary" disabled="@(Delegat.Id != null && !context.IsModified())">Lagre</button>    
+        <button type="button" class="btn btn-danger" @onclick="() => SlettDelegat(Delegat.Id)">Slett</button>    
     }
 </EditForm>
 
@@ -29,9 +30,11 @@
     [Parameter]
     public DelegatInputModel Delegat { get; set; } = null!;
 
-
     [Parameter]
     public int? ArrangementId { get; set; }
+    
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
 
     public EditContext? EditContext { get; set; }
 
@@ -49,41 +52,38 @@
     internal async Task<bool> HandleValidSubmit(EditContext context){
         if (ArrangementId == null) return false;
         customValidator?.ClearErrors();
-        var errors = new Dictionary<string, List<string>>();
         if (Delegat.Id == null)
-            await LeggTilDelegat(errors);
+            await LeggTilDelegat(ArrangementId.Value);
         else
-            await OppdaterDelegat(errors);
+            await OppdaterDelegat(ArrangementId.Value);
         
         context.MarkAsUnmodified();
-        if (errors.Count > 0)
-        {
-            customValidator?.DisplayErrors(errors);
-            return false;
-        }
         return true;
     }
 
-    private async Task OppdaterDelegat(IDictionary<string,List<string>> errors)
+    private async Task OppdaterDelegat(int arrangementId)
     {
-        if(ArrangementId == null) return;
-        if (errors.Count <= 0)
-        {
-            Delegat.ArrangementId = ArrangementId.Value;
-            var delegat = await _delegatService.OppdaterDelegat(Delegat);
-            _mapper.Map(delegat, Delegat);
-        }
+        Delegat.ArrangementId = arrangementId;
+        var delegat = await _delegatService.OppdaterDelegat(Delegat);
+        _mapper.Map(delegat, Delegat);
+        
     }
 
-    private async Task LeggTilDelegat(Dictionary<string, List<string>> errors)
+    private async Task LeggTilDelegat(int arrangementId)
     {
-        if(ArrangementId == null) return;
-        if (errors.Count <= 0)
+        Delegat.ArrangementId = arrangementId;
+        var delegat = await _delegatService.RegistrerNyDelegat(Delegat);
+        _mapper.Map(delegat, Delegat);
+    }
+    
+    private async Task SlettDelegat(int? delegatId, CancellationToken cancellationToken = default)
+    {
+        if (delegatId != null && ArrangementId != null)
         {
-            Delegat.ArrangementId = ArrangementId.Value;
-            var delegat = await _delegatService.RegistrerNyDelegat(Delegat);
-            _mapper.Map(delegat, Delegat);
+            await _delegatService.SlettDelegat(new SlettDelegatRequest(ArrangementId.Value, delegatId.Value), cancellationToken);
         }
+        
+        await OnDelete.InvokeAsync();
     }
 
     public async Task FocusAsync()

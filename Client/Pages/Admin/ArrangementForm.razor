@@ -59,7 +59,7 @@ else
             <div class="row">
                 @foreach (var delegat in Delegater.OrderBy(d => d.Delegatnummer ?? int.MaxValue))
                 {
-                    <DelegatFormInline Delegat="@delegat" ArrangementId="@_arrangement.Id.Value" />
+                    <DelegatFormInline Delegat="@delegat" ArrangementId="@_arrangement.Id.Value" OnDelete="() => Delegater.Remove(delegat)" />
                 }
             </div>
             <div class="row">

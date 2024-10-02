@@ -21,11 +21,10 @@ public interface IAdminDelegatService
 #pragma warning disable PBN2008
     Task<AdminDelegatDto?> HentDelegat(HentDelegatRequest request);
     Task<ICollection<AdminDelegatDto>> HentDelegater(HentDelegatRequest request);
-#pragma warning restore PBN2008
     // Task<bool> IsValidNo(int arrangement, int number);
     Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel model);
     Task<AdminDelegatDto> RegistrerNyDelegat(DelegatInputModel model);
-#pragma warning disable PBN2008
+    Task SlettDelegat(SlettDelegatRequest request, CancellationToken cancellationToken = default);
     Task SetTilStede(SetTilstedeRequest request, CancellationToken cancellationToken = default);
     Task SetTilStedeForAll(SetTilstedeForAllRequest request, CancellationToken cancellationToken = default);
 #pragma warning restore PBN2008
@@ -34,3 +33,4 @@ public interface IAdminDelegatService
 public record HentDelegatRequest(int ArrangementId, int? DelgatId = null);
 public record SetTilstedeRequest(int DelegatId, bool TilStede);
 public record SetTilstedeForAllRequest(int ArrangementId, bool TilStede);
+public record SlettDelegatRequest(int ArrangementId, int DelegatId);

@@ -74,7 +74,7 @@ namespace Stemmesystem.Server.Services
 
         public async Task<List<ArrangementInfo>> HentArrangementerAsync(CancellationToken cancellationToken = default)
         {
-                        return await _context.Arrangement
+            return await _context.Arrangement
                 .AsSplitQuery()
                 .Include(a=> a.Delegater)
                 .Include(a=> a.Saker)
@@ -86,15 +86,11 @@ namespace Stemmesystem.Server.Services
 
         public async Task<ArrangementDto?> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
         {
-            var arr = await _cache.GetOrAddAsync($"Arrangement({id})", async () =>
-            {
-                                var arrangement = await GetSingleQuery(_context)
-                    .Where(a => a.Id == id)
-                    .ProjectTo<ArrangementDto>(_mapper.ConfigurationProvider)
-                    .FirstOrDefaultAsync(cancellationToken);
-                return arrangement;
-            },  DateTimeOffset.Now.AddSeconds(15));
-            return arr;
+            var arrangement = await GetSingleQuery(_context)
+                .Where(a => a.Id == id)
+                .ProjectTo<ArrangementDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(cancellationToken);
+            return arrangement;
         }
 
         public async Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel model)
