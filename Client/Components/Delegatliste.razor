@@ -119,6 +119,7 @@
     private async Task SetTilstede(int delegatId, bool tilStede)
     {
         await DelegatService.SetTilStede(new SetTilstedeRequest(delegatId, tilStede));
+        _delegater[delegatId].TilStede = tilStede;
     }
     
     private async Task SetTilstede(bool tilStede)
