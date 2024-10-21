@@ -106,6 +106,7 @@ builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
 builder.Services.AddScoped<DelegatService>();
 builder.Services.AddScoped<NotificationManager>();
 builder.Services.AddScoped<MinSpeidingService>();
+builder.Services.AddSingleton<UserManager>();
 
 builder.Services.AddHttpClient<ISmsSender, SveveSmsSender>();
 builder.Services.AddOptions<SveveOptions>()
@@ -188,17 +189,9 @@ async Task MigrateDatabase(WebApplication webApplication)
 
     await db.Database.MigrateAsync();
 
-    if (!db.Arrangement.Any())
     {
-        var delegatService = scope.ServiceProvider.GetRequiredService<DelegatService>();
-        await TestData.SeedData(db, delegatService);
-    }
-
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    if (!await userManager.Users.AnyAsync())
-    {
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        await TestData.CreateAdminUsers(userManager, roleManager);
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager>();
+        await userManager.AddMissingAdminUsers();
     }
 }
 

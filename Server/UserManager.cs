@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
 using Stemmesystem.Data.Entities;
 using Stemmesystem.Data.Models;
@@ -8,8 +9,17 @@ using Stemmesystem.Shared.Models;
 
 namespace Stemmesystem.Server;
 
-public static class TestData
+
+public  class UserManager
 {
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
+
+    public UserManager(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager )
+    {
+        _userManager = userManager;
+        _roleManager = roleManager;
+    }
     private const string AdminRoleName = "admin";
 
     internal static async Task SeedData(StemmesystemContext db, DelegatService delegatService)
@@ -36,21 +46,39 @@ public static class TestData
 
     }
 
-    public static async Task CreateAdminUsers(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+    public async Task AddMissingAdminUsers()
     {
-        if (!await roleManager.RoleExistsAsync(AdminRoleName)) {
-            await roleManager.CreateAsync(new IdentityRole(AdminRoleName));
+        if (!await _roleManager.RoleExistsAsync(AdminRoleName)) {
+            await _roleManager.CreateAsync(new IdentityRole(AdminRoleName));
         }
 
-        await CreateUser(userManager, "sindre.kroknes@speiding.no");
-        await CreateUser(userManager, "tom.lantz@speiding.no");
+        var adminUsers = new HashSet<string>
+        {
+            "sindre.kroknes@speiding.no",
+            "tom.lantz@speiding.no",
+            "birgit.helene.torsaeter@speiding.no",
+            "lise.ringstad@speiding.no",
+            "andreas.salater@speiding.no",
+            "ingeborg.kolstad@speiding.no",
+            "kirsten.eidem@speiding.no",
+        };
+
+        var existing = await _userManager.Users
+            .Select(u => u.Email)
+            .ToArrayAsync();
+
+        var toAdd = adminUsers.Except(existing);
+
+        foreach (var username in toAdd)
+        {
+            await CreateUser(username);
+        }
     }
 
-    internal static async Task<ApplicationUser> CreateUser(UserManager<ApplicationUser> userManager, string email)
+    private async Task CreateUser(string email)
     {
         var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
-        await userManager.CreateAsync(user);
-        await userManager.AddToRoleAsync(user, AdminRoleName);
-        return user;
+        await _userManager.CreateAsync(user);
+        await _userManager.AddToRoleAsync(user, AdminRoleName);
     }
 }
