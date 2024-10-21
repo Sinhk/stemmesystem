@@ -57,16 +57,14 @@
     </div>
     <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
         <div class="card-body">
-            @if (Votering.Stemmer != null)
-            {
-                <b>Stemmer totalt: @Votering.Stemmer.Count</b>
-                <ul>
-                    @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
-                    {
-                        <li>@valg.Navn: @Votering.Stemmer.Count(s => s.ValgId == valg.Id)</li>
-                    }
-                </ul>    
-            }
+            <b>Stemmer totalt: @Votering.Stemmer.Count</b>
+            <ul>
+                @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
+                {
+                    <li>@valg.Navn: @Votering.Stemmer.Count(s => s.ValgId == valg.Id)</li>
+                }
+            </ul>
+            <p>Blanke stemmer: @Votering.Stemmer.Where(s => s.ValgId == Konstanter.BlankStemme)</p>
         </div>
     </div>
 </div>
