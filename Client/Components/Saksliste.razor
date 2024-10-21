@@ -61,7 +61,7 @@
     {
         var (voteringId, stemme) = e;
         var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
-        if (votering is {Stemmer: { } })
+        if (votering is not null)
         {
             votering.Stemmer.Add(stemme);
         }
