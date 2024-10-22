@@ -64,7 +64,7 @@
                     <li>@valg.Navn: @Votering.Stemmer.Count(s => s.ValgId == valg.Id)</li>
                 }
             </ul>
-            <p>Blanke stemmer: @Votering.Stemmer.Where(s => s.ValgId == Konstanter.BlankStemme)</p>
+            <p>Blanke stemmer: @Votering.Stemmer.Where(s => s.ValgId == Konstanter.BlankStemme).Count()</p>
         </div>
     </div>
 </div>
