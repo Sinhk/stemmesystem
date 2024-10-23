@@ -1,6 +1,4 @@
-﻿@using System.Globalization
-@using System.Threading
-@using Stemmesystem.Shared
+﻿@using Stemmesystem.Shared
 @using Stemmesystem.Shared.Models
 
 <div class="card">
@@ -10,16 +8,20 @@
     </div>
     <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
         <div class="card-body">
-            <b>Stemmer totalt: @(Votering.Stemmer.Count)</b>
-            @if (_total == 0)
+            
+            <div class="row">
+                <div class="col-auto"><b>Delegater som stemte:</b> @(Votering.AvgitteStemmer)</div>
+                <div class="col-auto"><b>Tellende stemmer (ikke blanke):</b> @(_tellendeStemmer)</div>
+            </div>
+            @if (_tellendeStemmer == 0)
             {
-                <tr><td class="text-danger">Ingen stemmer</td></tr>
+                <tr><td class="text-danger">Ingen tellende stemmer</td></tr>
             }
             else
             {
                 foreach(var (id, stemmer) in _resultater.OrderByDescending(r=> r.Value))
                 {
-                    <div>@_valg[id]: @stemmer (@(100 * stemmer/_total)%)</div>
+                    <div>@_valg[id]: @stemmer (@(100 * stemmer/_tellendeStemmer)%)</div>
                 }
             }
             <div>@(_blankt == 1 ? "1 blank stemme": $"{_blankt} blanke stemmer")</div>
@@ -36,7 +38,7 @@
     private Dictionary<Guid, string> _valg = new();
     private Dictionary<Guid, int> _resultater = new();
     private bool _visDetaljer;
-    private int _total;
+    private int _tellendeStemmer;
     private int _blankt;
 
 
@@ -49,7 +51,6 @@
             _resultater[valg.Id] = 0;
         }
 
-        _total = 0;
         _blankt = 0;
         foreach (var stemme in Votering.Stemmer)
         {
@@ -60,7 +61,7 @@
             }
 
             _resultater[stemme.ValgId]++;
-            _total++;
         }
+        _tellendeStemmer = Votering.AvgitteStemmer - _blankt;
     }
 }

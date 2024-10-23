@@ -41,7 +41,8 @@ public class ApiAutoMapperProfile : Profile
         CreateMap<Votering, VoteringDto>();
         CreateMap<Votering, AdminVoteringDto>();
         CreateMap<Votering, VoteringResultatDto>()
-            .ForMember(v =>v.SakNavn, opt => opt.MapFrom(s => s.Sak.Tittel));
+            .ForMember(v =>v.SakNavn, opt => opt.MapFrom(s => s.Sak.Tittel))
+            .ForMember(v =>v.AvgitteStemmer, opt => opt.MapFrom(s => s.AvgitStemme.Count));
         CreateMap<Votering, VoteringInputModel>()
             .ForMember(s => s.Startet, o => o.Ignore())
             .ReverseMap();;
