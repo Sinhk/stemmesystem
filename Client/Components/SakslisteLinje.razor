@@ -5,7 +5,6 @@
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Shared
 @using Stemmesystem.Client.SignalR
-@using NotifierService = Stemmesystem.Shared.NotifierService
 @implements IDisposable
 
 <div class="card">
@@ -18,7 +17,7 @@
                 </span>
             </div>
             <div class="col">
-                Avgitte stemmer: @_harStemt.Count/@Delegater 
+                Avgitte stemmer: @_harStemt.Count@(Votering.Lukket ? "" : $"/{Delegater}") 
             </div>
 
             <div class="col">
