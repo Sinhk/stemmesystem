@@ -15,6 +15,18 @@
                 <span>
                     <small>@Votering.Beskrivelse</small>
                 </span>
+                @if(Votering.Lukket)
+                {
+                <span class="badge badge-success">Lukket</span>
+                }
+                else if(Votering.Publisert)
+                {
+                <span class="badge badge-primary">Publisert</span>
+                }
+                else if(Votering.Aktiv)
+                {
+                <span class="badge badge-danger">Aktiv</span>
+                }
             </div>
             <div class="col">
                 @if (Votering.Lukket)
