@@ -99,16 +99,30 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         var votering = await _arrangementRepository.FinnVoteringAsync(request.ArrangementId, request.VoteringId, cancellationToken);
         if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
-        votering.AvsluttVotering();
-        await _context.SaveChangesAsync(cancellationToken);
-
-        var e = new VoteringStoppetEvent(votering.Id, votering.SluttTid.Value);
-        await _notificationManager.ForArrangement(request.ArrangementId).VoteringStoppet(e, cancellationToken);
-        await _notificationManager.ForAdmin(request.ArrangementId).VoteringStoppet(e, cancellationToken);
+        
+        await StoppVotering(votering, request.ArrangementId, cancellationToken: cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
 
+    private async Task StoppVotering(Votering votering, int arrangementId, bool lagre = true, CancellationToken cancellationToken = default)
+    {
+        var antallTilstede = await _context.Sak
+            .Where(s => s.Id ==  votering.SakId)
+            .SelectMany(s => s.Arrangement.Delegater)
+            .CountAsync(d => d.TilStede, cancellationToken);
         
+        votering.AvsluttVotering(antallTilstede);
+        if (lagre)
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        var e = new VoteringStoppetEvent(votering.Id, votering.SluttTid.Value);
+        await _notificationManager.ForArrangement(arrangementId).VoteringStoppet(e, cancellationToken);
+        await _notificationManager.ForAdmin(arrangementId).VoteringStoppet(e, cancellationToken);
+    }
+
+
     public async Task<HarStemmtResult> HarStemmt(StemmeRequest request, CallContext context = default)
     {
         var cancellationToken = context.CancellationToken;
@@ -190,8 +204,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             throw new StemmeException("Fant ikke valgt votering");
         if (votering.Aktiv)
         {
-            votering.AvsluttVotering();
-            await _notificationManager.ForArrangement(arrangementId).VoteringStoppet(new VoteringStoppetEvent(votering.Id, votering.SluttTid.Value), cancellationToken);
+            await StoppVotering(votering, arrangementId, false, cancellationToken);
         }
         votering.LukkVotering();
         await _context.SaveChangesAsync(cancellationToken);

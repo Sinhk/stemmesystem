@@ -69,11 +69,17 @@ namespace Stemmesystem.Data.Entities
         }
 
         [MemberNotNull(nameof(SluttTid))]
-        public void AvsluttVotering()
+        public void AvsluttVotering(int delegaterTilstede)
         {
             Aktiv = false;
             SluttTid = DateTime.UtcNow;
+            DelegaterTilstede = delegaterTilstede;
         }
+
+        /// <summary>
+        /// Antall delegater som var tilstede under voteringen
+        /// </summary>
+        public int? DelegaterTilstede { get; set; }
 
         public (List<Stemme> stemmer, List<Stemme>? fjernes) RegistrerStemme(IEnumerable<Guid> valgIder, Delegat delegat, string delegatkode, IKeyHasher keyHasher)
         {
