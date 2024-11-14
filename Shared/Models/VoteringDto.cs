@@ -40,6 +40,9 @@ public record AdminVoteringDto : VoteringDto
 {
     [ProtoMember(1)] public List<DelegatDto> AvgitStemme { get; init; } = new();
     [ProtoMember(2)] public List<StemmeDto> Stemmer { get; init; } = new();
+    
+    [ProtoMember(13)] public int? DelegaterTilstede { get; init; }
+    
 
 }
     

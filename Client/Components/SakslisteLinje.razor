@@ -17,7 +17,19 @@
                 </span>
             </div>
             <div class="col">
-                Avgitte stemmer: @_harStemt.Count@(Votering.Lukket ? "" : $"/{Delegater}") 
+                @if (Votering.Lukket)
+                {
+                    <span>
+                        Avgitte stemmer:@_harStemt.Count@(Votering.DelegaterTilstede is null ? "" : $"/{Votering.DelegaterTilstede}")
+                    </span>
+                }
+                else
+                {
+                    <span>
+                        Avgitte stemmer:@_harStemt.Count/@DelegaterTilstede
+                    </span>
+                }
+                    
             </div>
 
             <div class="col">
@@ -63,7 +75,7 @@
                     <li>@valg.Navn: @Votering.Stemmer.Count(s => s.ValgId == valg.Id)</li>
                 }
             </ul>
-            <p>Blanke stemmer: @Votering.Stemmer.Where(s => s.ValgId == Konstanter.BlankStemme).Count()</p>
+            <p>Blanke stemmer: @Votering.Stemmer.Count(s => s.ValgId == Konstanter.BlankStemme)</p>
         </div>
     </div>
 </div>
@@ -84,8 +96,8 @@
     [Parameter]
     public int ArrangementId { get; set; }
     
-    [CascadingParameter(Name = "Delegater")]
-    public int Delegater { get; set; }
+    [CascadingParameter(Name = "DelegaterTilestede")]
+    public int DelegaterTilstede { get; set; }
     
     private VoteringInputModel? _nyRunde;
     private bool _visDetaljer;
