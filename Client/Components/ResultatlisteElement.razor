@@ -12,6 +12,10 @@
             <div class="row">
                 <div class="col-auto"><b>Delegater som stemte:</b> @(Votering.AvgitteStemmer)</div>
                 <div class="col-auto"><b>Tellende stemmer (ikke blanke):</b> @(_tellendeStemmer)</div>
+                @if(Votering.DelegaterTilstede != null)
+                {
+                    <div class="col-auto"><b>Delegater til stede:</b> @Votering.DelegaterTilstede</div>
+                }
             </div>
             @if (_tellendeStemmer == 0)
             {

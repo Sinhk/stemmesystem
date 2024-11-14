@@ -66,7 +66,8 @@ public record VoteringResultatDto
     /// Hvor mange delegater som har avgitt stemme
     /// </summary>
     [ProtoMember(8)] public int AvgitteStemmer { get; init; }
-        
+
+    [ProtoMember(9)] public int? DelegaterTilstede { get; init; }
 }
 
 /*
