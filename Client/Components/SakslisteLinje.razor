@@ -15,13 +15,13 @@
                 <span>
                     <small>@Votering.Beskrivelse</small>
                 </span>
-                @if(Votering.Lukket)
+                @if(Votering.Publisert)
                 {
-                <span class="badge badge-success">Lukket</span>
+                    <span class="badge badge-success">Publisert</span>
                 }
-                else if(Votering.Publisert)
+                else if(Votering.Lukket)
                 {
-                <span class="badge badge-primary">Publisert</span>
+                    <span class="badge badge-primary">Lukket</span>
                 }
                 else if(Votering.Aktiv)
                 {
