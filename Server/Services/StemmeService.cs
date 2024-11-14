@@ -209,7 +209,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         votering.LukkVotering();
         await _context.SaveChangesAsync(cancellationToken);
             
-        await _notificationManager.ForAdmin(arrangementId).VoteringLukket(new VoteringLukketEvent(votering.SakId, votering.Id), cancellationToken);
+        await _notificationManager.ForAdmin(arrangementId).VoteringLukket(new VoteringLukketEvent(votering.SakId, votering.Id, votering.DelegaterTilstede), cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
         

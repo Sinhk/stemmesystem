@@ -127,7 +127,11 @@
             var index =  sak.Voteringer.FindIndex(v => v.Id == e.VoteringId);
             if (index >= 0)
             {
-                sak.Voteringer[index] = sak.Voteringer[index] with{ Lukket = true};
+                sak.Voteringer[index] = sak.Voteringer[index] with
+                {
+                    Lukket = true,
+                    DelegaterTilstede = e.DelegaterTilstede
+                };
                 StateHasChanged();
                 return;
             }

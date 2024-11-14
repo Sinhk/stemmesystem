@@ -47,7 +47,7 @@ public record VoteringStartetEvent(VoteringDto Votering);
 
 public record VoteringStoppetEvent(int VoteringId, DateTime Time);
 
-public record VoteringLukketEvent(int SakId, int VoteringId);
+public record VoteringLukketEvent(int SakId, int VoteringId, int? DelegaterTilstede);
 
 public record VoteringPublisertEvent(int ArrangementId, int SakId, int VoteringId);
 
