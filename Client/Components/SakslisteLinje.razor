@@ -80,21 +80,27 @@
         </div>
         <span class="ml-2 mt-1 oi float-right @(_visDetaljer ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
     </div>
+    @if (Votering.Lukket)
+    {
     <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
         <div class="card-body">
-            <b>Stemmer totalt: @Votering.Stemmer.Count</b>
-            @if (Votering.Lukket)
-            {
+            @{
+                var blankeStemmer = Votering.Stemmer.Values.Count(s => s.ValgId == Konstanter.BlankStemme);
+                var avgitteStemmer = _harStemt.Count;
+                var tellendeStemmer = avgitteStemmer - blankeStemmer;
+                <b>Tellende stemmer: @tellendeStemmer</b>
                 <ul>
                     @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
                     {
-                        <li>@valg.Navn: @Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id)</li>
+                        var stemmer = Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id);
+                        <li>@valg.Navn: @stemmer (@(100*stemmer/tellendeStemmer)%)</li>
                     }
                 </ul>
-                <p>Blanke stemmer: @Votering.Stemmer.Values.Count(s => s.ValgId == Konstanter.BlankStemme)</p>
+                <p>Blanke stemmer: @blankeStemmer</p>
             }
         </div>
     </div>
+    }
 </div>
 
 @if (_nyRunde != null)
