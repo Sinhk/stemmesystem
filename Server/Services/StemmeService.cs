@@ -39,17 +39,14 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     public async Task<List<StemmeDto>> AvgiStemmeAsync(AvgiStemmeRequest request, CallContext context = default)
     {
         var cancellationToken = context.CancellationToken;
-        var delegatkode =  context.ServerCallContext?.GetHttpContext().User.GetSubjectId();
-        if (delegatkode == null)
-            throw new StemmeException($"Fant ikke delegatkode");
-
-        var delegat = await _delegatRepository.ValiderKode(delegatkode, cancellationToken);
-        if (delegat == null)
-            throw new StemmeException($"Ugyldig delegat {delegatkode}");
-
-        if (delegat.TilStede != true){
+        var delegatkode = (context.ServerCallContext?.GetHttpContext().User.GetSubjectId()) 
+        ?? throw new StemmeException($"Ingen delegatkode oppgitt");
+        var delegat = await _delegatRepository.ValiderKode(delegatkode, cancellationToken) 
+        ?? throw new StemmeException($"Ugyldig delegat {delegatkode}");
+        /* if (delegat.TilStede != true)
+        {
             throw new StemmeException("Du er ikke sjekket inn. Du må være sjekket inn for å kunne avgi stemme");
-        }
+        } */
 
         _context.Attach(delegat);
         var votering = await _context.Votering
