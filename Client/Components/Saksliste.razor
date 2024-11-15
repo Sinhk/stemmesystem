@@ -1,9 +1,10 @@
-﻿@inject IStemmeService _stemmeService
-@inject ISakService _sakService
+﻿@inject IStemmeService StemmeService
+@inject ISakService SakService
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Shared
 @using Stemmesystem.Client.SignalR
+@using System.Collections.Concurrent
 @implements IAsyncDisposable
 @inherits OwningComponentBase<Stemmesystem.Client.SignalR.IAdminNotifierService>
 
@@ -19,11 +20,13 @@
     }
     else
     {
-        foreach (var sak in _saker.OrderBy(s => s.Nummer))
+        foreach (var sak in _saker.Values.OrderBy(s => s.Nummer))
         {
             <h5>@sak.Nummer - @sak.Tittel</h5>
             <p><small>@sak.Beskrivelse</small></p>
-            foreach (var votering in sak.Voteringer){
+            foreach (var voteringId in sak.Voteringer.Keys)
+            {
+                var votering = _voteringer[voteringId];
                 <SakslisteLinje Votering="@votering" ArrangementId="@ArrangementId" Notifier="Notifier"></SakslisteLinje>
             }
         }
@@ -34,14 +37,39 @@
     [Parameter]
     public int ArrangementId { get; set; }
     private IAdminNotifierService Notifier => Service;
-    private ICollection<AdminSakDto> _saker = null!;
+    private ConcurrentDictionary<int, DashboardSakModel> _saker = null!;
+    private ConcurrentDictionary<int, DashboardVoteringModel> _voteringer = new();
+
+
     private bool _expanded;
     private bool _inconsistentState;
-    private readonly List<IDisposable?> _subscriptions = new() ;
+    private readonly List<IDisposable?> _subscriptions = new();
 
     protected override async Task OnInitializedAsync()
     {
-        _saker = await _sakService.HentSaker(new SakerRequest(ArrangementId));
+        var saker = await SakService.HentSaker(new SakerRequest(ArrangementId));
+
+        _saker = new ConcurrentDictionary<int, DashboardSakModel>();
+        _voteringer = new ConcurrentDictionary<int, DashboardVoteringModel>();
+        foreach (var sakDto in saker)
+        {
+            var sak = new DashboardSakModel(sakDto.Id, sakDto.Nummer, sakDto.Tittel, sakDto.Beskrivelse, sakDto.Voteringer.Select(v => v.Id));
+            _saker[sak.Id] = sak;
+
+            foreach (var voteringDto in sakDto.Voteringer)
+            {
+                var votering = new DashboardVoteringModel(voteringDto.Id, voteringDto.Tittel, voteringDto.Beskrivelse, voteringDto.Valg, voteringDto.AvgitStemme, voteringDto.Stemmer)
+                {
+                    Aktiv = voteringDto.Aktiv,
+                    Lukket = voteringDto.Lukket,
+                    Publisert = voteringDto.Publisert,
+                    DelegaterTilstede = voteringDto.DelegaterTilstede,
+                    SluttTid = voteringDto.SluttTid
+                };
+
+                _voteringer[votering.Id] = votering;
+            }
+        }
 
         _subscriptions.AddRange(new[]
         {
@@ -57,13 +85,14 @@
         await Notifier.KobleTilArrangement(ArrangementId);
     }
 
-    public void OnNyStemme(NyStemmeEvent e)
+    private void OnNyStemme(NyStemmeEvent e)
     {
         var (voteringId, stemme) = e;
-        var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
+        _voteringer.TryGetValue(voteringId, out var votering);
+
         if (votering is not null)
         {
-            votering.Stemmer.Add(stemme);
+            votering.Stemmer[stemme.Id] = stemme;
         }
         else
         {
@@ -72,13 +101,13 @@
         StateHasChanged();
     }
 
-    public void OnStemmeFjernet(StemmeFjernetEvent e)
+    private void OnStemmeFjernet(StemmeFjernetEvent e)
     {
         var (voteringId, stemmeId) = e;
-        var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
+        _voteringer.TryGetValue(voteringId, out var votering);
         if (votering != null)
         {
-            votering.Stemmer.RemoveAll(s=> s.Id == stemmeId);
+            votering.Stemmer.Remove(stemmeId, out _);
         }
         else
         {
@@ -89,17 +118,16 @@
 
     private void OnVoteringStoppet(VoteringStoppetEvent e)
     {
-        var (voteringId, time, stemmer) = e;
-        var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
-        if (votering != null)
+        var (voteringId, _, stemmer) = e;
+
+        if (_voteringer.TryGetValue(voteringId, out var votering))
         {
             votering.Aktiv = false;
-            votering.SluttTid = time;
 
             votering.Stemmer.Clear();
             foreach (var stemme in stemmer)
             {
-                votering.Stemmer.Add(stemme);
+                votering.Stemmer[stemme.Id] = stemme;
             }
         }
         else
@@ -111,70 +139,55 @@
 
     private void OnVoteringStartet(VoteringStartetEvent e)
     {
-        var sak = _saker.FirstOrDefault(s => s.Id == e.Votering.SakId);
-        if (sak != null)
+        if(_voteringer.TryGetValue(e.Votering.Id, out var votering))
         {
-            var index =  sak.Voteringer.FindIndex(v => v.Id == e.Votering.Id);
-            if (index >= 0)
-            {
-                sak.Voteringer[index] = sak.Voteringer[index] with{ Aktiv = true, StartTid = e.Votering.StartTid};
-                StateHasChanged();
-                return;
-            }
+            votering.Aktiv = true;
+            StateHasChanged();
         }
-        _inconsistentState = true;
+        else
+        {
+            _inconsistentState = true;
+        }
     }
 
     private void OnVoteringLukket(VoteringLukketEvent e)
     {
-        var sak = _saker.FirstOrDefault(s => s.Id == e.SakId);
-        if (sak != null)
+        if (_voteringer.TryGetValue(e.VoteringId, out var votering))
         {
-            var index =  sak.Voteringer.FindIndex(v => v.Id == e.VoteringId);
-            if (index >= 0)
-            {
-                sak.Voteringer[index] = sak.Voteringer[index] with
-                {
-                    Lukket = true,
-                    DelegaterTilstede = e.DelegaterTilstede
-                };
-                StateHasChanged();
-                return;
-            }
+            votering.Lukket = true;
+            votering.DelegaterTilstede = e.DelegaterTilstede;
+            StateHasChanged();
         }
-        _inconsistentState = true;
+        else
+        {
+            _inconsistentState = true;
+        }
     }
 
     private void OnVoteringPublisert(VoteringPublisertEvent e)
     {
-        var (arrangementId,sakId, voteringId) = e;
+        var (arrangementId,_, voteringId) = e;
         if (arrangementId != ArrangementId)
             return;
-        var sak = _saker.FirstOrDefault(s => s.Id == sakId);
-        if (sak != null)
+
+        if (_voteringer.TryGetValue(voteringId, out var votering))
         {
-            var index =  sak.Voteringer.FindIndex(v => v.Id == voteringId);
-            if (index >= 0)
-            {
-                sak.Voteringer[index] = sak.Voteringer[index] with { Publisert = true };
-                StateHasChanged();
-                return;
-            }
+            votering.Publisert = true;
+            StateHasChanged();
         }
-        _inconsistentState = true;
+        else
+        {
+            _inconsistentState = true;
+        }
     }
 
     private void NyVotering(NyVoteringEvent e)
     {
         var votering = e.Votering;
-        var sak = _saker.FirstOrDefault(s => s.Id == votering.SakId);
-        if (sak != null)
+        if(_saker.TryGetValue(votering.SakId, out var sak))
         {
-            sak.Voteringer.Add(votering);
-        }
-        else
-        {
-            _inconsistentState = true;
+            sak.Voteringer[votering.Id] = votering.Id;
+            _voteringer[votering.Id] = new DashboardVoteringModel(votering.Id, votering.Tittel, votering.Beskrivelse, votering.Valg, votering.AvgitStemme);
         }
         StateHasChanged();
     }
@@ -188,4 +201,59 @@
             s?.Dispose();
         }
     }
+
+    internal record DashboardSakModel
+    {
+        public int Id { get; init; }
+        public string? Nummer { get; init; }
+        public string? Tittel { get; init; }
+        public string? Beskrivelse { get; init; }
+        public ConcurrentDictionary<int,int> Voteringer { get; init; }
+
+        public DashboardSakModel(int Id, string? Nummer, string? Tittel, string? Beskrivelse, IEnumerable<int> Voteringer)
+        {
+            this.Id = Id;
+            this.Nummer = Nummer;
+            this.Tittel = Tittel;
+            this.Beskrivelse = Beskrivelse;
+            this.Voteringer = new ConcurrentDictionary<int,int>(Voteringer.Select(v => new KeyValuePair<int, int>(v,v)));
+        }
+    }
+
+    public record DashboardVoteringModel
+    {
+        public DashboardVoteringModel(int Id, string tittel, string beskrivelse, IEnumerable<ValgDto> valg, IEnumerable<DelegatDto> avgitStemme, IEnumerable<StemmeDto>? Stemmer = null)
+        {
+            this.Id = Id;
+            Tittel = tittel;
+            Beskrivelse = beskrivelse;
+            Valg = valg
+                .Select(v => new DashboardValgModel(v.Id,v.Navn,v.SortId))
+                .ToArray();
+
+            AvgitStemme = avgitStemme
+                .Select(d => d.Id)
+                .ToArray();
+
+            this.Stemmer = Stemmer is null 
+                ? new ConcurrentDictionary<Guid, StemmeDto>() 
+                : new ConcurrentDictionary<Guid, StemmeDto>(Stemmer.Select(s => new KeyValuePair<Guid, StemmeDto>(s.Id, s)));
+        }
+
+        public int Id { get; }
+        public string Tittel { get; }
+        public string Beskrivelse { get; }
+        public bool Aktiv { get; set; }
+        public bool Lukket { get; set; }
+        public bool Publisert { get; set; }
+        public int? DelegaterTilstede { get; set; }
+        public DateTime? SluttTid { get; set; }
+
+        public ConcurrentDictionary<Guid, StemmeDto> Stemmer { get; }
+        public IReadOnlyCollection<int> AvgitStemme { get; }
+        public IReadOnlyCollection<DashboardValgModel> Valg { get; }
+    }
+    
+    public record DashboardValgModel(Guid Id, string Navn, int? SortId);
+
 }

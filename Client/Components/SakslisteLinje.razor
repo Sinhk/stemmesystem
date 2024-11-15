@@ -1,10 +1,12 @@
 
-@inject IAdminStemmeService _stemmeService
+@inject IAdminStemmeService StemmeService
 
+@using System.Collections.Concurrent
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Shared
 @using Stemmesystem.Client.SignalR
+@using static Stemmesystem.Client.Components.Saksliste
 @implements IDisposable
 
 <div class="card">
@@ -84,10 +86,10 @@
             <ul>
                 @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
                 {
-                    <li>@valg.Navn: @Votering.Stemmer.Count(s => s.ValgId == valg.Id)</li>
+                    <li>@valg.Navn: @Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id)</li>
                 }
             </ul>
-            <p>Blanke stemmer: @Votering.Stemmer.Count(s => s.ValgId == Konstanter.BlankStemme)</p>
+            <p>Blanke stemmer: @Votering.Stemmer.Values.Count(s => s.ValgId == Konstanter.BlankStemme)</p>
         </div>
     </div>
 </div>
@@ -100,7 +102,7 @@
 @code {
 
     [Parameter]
-    public AdminVoteringDto Votering { get; set; } = null!;
+    public DashboardVoteringModel Votering { get; set; } = null!;
     
     [Parameter]
     public IAdminNotifierService Notifier { get; set; } = null!;
@@ -113,56 +115,54 @@
     
     private VoteringInputModel? _nyRunde;
     private bool _visDetaljer;
-    private HashSet<int> _harStemt = new();
-    private IDisposable? Subscription;
+    private ConcurrentDictionary<int, bool> _harStemt = new();
+    private IDisposable? _subscription;
 
 
     protected override void OnInitialized()
     {
-        Subscription = Notifier.OnHarStemt(OnHarStemt);
+        _subscription = Notifier.OnHarStemt(OnHarStemt);
 
-        foreach (var delegat in Votering.AvgitStemme)
+        foreach (var delegatId in Votering.AvgitStemme)
         {
-            _harStemt.Add(delegat.Id);    
+            _harStemt[delegatId] = true;    
         }
     }
 
     private void OnHarStemt(HarStemtEvent e)
     {
-        InvokeAsync(() => 
+        if (e.VoteringId != Votering.Id) return;
+        InvokeAsync(() =>
         {
-            if (e.VoteringId == Votering.Id)
-            {
-                _harStemt.Add(e.DelegatId);
-                StateHasChanged();
-            }
+            _harStemt[e.DelegatId] = true;
+            StateHasChanged();
         });
     }
 
-    public async Task StartVotering(int arrangementId, int voteringId)
+    private async Task StartVotering(int arrangementId, int voteringId)
     {
-        var result = await _stemmeService.StartVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        await StemmeService.StartVotering(new AdminStemmeRequest(arrangementId, voteringId));
     }
 
-    public async Task StoppVotering(int arrangementId, int voteringId)
+    private async Task StoppVotering(int arrangementId, int voteringId)
     {
-        var result = await _stemmeService.StoppVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        await StemmeService.StoppVotering(new AdminStemmeRequest(arrangementId, voteringId));
     }
 
-    public async Task LukkVotering(int arrangementId, int voteringId)
+    private async Task LukkVotering(int arrangementId, int voteringId)
     {
-        var result = await _stemmeService.LukkVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        await StemmeService.LukkVotering(new AdminStemmeRequest(arrangementId, voteringId));
     }
 
-    public async Task PubliserVotering(int arrangementId, int voteringId)
+    private async Task PubliserVotering(int arrangementId, int voteringId)
     {
-        var result = await _stemmeService.PubliserVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        await StemmeService.PubliserVotering(new AdminStemmeRequest(arrangementId, voteringId));
     }
 
 
     private async Task NyRunde(int arrangementId, int voteringId)
     {
-        _nyRunde = await _stemmeService.KopierVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        _nyRunde = await StemmeService.KopierVotering(new AdminStemmeRequest(arrangementId, voteringId));
         var num = 2;
         if (_nyRunde.Tittel.Contains(". runde", StringComparison.OrdinalIgnoreCase))
         {
@@ -189,7 +189,7 @@
 
     public void Dispose()
     {
-        Subscription?.Dispose();
+        _subscription?.Dispose();
     }
 
 }
