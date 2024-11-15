@@ -42,8 +42,8 @@ public class SakService : ISakService
         return await _context.Arrangement
             .SelectMany(a => a.Saker)
             .Where(s => s.Id == sakId)
-            .SelectMany(s=> s.Voteringer)
-            .Where(v=> v.Id == voteringId)
+            .SelectMany(s => s.Voteringer)
+            .Where(v => v.Id == voteringId)
             .ProjectTo<VoteringDto>(_mapper.ConfigurationProvider)
             .FirstAsync(cancellationToken: cancellationToken);
     }
@@ -54,7 +54,7 @@ public class SakService : ISakService
             .AsSplitQuery()
             .SelectMany(a => a.Saker)
             .Where(s => s.Id == request.SakId)
-            .SelectMany(s=> s.Voteringer)
+            .SelectMany(s => s.Voteringer)
             .ProjectTo<VoteringDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }
@@ -77,13 +77,13 @@ public class SakService : ISakService
             .FirstOrDefaultAsync();
         if (arrangement == null)
             throw new StemmeException($"Arrangement med id {model.ArrangementId} ble ikke funnet");
-            
-        if ( await ErNummerBrukt(model.ArrangementId, model.Nummer))
+
+        if (await ErNummerBrukt(model.ArrangementId, model.Nummer))
         {
-            errors.Add(nameof(model.Nummer), new List<string>{"Saknummer er allerede brukt"});
+            errors.Add(nameof(model.Nummer), new List<string> { "Saknummer er allerede brukt" });
             return new LagreResult<SakDto>(null, errors);
         }
-        
+
         var sak = _mapper.Map<Sak>(model);
         arrangement.LeggTil(sak);
         await _context.SaveChangesAsync();
@@ -107,6 +107,23 @@ public class SakService : ISakService
         await _context.SaveChangesAsync();
         return _mapper.Map<SakDto>(sak);
     }
+
+    [Authorize(Roles = "admin")]
+    public async Task SlettSak(SlettSakRequest request, CancellationToken cancellationToken = default)
+    {
+        var sak = await _context.Sak
+            .Where(s => s.Id == request.SakId)
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new StemmeException($"Fant ikke sak med id {request.SakId}");
+        if (sak.Voteringer.Count > 0)
+        {
+            throw new StemmeException("Kan ikke slette sak med voteringer");
+        }
+        _context.Sak.Remove(sak);
+        await _context.SaveChangesAsync(cancellationToken);
+        await _notificationManager.ForAdmin(sak.ArrangementId).SakSlettet(new SakSlettetEvent(request.SakId), cancellationToken);
+    }
+
     [Authorize(Roles = "admin")]
     public async Task<LagreResult<VoteringDto>> LagreNyVotering(VoteringInputModel model)
     {
@@ -139,8 +156,24 @@ public class SakService : ISakService
         return LagreResult.Success(_mapper.Map<VoteringDto>(votering));
     }
 
+    [Authorize(Roles = "admin")]
+    public async Task SlettVotering(SlettVoteringRequest request, CancellationToken cancellationToken = default)
+    {
+        var votering = await _context.Votering
+            .Where(v => v.Id == request.VoteringId)
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new StemmeException($"Fant ikke votering med id {request.VoteringId}");
 
-        
+        if (votering.StartTid is not null || votering.Stemmer.Count > 0){
+            throw new StemmeException("Kan ikke slette votering som har vært startet");
+        }
+
+        _context.Votering.Remove(votering);
+        await _context.SaveChangesAsync(cancellationToken);
+        await _notificationManager.ForAdmin(votering.Sak.ArrangementId)
+            .VoteringSlettet(new VoteringSlettetEvent(votering.SakId, request.VoteringId), cancellationToken);
+    }
+
     public async Task<ICollection<AdminSakDto>> HentSaker(SakerRequest request)
     {
         return await _context.Arrangement

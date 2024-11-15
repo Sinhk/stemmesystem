@@ -12,13 +12,16 @@ public interface ISakService
     //Task<bool> ErNummerBrukt(int arrangementId, string? nummer);
     Task<LagreResult<SakDto>> LagreNySak(SakInputModel sak);
     Task<SakDto> OppdaterSak(SakInputModel sak);
+    Task SlettSak(SlettSakRequest request, CancellationToken cancellationToken = default);
     Task<VoteringDto> HentVotering(HentVoteringRequest request, CancellationToken cancellationToken = default);
     Task<ICollection<VoteringDto>> HentVoteringer(HentVoteringerRequest request, CancellationToken cancellationToken = default);
     Task<LagreResult<VoteringDto>> LagreNyVotering(VoteringInputModel votering);
     Task<LagreResult<VoteringDto>> OppdaterVotering(VoteringInputModel votering);
+    Task SlettVotering(SlettVoteringRequest request, CancellationToken cancellationToken = default);
     //Task<ICollection<SakDto>> HentSaker(int arrangementId);
     Task<ICollection<AdminSakDto>> HentSaker(SakerRequest request);
     Task<HentResult<SakInfoDto>> HentSakInfo(SakRequest request, CancellationToken cancellationToken = default);
+
 }
 
 [ProtoContract]
@@ -88,3 +91,5 @@ public record SakRequest(int SakId);
 public record SakerRequest(int ArrangementId);
 public record HentVoteringRequest(int SakId, int VoteringId);
 public record HentVoteringerRequest(int SakId);
+public record SlettVoteringRequest(int SakId, int VoteringId);
+public record SlettSakRequest(int SakId);

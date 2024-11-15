@@ -53,8 +53,10 @@ public record VoteringPublisertEvent(int ArrangementId, int SakId, int VoteringI
 
 public record ActiveCountChangedEvent(int ArrangementId, int NewCount);
 
-
 public record NyVoteringEvent(AdminVoteringDto Votering);
+public record NySakEvent(AdminSakDto Sak);
+public record SakSlettetEvent(int SakId);
+public record VoteringSlettetEvent(int SakId, int VoteringId);
 
 public record HarStemtEvent(int VoteringId, int DelegatId);
 public record TilstedeCountChangedEvent(int ArrangementId, int Count);

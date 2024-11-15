@@ -15,6 +15,9 @@ public interface IAdminHubClient : IDelegatHubClient
     Task StemmeFjernet(StemmeFjernetEvent e, CancellationToken cancellationToken = default);
     Task VoteringLukket(VoteringLukketEvent e, CancellationToken cancellationToken = default);
     Task NyVotering(NyVoteringEvent e, CancellationToken cancellationToken = default);
+    Task VoteringSlettet(VoteringSlettetEvent e, CancellationToken cancellationToken = default);
+    Task NySak(NySakEvent e, CancellationToken cancellationToken = default);
+    Task SakSlettet(SakSlettetEvent e, CancellationToken cancellationToken = default);
     Task HarStemt(HarStemtEvent e, CancellationToken cancellationToken = default);
     Task TilstedeCountChanged(TilstedeCountChangedEvent e, CancellationToken cancellationToken = default);
 }
