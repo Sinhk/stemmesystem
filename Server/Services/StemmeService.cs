@@ -1,5 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Diagnostics.CodeAnalysis;
+using AutoMapper;
 using Duende.IdentityServer.Extensions;
+using Google.Protobuf.WellKnownTypes;
+using Google.Rpc;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +28,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     private readonly NotificationManager _notificationManager;
     private readonly IMapper _mapper;
 
-    public StemmeService(IDelegatRepository delegatRepository, IArrangementRepository arrangementRepository ,StemmesystemContext context, IKeyHasher keyHasher, NotificationManager notificationManager, IMapper mapper)
+    public StemmeService(IDelegatRepository delegatRepository, IArrangementRepository arrangementRepository, StemmesystemContext context, IKeyHasher keyHasher, NotificationManager notificationManager, IMapper mapper)
     {
         _delegatRepository = delegatRepository;
         _arrangementRepository = arrangementRepository;
@@ -36,45 +39,61 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         _mapper = mapper;
     }
 
+
+    [DoesNotReturn]
+    private static void ThrowError(string field, string message)
+    {
+        var status = new Google.Rpc.Status
+        {
+            Code = (int)Code.FailedPrecondition,
+            Message = message
+        };
+        throw status.ToRpcException();
+    }
     public async Task<List<StemmeDto>> AvgiStemmeAsync(AvgiStemmeRequest request, CallContext context = default)
     {
         var cancellationToken = context.CancellationToken;
-        var delegatkode = (context.ServerCallContext?.GetHttpContext().User.GetSubjectId()) 
-        ?? throw new StemmeException($"Ingen delegatkode oppgitt");
-        var delegat = await _delegatRepository.ValiderKode(delegatkode, cancellationToken) 
-        ?? throw new StemmeException($"Ugyldig delegat {delegatkode}");
-        /* if (delegat.TilStede != true)
+        var delegatkode = (context.ServerCallContext?.GetHttpContext().User.GetSubjectId());
+        if (delegatkode is null){
+            ThrowError("Delegatkode", $"Ingen delegatkode oppgitt");
+        }
+        var delegat = await _delegatRepository.ValiderKode(delegatkode, cancellationToken);
+        if (delegat is null)
         {
-            throw new StemmeException("Du er ikke sjekket inn. Du må være sjekket inn for å kunne avgi stemme");
-        } */
+            ThrowError("Delegatkode", $"Ugyldig delegatkode {delegatkode}");
+        }
+        if (delegat.TilStede != true)
+        {
+            ThrowError("Tilstede", "Du er ikke sjekket inn. Du må være sjekket inn for å kunne avgi stemme");
+        }
 
         _context.Attach(delegat);
         var votering = await _context.Votering
             .AsSingleQuery()
-            .Include(v=> v.Stemmer)
+            .Include(v => v.Stemmer)
             .Include(v => v.AvgitStemme)
-            .Include(v=> v.Sak)
+            .Include(v => v.Sak)
             .SingleOrDefaultAsync(v => v.Id == request.VoteringId, cancellationToken);
 
-        if (votering == null)
+        if (votering is null)
         {
-            throw new StemmeException($"Ugyldig votering {request.VoteringId}");
+            ThrowError("VoteringId", $"Ugyldig votering {request.VoteringId}");
         }
-            
+
         if (votering.Aktiv == false)
         {
-            throw new StemmeException("Votering er ferdig eller har ikke startet enda");
+            ThrowError("VoteringId", $"Votering er ferdig eller har ikke startet enda");
         }
 
         var notifier = _notificationManager.ForAdmin(votering.Sak.ArrangementId);
         var (stemmer, fjernes) = votering.RegistrerStemme(request.ValgIder, delegat, delegatkode, _keyHasher);
-        
+
         await _context.SaveChangesAsync(cancellationToken);
-        
-        if(fjernes != null && fjernes.Any())
+
+        if (fjernes != null && fjernes.Any())
             await Parallel.ForEachAsync(fjernes, cancellationToken, async (s, token) => await notifier.StemmeFjernet(new StemmeFjernetEvent(votering.Id, s.Id), token));
         await Parallel.ForEachAsync(stemmer, cancellationToken, async (s, token) => await notifier.NyStemme(new NyStemmeEvent(votering.Id, new StemmeDto(s.Id, s.ValgId)), token));
-        await notifier.HarStemt(new HarStemtEvent(votering.Id,delegat.Id), cancellationToken);
+        await notifier.HarStemt(new HarStemtEvent(votering.Id, delegat.Id), cancellationToken);
         var dto = _mapper.Map<List<StemmeDto>>(stemmer);
         return dto;
     }
@@ -100,7 +119,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         var votering = await _arrangementRepository.FinnVoteringAsync(request.ArrangementId, request.VoteringId, cancellationToken);
         if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
-        
+
         await StoppVotering(votering, request.ArrangementId, cancellationToken: cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
@@ -108,10 +127,10 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     private async Task StoppVotering(Votering votering, int arrangementId, bool lagre = true, CancellationToken cancellationToken = default)
     {
         var antallTilstede = await _context.Sak
-            .Where(s => s.Id ==  votering.SakId)
+            .Where(s => s.Id == votering.SakId)
             .SelectMany(s => s.Arrangement.Delegater)
             .CountAsync(d => d.TilStede, cancellationToken);
-        
+
         votering.AvsluttVotering(antallTilstede);
         if (lagre)
         {
@@ -148,7 +167,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         var delegatkode = context.ServerCallContext?.GetHttpContext().User.GetSubjectId();
         if (delegatkode == null)
             throw new StemmeException($"Fant ikke delegatkode");
-            
+
         var delegat = await _delegatRepository.ValiderKode(delegatkode, cancellationToken);
         if (delegat == null)
             throw new StemmeException($"Ugyldig delegat {delegatkode}");
@@ -159,10 +178,10 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     {
         var stemme = await _context.Votering
             .Where(v => v.Id == voteringId)
-            .SelectMany(v=> v.Stemmer)
+            .SelectMany(v => v.Stemmer)
             .Where(s => s.Id == stemmeId)
             .FirstOrDefaultAsync(cancellationToken);
-            
+
         return _mapper.Map<StemmeDto>(stemme);
     }
 
@@ -179,12 +198,12 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             throw new StemmeException($"Ugyldig delegat {delegatkode}");
         return await GetFinnStemmeQuery(context, voteringId, delegat, cancellationToken);
     }
-        
+
     private async Task<List<Stemme>> GetFinnStemmeQuery(StemmesystemContext context, int voteringId, Delegat delegat, CancellationToken cancellationToken = default)
     {
         var votering = await context.Votering
             .Where(v => v.Id == voteringId)
-            .Include(v=> v.Stemmer)
+            .Include(v => v.Stemmer)
             .FirstOrDefaultAsync(cancellationToken);
         if (votering == null)
             throw new StemmeException($"Votering med id {voteringId} ble ikke funnet");
@@ -209,11 +228,11 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         }
         votering.LukkVotering();
         await _context.SaveChangesAsync(cancellationToken);
-            
+
         await _notificationManager.ForAdmin(arrangementId).VoteringLukket(new VoteringLukketEvent(votering.SakId, votering.Id, votering.DelegaterTilstede), cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
     }
-        
+
     [Authorize(Roles = "admin")]
     public async Task<HentResult<AdminVoteringDto>> PubliserVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
     {
@@ -223,7 +242,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             throw new StemmeException("Fant ikke valgt votering");
         votering.PubliserVotering();
         await _context.SaveChangesAsync(cancellationToken);
-            
+
         await _notificationManager.ForAdmin().VoteringPublisert(new VoteringPublisertEvent(arrangementId, votering.SakId, votering.Id), cancellationToken);
         await _notificationManager.ForArrangement(arrangementId).VoteringPublisert(new VoteringPublisertEvent(arrangementId, votering.SakId, votering.Id), cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
@@ -236,7 +255,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         var votering = await _arrangementRepository.FinnVoteringAsync(arrangementId, voteringId, cancellationToken);
         if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
-            
+
         var kopi = votering.Kopier();
         return _mapper.Map<VoteringInputModel>(kopi);
     }
@@ -246,11 +265,11 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     {
         var (arrangementId, voteringId) = request;
         var arrangement = await _arrangementRepository.HentArrangementAsync(arrangementId, cancellationToken);
-        if(arrangement == null)
+        if (arrangement == null)
             return;
         _context.Attach(arrangement);
         var votering = arrangement.FinnVotering(voteringId);
-        if(votering == null) return;
+        if (votering == null) return;
         votering.StartTid = null;
         votering.SluttTid = null;
         votering.Lukket = false;
