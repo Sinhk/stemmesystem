@@ -137,7 +137,8 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        var e = new VoteringStoppetEvent(votering.Id, votering.SluttTid.Value);
+        var stemmer = votering.Stemmer.Select(s => new StemmeDto(s.Id, s.ValgId)).ToArray();
+        var e = new VoteringStoppetEvent(votering.Id, votering.SluttTid.Value, stemmer);
         await _notificationManager.ForArrangement(arrangementId).VoteringStoppet(e, cancellationToken);
         await _notificationManager.ForAdmin(arrangementId).VoteringStoppet(e, cancellationToken);
     }

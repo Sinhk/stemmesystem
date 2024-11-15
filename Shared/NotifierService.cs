@@ -45,7 +45,7 @@ public record StemmeFjernetEvent(int VoteringId, Guid StemmeId);
 
 public record VoteringStartetEvent(VoteringDto Votering);
 
-public record VoteringStoppetEvent(int VoteringId, DateTime Time);
+public record VoteringStoppetEvent(int VoteringId, DateTime Time, IReadOnlyCollection<StemmeDto> Stemmer);
 
 public record VoteringLukketEvent(int SakId, int VoteringId, int? DelegaterTilstede);
 

@@ -89,12 +89,18 @@
 
     private void OnVoteringStoppet(VoteringStoppetEvent e)
     {
-        var (voteringId, time) = e;
+        var (voteringId, time, stemmer) = e;
         var votering = _saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
         if (votering != null)
         {
             votering.Aktiv = false;
             votering.SluttTid = time;
+
+            votering.Stemmer.Clear();
+            foreach (var stemme in stemmer)
+            {
+                votering.Stemmer.Add(stemme);
+            }
         }
         else
         {
