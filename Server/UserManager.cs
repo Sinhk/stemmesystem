@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
 using Stemmesystem.Data.Entities;
@@ -61,6 +61,13 @@ public  class UserManager
             "andreas.salater@speiding.no",
             "ingeborg.kolstad@speiding.no",
             "kirsten.eidem@speiding.no",
+            "oda.larsen@speiding.no", 
+            "katinka.rosbach@speiding.no", 
+            "brede.udahl@speiding.no", 
+            "tove.jurs-martinsen@speiding.no", 
+            "eva.brunsell@speiding.no", 
+            "ingrid.stene.kvist@speiding.no",
+            "knut.slettebak@speiding.no"
         };
 
         var existing = await _userManager.Users
