@@ -66,7 +66,8 @@ public  class UserManager
             "brede.udahl@speiding.no", 
             "tove.jurs-martinsen@speiding.no", 
             "eva.brunsell@speiding.no", 
-            "ingrid.stene.kvist@speiding.no"
+            "ingrid.stene.kvist@speiding.no",
+            "knut.slettebak@speiding.no"
         };
 
         var existing = await _userManager.Users
