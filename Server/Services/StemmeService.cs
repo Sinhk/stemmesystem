@@ -47,6 +47,10 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         if (delegat == null)
             throw new StemmeException($"Ugyldig delegat {delegatkode}");
 
+        if (delegat.TilStede != true){
+            throw new StemmeException("Du er ikke sjekket inn. Du må være sjekket inn for å kunne avgi stemme");
+        }
+
         _context.Attach(delegat);
         var votering = await _context.Votering
             .AsSingleQuery()
