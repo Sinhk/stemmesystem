@@ -123,6 +123,7 @@
         if (_voteringer.TryGetValue(voteringId, out var votering))
         {
             votering.Aktiv = false;
+            votering.SluttTid = e.Time;
 
             votering.Stemmer.Clear();
             foreach (var stemme in stemmer)

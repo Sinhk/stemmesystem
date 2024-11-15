@@ -38,6 +38,7 @@ public class ArrangementRepository : IArrangementRepository
             .SelectMany(a => a.Saker)
             .SelectMany(s => s.Voteringer)
             .Where(v => v.Id == voteringId)
+            .Include(v => v.Stemmer)
             .SingleOrDefaultAsync(cancellationToken: cancellationToken);
     }
 
