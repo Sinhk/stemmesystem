@@ -60,7 +60,13 @@ public  class UserManager
             "lise.ringstad@speiding.no",
             "andreas.salater@speiding.no",
             "ingeborg.kolstad@speiding.no",
-            "kirsten.eidem@speiding.no","oda.larsen@speiding.no", "katinka.rosbach@speiding.no", "brede.udahl@speiding.no", "tove.jurs-martinsen@speiding.no", "eva.brunsell@speiding.no", "ingrid.stene.kvist@speiding.no", "birgit.helene.torsaeter@speiding.no"
+            "kirsten.eidem@speiding.no",
+            "oda.larsen@speiding.no", 
+            "katinka.rosbach@speiding.no", 
+            "brede.udahl@speiding.no", 
+            "tove.jurs-martinsen@speiding.no", 
+            "eva.brunsell@speiding.no", 
+            "ingrid.stene.kvist@speiding.no"
         };
 
         var existing = await _userManager.Users
