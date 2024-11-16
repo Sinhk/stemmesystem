@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using AsyncKeyedLock;
 using AutoMapper;
 using Duende.IdentityServer.Extensions;
 using Google.Rpc;
 using Grpc.Core;
-using Medallion.Threading.Postgres;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ProtoBuf.Grpc;
@@ -27,6 +27,8 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     private readonly IArrangementRepository _arrangementRepository;
     private readonly NotificationManager _notificationManager;
     private readonly IMapper _mapper;
+    
+    private static readonly AsyncKeyedLocker<string> _asyncKeyedLocker = new();
 
     public StemmeService(IDelegatRepository delegatRepository, IArrangementRepository arrangementRepository, StemmesystemContext context, IKeyHasher keyHasher, NotificationManager notificationManager, IMapper mapper)
     {
@@ -41,7 +43,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
 
 
     [DoesNotReturn]
-    private static void ThrowError(string field, string message)
+    private static void ThrowError(string message)
     {
         var status = new Google.Rpc.Status
         {
@@ -55,24 +57,23 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         var cancellationToken = context.CancellationToken;
         var delegatkode = (context.ServerCallContext?.GetHttpContext().User.GetSubjectId());
         if (delegatkode is null){
-            ThrowError("Delegatkode", "Ingen delegatkode oppgitt");
+            ThrowError("Ingen delegatkode oppgitt");
         }
         var delegat = await _delegatRepository.ValiderKode(delegatkode, cancellationToken);
         if (delegat is null)
         {
-            ThrowError("Delegatkode", $"Ugyldig delegatkode {delegatkode}");
+            ThrowError($"Ugyldig delegatkode {delegatkode}");
         }
         if (delegat.TilStede != true)
         {
-            ThrowError("Tilstede", "Du er ikke sjekket inn. Du må være sjekket inn for å kunne avgi stemme");
+            ThrowError("Du er ikke sjekket inn. Du må være sjekket inn for å kunne avgi stemme");
         }
 
         _context.Attach(delegat);
 
         List<Stemme>? stemmer, fjernes;
         Votering? votering;
-        var @lock = new PostgresDistributedLock(new PostgresAdvisoryLockKey($"stemme-lock-{delegat.Id}", allowHashing: true), _context.Database.GetConnectionString()!);
-        await using (await @lock.AcquireAsync(cancellationToken: cancellationToken))
+        using (await _asyncKeyedLocker.LockAsync($"stemme-lock-{delegat.Id}", cancellationToken))
         {
             votering = await _context.Votering
                 .AsSingleQuery()
@@ -83,12 +84,12 @@ public class StemmeService : IStemmeService, IAdminStemmeService
 
             if (votering is null)
             {
-                ThrowError("VoteringId", $"Ugyldig votering {request.VoteringId}");
+                ThrowError($"Ugyldig votering {request.VoteringId}");
             }
 
             if (votering.Aktiv == false)
             {
-                ThrowError("VoteringId", $"Votering er ferdig eller har ikke startet enda");
+                ThrowError($"Votering er ferdig eller har ikke startet enda");
             }
 
             (stemmer, fjernes) = votering.RegistrerStemme(request.ValgIder, delegat, delegatkode, _keyHasher);
