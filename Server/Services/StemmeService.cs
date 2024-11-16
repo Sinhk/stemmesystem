@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using Duende.IdentityServer.Extensions;
-using Google.Protobuf.WellKnownTypes;
 using Google.Rpc;
 using Grpc.Core;
+using Medallion.Threading.Postgres;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ProtoBuf.Grpc;
@@ -68,27 +68,35 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         }
 
         _context.Attach(delegat);
-        var votering = await _context.Votering
-            .AsSingleQuery()
-            .Include(v => v.Stemmer)
-            .Include(v => v.AvgitStemme)
-            .Include(v => v.Sak)
-            .SingleOrDefaultAsync(v => v.Id == request.VoteringId, cancellationToken);
 
-        if (votering is null)
+        List<Stemme>? stemmer, fjernes;
+        Votering? votering;
+        var @lock = new PostgresDistributedLock(new PostgresAdvisoryLockKey($"stemme-lock-{delegat.Id}", allowHashing: true), _context.Database.GetConnectionString()!);
+        await using (await @lock.AcquireAsync(cancellationToken: cancellationToken))
         {
-            ThrowError("VoteringId", $"Ugyldig votering {request.VoteringId}");
-        }
+            votering = await _context.Votering
+                .AsSingleQuery()
+                .Include(v => v.Stemmer)
+                .Include(v => v.AvgitStemme)
+                .Include(v => v.Sak)
+                .SingleOrDefaultAsync(v => v.Id == request.VoteringId, cancellationToken);
 
-        if (votering.Aktiv == false)
-        {
-            ThrowError("VoteringId", $"Votering er ferdig eller har ikke startet enda");
+            if (votering is null)
+            {
+                ThrowError("VoteringId", $"Ugyldig votering {request.VoteringId}");
+            }
+
+            if (votering.Aktiv == false)
+            {
+                ThrowError("VoteringId", $"Votering er ferdig eller har ikke startet enda");
+            }
+
+            (stemmer, fjernes) = votering.RegistrerStemme(request.ValgIder, delegat, delegatkode, _keyHasher);
+
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         var notifier = _notificationManager.ForAdmin(votering.Sak.ArrangementId);
-        var (stemmer, fjernes) = votering.RegistrerStemme(request.ValgIder, delegat, delegatkode, _keyHasher);
-
-        await _context.SaveChangesAsync(cancellationToken);
 
         if (fjernes != null && fjernes.Any())
             await Parallel.ForEachAsync(fjernes, cancellationToken, async (s, token) => await notifier.StemmeFjernet(new StemmeFjernetEvent(votering.Id, s.Id), token));
