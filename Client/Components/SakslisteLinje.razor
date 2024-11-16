@@ -88,15 +88,23 @@
                 var blankeStemmer = Votering.Stemmer.Values.Count(s => s.ValgId == Konstanter.BlankStemme);
                 var avgitteStemmer = _harStemt.Count;
                 var tellendeStemmer = avgitteStemmer - blankeStemmer;
-                <b>Tellende stemmer: @tellendeStemmer</b>
-                <ul>
-                    @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
-                    {
-                        var stemmer = Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id);
-                        <li>@valg.Navn: @stemmer (@(100*stemmer/tellendeStemmer)%)</li>
-                    }
-                </ul>
-                <p>Blanke stemmer: @blankeStemmer</p>
+
+                @if (tellendeStemmer == 0)
+                {
+                    <tr><td class="text-danger">Ingen tellende stemmer</td></tr>
+                }
+                else
+                {
+                    <b>Tellende stemmer: @tellendeStemmer</b>
+                    <ul>
+                        @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
+                        {
+                            var stemmer = Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id);
+                            <li>@valg.Navn: @stemmer (@(100*stemmer/tellendeStemmer)%)</li>
+                        }
+                    </ul>
+                    <p>Blanke stemmer: @blankeStemmer</p>
+                }
             }
         </div>
     </div>
