@@ -107,6 +107,16 @@
                     </ul>
                     <p>Blanke stemmer: @blankeStemmer</p>
                 }
+
+                if (avgitteStemmer !=  @Votering.Stemmer.Count)
+                {
+                    <ul>
+                        @foreach (var d in Votering.Stemmer.Values.GroupBy(x => x.DelegatId))
+                        {
+                            <li>Stemmer fra id @d.Key: @d.Count()</li>
+                        }
+                    </ul>
+                }
             }
         </div>
     </div>
