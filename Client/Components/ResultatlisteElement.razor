@@ -25,7 +25,7 @@
             {
                 foreach(var (id, stemmer) in _resultater.OrderByDescending(r=> r.Value))
                 {
-                    <div>@_valg[id]: @stemmer (@(100 * stemmer/_tellendeStemmer)%)</div>
+                    <div>@_valg[id]: @stemmer (@(Math.Round(100m * stemmer/_tellendeStemmer,2))%)</div>
                 }
             }
             <div>@(_blankt == 1 ? "1 blank stemme": $"{_blankt} blanke stemmer")</div>

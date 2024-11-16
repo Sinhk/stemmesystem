@@ -100,7 +100,7 @@
                         @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
                         {
                             var stemmer = Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id);
-                            <li>@valg.Navn: @stemmer (@(100*stemmer/tellendeStemmer)%)</li>
+                            <li>@valg.Navn: @stemmer (@(Math.Round(100m*stemmer/tellendeStemmer,2))%)</li>
                         }
                     </ul>
                     <p>Blanke stemmer: @blankeStemmer</p>
