@@ -4,7 +4,6 @@
 
 @inject IArrangementService ArrangementService
 @inject IDelegatService DelegatService
-@inject ISakService SakService
 @inject NavigationManager NavigationManager
 
 @using Stemmesystem.Shared.Interfaces
@@ -21,19 +20,18 @@ else
     <h2>@_arrangement.Navn</h2>
     if (_delegat == null)
     {
-        <h3>Fant ikke delegat info. Noe er galt</h3>
+        <h3>Fant ikke delegat-info. Noe er galt</h3>
     }
     else
     {
-        <h3>Delegat: @_delegat.Delegatnummer (@_delegat.Navn) @*<span class="oi oi-pencil" data-toggle="modal" data-target="#delegatModal"></span>*@</h3>
-        @*<EndreDelegatDialog Delegat=@_delegat/>*@
+        <h3>Delegat: @_delegat.Delegatnummer (@_delegat.Navn)</h3>
         <div class="row">
             <h3>Voteringer</h3>
         </div>
         <div class="row">
             @if (_voteringer.Any())
             {
-                foreach (var votering in _voteringer)
+                foreach (var votering in _voteringer.Values)
                 {
                     <AktivVotering @key="votering.Id" Votering=votering/>
                 }

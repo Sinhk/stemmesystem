@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Components;
 using Stemmesystem.Client.SignalR;
 using Stemmesystem.Shared;
@@ -13,11 +14,11 @@ namespace Stemmesystem.Client.Pages
 
         private ArrangementInfo? _arrangement;
         private DelegatDto? _delegat;
-        private List<VoteringDto> _voteringer = new();
+        private ConcurrentDictionary<int, VoteringDto> _voteringer = new();
         private IDelegatNotifierService Notifier => Service;
 
         private bool _disposed;
-        private List<IDisposable> _subscriptions = new();
+
         private IDisposable? _startetSubscription;
         private IDisposable? _stoppetSubscription;
 
@@ -45,46 +46,35 @@ namespace Stemmesystem.Client.Pages
             }
 
             _arrangement = arrangement;
-            /*
-             _notifier = Notifications.ForArrangement(_arrangement.Id);
-            */
-            
-            _voteringer = await ArrangementService.FinnAktiveVoteringer(new ArrangementRequest {ArrangementId = _arrangement.Id});
+            var voteringer = await ArrangementService.FinnAktiveVoteringer(new ArrangementRequest {ArrangementId = _arrangement.Id});
+            foreach (var votering in voteringer)
+            {
+                _voteringer[votering.Id] = votering;
+            }
 
             _startetSubscription = Notifier.OnVoteringStartet(VoteringStartet);
             _stoppetSubscription = Notifier.OnVoteringStoppet(VoteringStoppet);
             await Notifier.Start();
         }
         
-        public void Dispose() => Dispose(true);
-
-        private void Dispose(bool disposing)
-        {
+        public void Dispose()
+        { 
             if (_disposed)
                 return;
-            
             _startetSubscription?.Dispose();
             _stoppetSubscription?.Dispose();
-            
-/*
-            if (disposing)
-            {
-                if (Tracker != null && _arrangement != null &&_delegat != null)
-                    Tracker.RegisterInactive(_arrangement.Id, _delegat.Id);
-            }
-*/
             _disposed = true;
         }
 
         private void VoteringStartet(VoteringStartetEvent e)
         {
-            _voteringer.Add(e.Votering);
-                StateHasChanged();
+            _voteringer[e.Votering.Id] = e.Votering;
+            StateHasChanged();
         }
 
         private void VoteringStoppet(VoteringStoppetEvent e)
         {
-            _voteringer.RemoveAll(v => v.Id == e.VoteringId);
+            _voteringer.Remove(e.VoteringId, out _);
             StateHasChanged();
         }
     }
