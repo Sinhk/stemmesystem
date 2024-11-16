@@ -96,6 +96,7 @@
                 else
                 {
                     <b>Tellende stemmer: @tellendeStemmer</b>
+                    <br/>
                     <b>Stemmer totalt: @Votering.Stemmer.Count</b>
                     <ul>
                         @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
@@ -105,6 +106,16 @@
                         }
                     </ul>
                     <p>Blanke stemmer: @blankeStemmer</p>
+                }
+
+                if (avgitteStemmer !=  @Votering.Stemmer.Count)
+                {
+                    <ul>
+                        @foreach (var d in Votering.Stemmer.Values.GroupBy(x => x.DelegatId))
+                        {
+                            <li>Stemmer fra id @d.Key: @d.Count()</li>
+                        }
+                    </ul>
                 }
             }
         </div>

@@ -55,7 +55,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         var cancellationToken = context.CancellationToken;
         var delegatkode = (context.ServerCallContext?.GetHttpContext().User.GetSubjectId());
         if (delegatkode is null){
-            ThrowError("Delegatkode", $"Ingen delegatkode oppgitt");
+            ThrowError("Delegatkode", "Ingen delegatkode oppgitt");
         }
         var delegat = await _delegatRepository.ValiderKode(delegatkode, cancellationToken);
         if (delegat is null)
@@ -92,7 +92,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
 
         if (fjernes != null && fjernes.Any())
             await Parallel.ForEachAsync(fjernes, cancellationToken, async (s, token) => await notifier.StemmeFjernet(new StemmeFjernetEvent(votering.Id, s.Id), token));
-        await Parallel.ForEachAsync(stemmer, cancellationToken, async (s, token) => await notifier.NyStemme(new NyStemmeEvent(votering.Id, new StemmeDto(s.Id, s.ValgId)), token));
+        await Parallel.ForEachAsync(stemmer, cancellationToken, async (s, token) => await notifier.NyStemme(new NyStemmeEvent(votering.Id, new StemmeDto(s.Id, s.ValgId, null)), token));
         await notifier.HarStemt(new HarStemtEvent(votering.Id, delegat.Id), cancellationToken);
         var dto = _mapper.Map<List<StemmeDto>>(stemmer);
         return dto;
@@ -137,7 +137,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        var stemmer = votering.Stemmer.Select(s => new StemmeDto(s.Id, s.ValgId)).ToArray();
+        var stemmer = votering.Stemmer.Select(s => new StemmeDto(s.Id, s.ValgId, s.DelegatId)).ToArray();
         var e = new VoteringStoppetEvent(votering.Id, votering.SluttTid.Value, stemmer);
         await _notificationManager.ForArrangement(arrangementId).VoteringStoppet(e, cancellationToken);
         await _notificationManager.ForAdmin(arrangementId).VoteringStoppet(e, cancellationToken);
