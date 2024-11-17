@@ -15,7 +15,7 @@ namespace Stemmesystem.Client.Pages
         private bool _disposed;
         private List<ArrangementInfo>? _arrangementer;
         private IDisposable? _subscription;
-        private bool _nyPublisert = false;
+        private bool _nyPublisert;
 
         protected override async Task OnInitializedAsync()
         {

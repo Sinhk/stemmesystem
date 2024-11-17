@@ -1,7 +1,5 @@
-﻿@inject IArrangementService _arrangementService
-@using Stemmesystem.Shared
+﻿@inject IArrangementService ArrangementService
 @using Stemmesystem.Shared.Models
-@using System.Linq
 @using Stemmesystem.Shared.Interfaces
 @using System.ComponentModel.DataAnnotations
 
@@ -24,7 +22,7 @@
     [Parameter, Required]
     public ArrangementInfo Arrangement { get; set; } = null!;
     
-    private List<VoteringResultatDto>? _voteringer;
+    private IReadOnlyCollection<VoteringResultatDto>? _voteringer;
 
     private bool _nyPublisert = false;
     private bool _expanded;
@@ -34,7 +32,7 @@
         _expanded = !_expanded;
         if (_voteringer == null)
         {
-            var resultater = await _arrangementService.HentResultater(new ArrangementRequest { ArrangementId = Arrangement.Id });
+            var resultater = await ArrangementService.HentResultater(new ArrangementRequest { ArrangementId = Arrangement.Id });
             _voteringer = resultater;
         }
     }

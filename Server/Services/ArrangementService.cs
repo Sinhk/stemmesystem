@@ -129,15 +129,18 @@ namespace Stemmesystem.Server.Services
             }, token: cancellationToken);
         }
 
-        public async Task<List<VoteringResultatDto>> HentResultater(ArrangementRequest request)
+        public async Task<IReadOnlyCollection<VoteringResultatDto>> HentResultater(ArrangementRequest request, CancellationToken cancellationToken = default)
         {
-            return await _context.Arrangement
-                .Where(a=> a.Id == request.ArrangementId)
-                .SelectMany(a => a.Saker)
-                .SelectMany(s => s.Voteringer)
-                .Where(v => v.Publisert)
-                .ProjectTo<VoteringResultatDto>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+            return await _cache.GetOrSetAsync($"resultater-{request.ArrangementId}", async token =>
+            {
+                return await _context.Arrangement
+                    .Where(a=> a.Id == request.ArrangementId)
+                    .SelectMany(a => a.Saker)
+                    .SelectMany(s => s.Voteringer)
+                    .Where(v => v.Publisert)
+                    .ProjectTo<VoteringResultatDto>(_mapper.ConfigurationProvider)
+                    .ToArrayAsync(cancellationToken: token);
+            }, token: cancellationToken);
         }
 
         public async Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request)

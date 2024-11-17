@@ -12,7 +12,8 @@ public interface IArrangementService
     Task<ArrangementDto?> HentArrangementAsync(HentArrangementRequest request, CancellationToken cancellationToken = default);
     Task<List<ArrangementInfo>> HentArrangementerAsync(CancellationToken cancellationToken = default);
     Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request);
-    Task<List<VoteringResultatDto>> HentResultater(ArrangementRequest request);
+    Task<IReadOnlyCollection<VoteringResultatDto>> HentResultater(ArrangementRequest request,
+        CancellationToken cancellationToken = default);
     Task<IReadOnlyCollection<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request, CancellationToken cancellationToken = default);
 
 

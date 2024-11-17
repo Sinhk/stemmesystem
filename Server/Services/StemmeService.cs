@@ -15,6 +15,7 @@ using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
 using Stemmesystem.Shared.Models;
 using Stemmesystem.Shared.Tools;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace Stemmesystem.Server.Services;
 
@@ -27,10 +28,11 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     private readonly IArrangementRepository _arrangementRepository;
     private readonly NotificationManager _notificationManager;
     private readonly IMapper _mapper;
-    
-    private static readonly AsyncKeyedLocker<string> _asyncKeyedLocker = new();
+    private readonly IFusionCache _cache;
 
-    public StemmeService(IDelegatRepository delegatRepository, IArrangementRepository arrangementRepository, StemmesystemContext context, IKeyHasher keyHasher, NotificationManager notificationManager, IMapper mapper)
+    private static readonly AsyncKeyedLocker<string> AsyncKeyedLocker = new();
+
+    public StemmeService(IDelegatRepository delegatRepository, IArrangementRepository arrangementRepository, StemmesystemContext context, IKeyHasher keyHasher, NotificationManager notificationManager, IMapper mapper, IFusionCache cache)
     {
         _delegatRepository = delegatRepository;
         _arrangementRepository = arrangementRepository;
@@ -39,6 +41,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         _keyHasher = keyHasher;
         _notificationManager = notificationManager;
         _mapper = mapper;
+        _cache = cache;
     }
 
 
@@ -73,7 +76,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
 
         List<Stemme>? stemmer, fjernes;
         Votering? votering;
-        using (await _asyncKeyedLocker.LockAsync($"stemme-lock-{delegat.Id}", cancellationToken))
+        using (await AsyncKeyedLocker.LockAsync($"stemme-lock-{delegat.Id}", cancellationToken))
         {
             votering = await _context.Votering
                 .AsSingleQuery()
@@ -253,6 +256,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         votering.PubliserVotering();
         await _context.SaveChangesAsync(cancellationToken);
 
+        await _cache.RemoveAsync($"resultater-{request.ArrangementId}", token: cancellationToken);
         await _notificationManager.ForAdmin().VoteringPublisert(new VoteringPublisertEvent(arrangementId, votering.SakId, votering.Id), cancellationToken);
         await _notificationManager.ForArrangement(arrangementId).VoteringPublisert(new VoteringPublisertEvent(arrangementId, votering.SakId, votering.Id), cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
