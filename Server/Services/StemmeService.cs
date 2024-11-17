@@ -92,7 +92,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
 
             if (votering.Aktiv == false)
             {
-                ThrowError($"Votering er ferdig eller har ikke startet enda");
+                ThrowError("Votering er ferdig eller har ikke startet enda");
             }
 
             (stemmer, fjernes) = votering.RegistrerStemme(request.ValgIder, delegat, delegatkode, _keyHasher);
@@ -182,7 +182,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     {
         var delegatkode = context.ServerCallContext?.GetHttpContext().User.GetSubjectId();
         if (delegatkode == null)
-            throw new StemmeException($"Fant ikke delegatkode");
+            throw new StemmeException("Fant ikke delegatkode");
 
         var delegat = await _delegatRepository.ValiderKode(delegatkode, cancellationToken);
         if (delegat == null)

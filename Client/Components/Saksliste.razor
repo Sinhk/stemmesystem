@@ -58,7 +58,7 @@
 
             foreach (var voteringDto in sakDto.Voteringer)
             {
-                var votering = new DashboardVoteringModel(voteringDto.Id, voteringDto.Tittel, voteringDto.Beskrivelse, voteringDto.Valg, voteringDto.AvgitStemme, voteringDto.Stemmer)
+                var votering = new DashboardVoteringModel(voteringDto.Id, voteringDto.Tittel, voteringDto.Beskrivelse, voteringDto.Valg, voteringDto.AvgitStemme, voteringDto.KanVelge, voteringDto.Stemmer)
                 {
                     Aktiv = voteringDto.Aktiv,
                     Lukket = voteringDto.Lukket,
@@ -188,7 +188,7 @@
         if(_saker.TryGetValue(votering.SakId, out var sak))
         {
             sak.Voteringer[votering.Id] = votering.Id;
-            _voteringer[votering.Id] = new DashboardVoteringModel(votering.Id, votering.Tittel, votering.Beskrivelse, votering.Valg, votering.AvgitStemme);
+            _voteringer[votering.Id] = new DashboardVoteringModel(votering.Id, votering.Tittel, votering.Beskrivelse, votering.Valg,votering.AvgitStemme, votering.KanVelge);
         }
         StateHasChanged();
     }
@@ -223,11 +223,12 @@
 
     public record DashboardVoteringModel
     {
-        public DashboardVoteringModel(int Id, string tittel, string beskrivelse, IEnumerable<ValgDto> valg, IEnumerable<DelegatDto> avgitStemme, IEnumerable<StemmeDto>? Stemmer = null)
+        public DashboardVoteringModel(int Id, string tittel, string beskrivelse, IEnumerable<ValgDto> valg, IEnumerable<DelegatDto> avgitStemme, int kanVelge, IEnumerable<StemmeDto>? Stemmer = null)
         {
             this.Id = Id;
             Tittel = tittel;
             Beskrivelse = beskrivelse;
+            KanVelge = kanVelge;
             Valg = valg
                 .Select(v => new DashboardValgModel(v.Id,v.Navn,v.SortId))
                 .ToArray();
@@ -253,6 +254,7 @@
         public ConcurrentDictionary<Guid, StemmeDto> Stemmer { get; }
         public IReadOnlyCollection<int> AvgitStemme { get; }
         public IReadOnlyCollection<DashboardValgModel> Valg { get; }
+        public int KanVelge { get; }
     }
     
     public record DashboardValgModel(Guid Id, string Navn, int? SortId);

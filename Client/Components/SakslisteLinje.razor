@@ -33,9 +33,7 @@
             <div class="col">
                 @if (Votering.Lukket)
                 {
-                    <span>
-                        Avgitte stemmer:@_harStemt.Count@(Votering.DelegaterTilstede is null ? "" : $"/{Votering.DelegaterTilstede}")
-                    </span>
+                    <span>Avgitte stemmer:@_harStemt.Count@(Votering.DelegaterTilstede is null ? "" : $"/{Votering.DelegaterTilstede}")</span>
                 }
                 else
                 {
@@ -80,47 +78,53 @@
         </div>
         <span class="ml-2 mt-1 oi float-right @(_visDetaljer ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
     </div>
-    @if (Votering.Lukket)
-    {
     <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
         <div class="card-body">
-            @{
-                var blankeStemmer = Votering.Stemmer.Values.Count(s => s.ValgId == Konstanter.BlankStemme);
-                var avgitteStemmer = _harStemt.Count;
-                var tellendeStemmer = avgitteStemmer - blankeStemmer;
+            @if (Votering.Lukket)
+            {
+                <span>Kan velge: <b>@Votering.KanVelge</b></span><br/>
 
-                @if (tellendeStemmer == 0)
-                {
-                    <tr><td class="text-danger">Ingen tellende stemmer</td></tr>
-                }
-                else
-                {
-                    <b>Tellende stemmer: @tellendeStemmer</b>
-                    <br/>
-                    <b>Stemmer totalt: @Votering.Stemmer.Count</b>
-                    <ul>
-                        @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
-                        {
-                            var stemmer = Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id);
-                            <li>@valg.Navn: @stemmer (@(Math.Round(100m*stemmer/tellendeStemmer,2))%)</li>
-                        }
-                    </ul>
-                    <p>Blanke stemmer: @blankeStemmer</p>
-                }
+                @{
+                    var blankeStemmer = Votering.Stemmer.Values.Count(s => s.ValgId == Konstanter.BlankStemme);
+                    var avgitteStemmer = _harStemt.Count;
+                    var tellendeStemmer = avgitteStemmer - blankeStemmer;
 
-                if (avgitteStemmer !=  @Votering.Stemmer.Count)
-                {
-                    <ul>
-                        @foreach (var d in Votering.Stemmer.Values.GroupBy(x => x.DelegatId))
+                    @if (tellendeStemmer == 0)
+                    {
+                        <tr><td class="text-danger">Ingen tellende stemmer</td></tr>
+                    }
+                    else
+                    {
+                        <span>Tellende stemmer: <b>@tellendeStemmer</b></span>
+                        <br/>
+                        <span>Stemmer totalt: <b>@Votering.Stemmer.Count</b></span>
+                        @if (Votering.KanVelge > 1)
                         {
-                            <li>Stemmer fra id @d.Key: @d.Count()</li>
+                            <br/><i>ved flervalg vil stemmer totalt være høyere enn tellende</i>
                         }
-                    </ul>
+                        <ul>
+                            @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
+                            {
+                                var stemmer = Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id);
+                                <li>@valg.Navn: @stemmer (@(Math.Round(100m * stemmer / tellendeStemmer, 2))%)</li>
+                            }
+                        </ul>
+                        <p>Blanke stemmer: @blankeStemmer</p>
+                    }
+
+                    if (Votering.KanVelge == 1 && avgitteStemmer != Votering.Stemmer.Count)
+                    {
+                        <ul>
+                            @foreach (var d in Votering.Stemmer.Values.GroupBy(x => x.DelegatId))
+                            {
+                                <li>Stemmer fra id @d.Key: @d.Count()</li>
+                            }
+                        </ul>
+                    }
                 }
             }
         </div>
     </div>
-    }
 </div>
 
 @if (_nyRunde != null)
