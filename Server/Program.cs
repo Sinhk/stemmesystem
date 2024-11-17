@@ -27,6 +27,7 @@ using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Tools;
+using ZiggyCreatures.Caching.Fusion;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 using Secret = Duende.IdentityServer.Models.Secret;
 
@@ -48,7 +49,6 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddRoles<IdentityRole>()    
     .AddEntityFrameworkStores<StemmesystemContext>()
    ;
-
 
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
@@ -123,7 +123,18 @@ builder.Services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
 builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
 
 builder.Services.AddAutoMapper(typeof(ApiAutoMapperProfile));
-builder.Services.AddLazyCache();
+builder.Services.AddFusionCache()
+    .WithDefaultEntryOptions(new FusionCacheEntryOptions {
+        Duration = TimeSpan.FromMinutes(1),
+    
+        IsFailSafeEnabled = true,
+        FailSafeMaxDuration = TimeSpan.FromHours(2),
+        FailSafeThrottleDuration = TimeSpan.FromSeconds(30),
+
+        // FACTORY TIMEOUTS
+        FactorySoftTimeout = TimeSpan.FromMilliseconds(100),
+        FactoryHardTimeout = TimeSpan.FromSeconds(10)
+    });
 
 builder.Services.AddAuthorizationCore(b => b.AddPolicy("admin", policyBuilder => policyBuilder.RequireRole("admin")));
 

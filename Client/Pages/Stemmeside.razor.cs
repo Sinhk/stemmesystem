@@ -14,7 +14,7 @@ namespace Stemmesystem.Client.Pages
 
         private ArrangementInfo? _arrangement;
         private DelegatDto? _delegat;
-        private ConcurrentDictionary<int, VoteringDto> _voteringer = new();
+        private readonly ConcurrentDictionary<int, VoteringDto> _voteringer = new();
         private IDelegatNotifierService Notifier => Service;
 
         private bool _disposed;

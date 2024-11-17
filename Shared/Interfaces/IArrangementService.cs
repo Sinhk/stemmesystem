@@ -13,7 +13,7 @@ public interface IArrangementService
     Task<List<ArrangementInfo>> HentArrangementerAsync(CancellationToken cancellationToken = default);
     Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request);
     Task<List<VoteringResultatDto>> HentResultater(ArrangementRequest request);
-    Task<List<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request);
+    Task<IReadOnlyCollection<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request, CancellationToken cancellationToken = default);
 
 
     Task<ArrangementDto> NyttArrangement(ArrangementInputModel dto);

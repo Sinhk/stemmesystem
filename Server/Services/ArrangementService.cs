@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using LazyCache;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
@@ -8,6 +7,7 @@ using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
 using Stemmesystem.Shared.Models;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace Stemmesystem.Server.Services
 {
@@ -16,9 +16,9 @@ namespace Stemmesystem.Server.Services
     {
         private readonly StemmesystemContext _context;
         private readonly IMapper _mapper;
-        private readonly IAppCache _cache;
+        private readonly IFusionCache _cache;
 
-        public ArrangementService(StemmesystemContext context, IMapper mapper, IAppCache cache)
+        public ArrangementService(StemmesystemContext context, IMapper mapper, IFusionCache cache)
         {
             _mapper = mapper;
             _cache = cache;
@@ -109,16 +109,24 @@ namespace Stemmesystem.Server.Services
             return (await HentArrangementAsync(arrangement.Id))!;
         }
 
-        public async Task<List<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request)
+        public async Task<IReadOnlyCollection<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request, CancellationToken cancellationToken = default)
         {
-            return await _context.Arrangement
-                .AsSplitQuery()
-                .Where(a=> a.Id == request.ArrangementId)
-                .SelectMany(a => a.Saker)
-                .SelectMany(s => s.Voteringer)
-                .Where(v => v.Aktiv)
-                .ProjectTo<VoteringDto>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+            return await _cache.GetOrSetAsync<IReadOnlyCollection<VoteringDto>>($"aktive-{request.ArrangementId}", async token =>
+            {
+                return await _context.Arrangement
+                    .AsSplitQuery()
+                    .Where(a => a.Id == request.ArrangementId)
+                    .SelectMany(a => a.Saker)
+                    .SelectMany(s => s.Voteringer)
+                    .Where(v => v.Aktiv)
+                    .ProjectTo<VoteringDto>(_mapper.ConfigurationProvider)
+                    .ToArrayAsync(cancellationToken: token);
+
+            }, options =>
+            {
+                options.Duration = TimeSpan.FromSeconds(2);
+                options.SetFailSafe(true, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(10));
+            }, token: cancellationToken);
         }
 
         public async Task<List<VoteringResultatDto>> HentResultater(ArrangementRequest request)
@@ -134,13 +142,13 @@ namespace Stemmesystem.Server.Services
 
         public async Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request)
         {
-            return await _cache.GetOrAddAsync($"ArrangementInfo({request.ArrangementId})", async () =>
+            return await _cache.GetOrSetAsync<ArrangementInfo?>($"ArrangementInfo({request.ArrangementId})", async token =>
             {
                 return await _context.Arrangement
                     .Where(a=> a.Id == request.ArrangementId)
                     .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
-                    .SingleOrDefaultAsync();
-            },  DateTimeOffset.Now.AddSeconds(60));
+                    .SingleOrDefaultAsync(token);
+            });
         }
 
         public async Task<TilstedeCountResponse> GetTilstedeCount(TilstedeCountRequest request, CancellationToken cancellationToken = default)
@@ -149,7 +157,7 @@ namespace Stemmesystem.Server.Services
                 .Select(a => a.Delegater.Count(d => d.TilStede))
                 .SingleOrDefaultAsync(cancellationToken);
 
-            return new(count);
+            return new TilstedeCountResponse(count);
         }
     }
 }

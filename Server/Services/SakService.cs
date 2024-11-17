@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using LazyCache;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
@@ -8,6 +7,7 @@ using Stemmesystem.Data.Entities;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
 using Stemmesystem.Shared.Models;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace Stemmesystem.Server.Services;
 
@@ -17,9 +17,9 @@ public class SakService : ISakService
     private readonly StemmesystemContext _context;
     private readonly IMapper _mapper;
     private readonly NotificationManager _notificationManager;
-    private readonly IAppCache _cache;
+    private readonly IFusionCache _cache;
 
-    public SakService(IMapper mapper, NotificationManager notificationManager, StemmesystemContext context, IAppCache cache)
+    public SakService(IMapper mapper, NotificationManager notificationManager, StemmesystemContext context, IFusionCache cache)
     {
         _mapper = mapper;
         _notificationManager = notificationManager;
@@ -151,16 +151,16 @@ public class SakService : ISakService
             .ToListAsync();
     }
 
-    public Task<HentResult<SakInfoDto>> HentSakInfo(SakRequest request, CancellationToken cancellationToken = default)
+    public async Task<HentResult<SakInfoDto>> HentSakInfo(SakRequest request, CancellationToken cancellationToken = default)
     {
-        return _cache.GetOrAddAsync(request.ToString(), async () =>
+        return await _cache.GetOrSetAsync<HentResult<SakInfoDto>>($"sakinfo-{request.SakId}", async token =>
         {
             var sak = await _context.Arrangement
                 .SelectMany(a => a.Saker)
                 .Where(s => s.Id == request.SakId)
                 .ProjectTo<SakInfoDto>(_mapper.ConfigurationProvider)
-                .FirstOrDefaultAsync(cancellationToken);
+                .FirstOrDefaultAsync(token);
             return new HentResult<SakInfoDto>(sak);
-        }, DateTimeOffset.Now.AddMinutes(1));
+        }, token: cancellationToken);
     }
 }
