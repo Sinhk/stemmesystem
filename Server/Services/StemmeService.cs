@@ -120,6 +120,8 @@ public class StemmeService : IStemmeService, IAdminStemmeService
 
         await _context.SaveChangesAsync(cancellationToken);
         var e = new VoteringStartetEvent(_mapper.Map<AdminVoteringDto>(votering));
+
+        await _cache.RemoveAsync($"aktive-{request.ArrangementId}", token: cancellationToken);
         await _notificationManager.ForArrangement(request.ArrangementId).VoteringStartet(e, cancellationToken);
         await _notificationManager.ForAdmin(request.ArrangementId).VoteringStartet(e, cancellationToken);
         return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
@@ -149,6 +151,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             await _context.SaveChangesAsync(cancellationToken);
         }
 
+        await _cache.RemoveAsync($"aktive-{arrangementId}", token: cancellationToken);
         var stemmer = votering.Stemmer.Select(s => new StemmeDto(s.Id, s.ValgId, s.DelegatId)).ToArray();
         var e = new VoteringStoppetEvent(votering.Id, votering.SluttTid.Value, stemmer);
         await _notificationManager.ForArrangement(arrangementId).VoteringStoppet(e, cancellationToken);
