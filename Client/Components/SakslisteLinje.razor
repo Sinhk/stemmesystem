@@ -84,43 +84,41 @@
             {
                 <span>Kan velge: <b>@Votering.KanVelge</b></span><br/>
 
-                @{
-                    var blankeStemmer = Votering.Stemmer.Values.Count(s => s.ValgId == Konstanter.BlankStemme);
-                    var avgitteStemmer = _harStemt.Count;
-                    var tellendeStemmer = avgitteStemmer - blankeStemmer;
+                var blankeStemmer = Votering.Stemmer.Values.Count(s => s.ValgId == Konstanter.BlankStemme);
+                var avgitteStemmer = _harStemt.Count;
+                var tellendeStemmer = avgitteStemmer - blankeStemmer;
 
-                    @if (tellendeStemmer == 0)
+                @if (tellendeStemmer == 0)
+                {
+                    <tr><td class="text-danger">Ingen tellende stemmer</td></tr>
+                }
+                else
+                {
+                    <span>Tellende stemmer: <b>@tellendeStemmer</b></span>
+                    <br/>
+                    <span>Stemmer totalt: <b>@Votering.Stemmer.Count</b></span>
+                    @if (Votering.KanVelge > 1)
                     {
-                        <tr><td class="text-danger">Ingen tellende stemmer</td></tr>
+                        <br/><i>ved flervalg vil stemmer totalt være høyere enn tellende</i>
                     }
-                    else
-                    {
-                        <span>Tellende stemmer: <b>@tellendeStemmer</b></span>
-                        <br/>
-                        <span>Stemmer totalt: <b>@Votering.Stemmer.Count</b></span>
-                        @if (Votering.KanVelge > 1)
+                    <ul>
+                        @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
                         {
-                            <br/><i>ved flervalg vil stemmer totalt være høyere enn tellende</i>
+                            var stemmer = Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id);
+                            <li>@valg.Navn: @stemmer (@(Math.Round(100m * stemmer / tellendeStemmer, 2))%)</li>
                         }
-                        <ul>
-                            @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
-                            {
-                                var stemmer = Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id);
-                                <li>@valg.Navn: @stemmer (@(Math.Round(100m * stemmer / tellendeStemmer, 2))%)</li>
-                            }
-                        </ul>
-                        <p>Blanke stemmer: @blankeStemmer</p>
-                    }
+                    </ul>
+                    <p>Blanke stemmer: @blankeStemmer</p>
+                }
 
-                    if (Votering.KanVelge == 1 && avgitteStemmer != Votering.Stemmer.Count)
-                    {
-                        <ul>
-                            @foreach (var d in Votering.Stemmer.Values.GroupBy(x => x.DelegatId))
-                            {
-                                <li>Stemmer fra id @d.Key: @d.Count()</li>
-                            }
-                        </ul>
-                    }
+                if (Votering.KanVelge == 1 && avgitteStemmer != Votering.Stemmer.Count)
+                {
+                    <ul>
+                        @foreach (var d in Votering.Stemmer.Values.GroupBy(x => x.DelegatId))
+                        {
+                            <li>Stemmer fra id @d.Key: @d.Count()</li>
+                        }
+                    </ul>
                 }
             }
         </div>
