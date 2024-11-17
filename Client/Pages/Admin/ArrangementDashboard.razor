@@ -41,15 +41,19 @@
         var arrangement = await ArrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId});
         if(arrangement != null)
             _arrangement = arrangement;
+        Console.WriteLine("Arrangement hentet");
         
         _countSubscription = Service.OnActiveCountChanged(ActiveCountChanged);
         await Service.Start();
+        Console.WriteLine("Active subscription connected");
         _aktiveDelegater = await Service.GetActiveCount(ArrangementId);
         
         _tilstedeSubscription = AdminNotifier.OnTilstedeCountChanged(TilstedeCountChanged);
         await AdminNotifier.Start();
+        Console.WriteLine("Tilstede subscribtion connected");
         var tilstedeResponse = await ArrangementService.GetTilstedeCount(new TilstedeCountRequest(ArrangementId));
         _delegaterTilstede = tilstedeResponse.Count;
+        Console.WriteLine("Tilstede count fetched");
     }
 
     private void TilstedeCountChanged(TilstedeCountChangedEvent e)
@@ -65,11 +69,10 @@
         _aktiveDelegater = e.NewCount;
         StateHasChanged();
     }
-    
+
     public void Dispose()
     {
         _countSubscription?.Dispose();
         _tilstedeSubscription?.Dispose();
     }
-
 }
