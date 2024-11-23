@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Server.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Data.Tests", "Stemmesystem.Data.Tests\Stemmesystem.Data.Tests.csproj", "{E719C16A-B2F7-4448-BE65-1E577450C158}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stemmesystem.Client.Tests", "Stemmesystem.Client.Tests\Stemmesystem.Client.Tests.csproj", "{272D1066-3F1D-4FDE-83A9-6D3818310005}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Client.Tests", "Stemmesystem.Client.Tests\Stemmesystem.Client.Tests.csproj", "{272D1066-3F1D-4FDE-83A9-6D3818310005}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
