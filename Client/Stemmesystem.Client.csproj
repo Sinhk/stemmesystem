@@ -8,7 +8,6 @@
     <InternalsVisibleTo Include="$(AssemblyName).Tests" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
     <PackageReference Include="Blazored.SessionStorage" />
     <PackageReference Include="CsvHelper" />
     <PackageReference Include="Grpc.Net.Client" />
