@@ -8,14 +8,14 @@
     <SupportedPlatform Include="browser" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Grpc.Core.Api" Version="2.66.0" />
-    <PackageReference Include="JsonPath.Net" Version="1.1.6" />
-    <PackageReference Include="JsonPointer.Net" Version="5.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="9.0.0" />
-    <PackageReference Include="protobuf-net" Version="3.2.30" />
-    <PackageReference Include="protobuf-net.Grpc" Version="1.1.1" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.10.3" />
-    <PackageReference Include="protobuf-net.BuildTools" Version="3.2.33" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <PackageReference Include="Grpc.Core.Api" />
+    <PackageReference Include="JsonPath.Net" />
+    <PackageReference Include="JsonPointer.Net" />
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
+    <PackageReference Include="protobuf-net" />
+    <PackageReference Include="protobuf-net.Grpc" />
+    <PackageReference Include="System.ServiceModel.Primitives" />
+    <PackageReference Include="protobuf-net.BuildTools" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 </Project>
