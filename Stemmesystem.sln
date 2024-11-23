@@ -8,13 +8,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Client", "Clie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Shared", "Shared\Stemmesystem.Shared.csproj", "{26186DAD-A390-4012-96FA-42348AA3736B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stemmesystem.Data", "Data\StemmeSystem.Data.csproj", "{CABEAA4A-664B-492E-8BD2-898CF857E42D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Data", "Data\StemmeSystem.Data.csproj", "{CABEAA4A-664B-492E-8BD2-898CF857E42D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{CACD0C2C-CB1C-4C4E-8A2C-23961806A1FE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stemmesystem.Server.Tests", "Stemmesystem.Server.Tests\Stemmesystem.Server.Tests.csproj", "{E08709D5-3BBA-4860-B35C-AFF7D5AFF113}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stemmesystem.Data.Tests", "Stemmesystem.Data.Tests\Stemmesystem.Data.Tests.csproj", "{E719C16A-B2F7-4448-BE65-1E577450C158}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stemmesystem.Data.Tests", "Stemmesystem.Data.Tests\Stemmesystem.Data.Tests.csproj", "{E719C16A-B2F7-4448-BE65-1E577450C158}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stemmesystem.Client.Tests", "Stemmesystem.Client.Tests\Stemmesystem.Client.Tests.csproj", "{272D1066-3F1D-4FDE-83A9-6D3818310005}"
 EndProject
