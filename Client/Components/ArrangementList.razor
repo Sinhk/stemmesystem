@@ -1,4 +1,4 @@
-﻿@using Stemmesystem.Shared.Interfaces
+@using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @inject IArrangementService _arrangementService
 @inject NavigationManager Navigation
@@ -31,8 +31,7 @@ else
                 <td>@arrangement.DelegaterCount</td>
                 <td>
                     <button class="btn btn-secondary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}"))">Rediger</button>
-                    <button class="btn btn-primary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}/dashboard"))">Gå til (broken)</button>
-                    <button class="btn btn-primary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}/sak-dashboard"))">Gå ti saker</button>
+                    <button class="btn btn-primary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}/sak-dashboard"))">Gå til saker</button>
                     <button class="btn btn-primary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}/delegat-dashboard"))">Gå til delegater</button>
                 </td>
             </tr>
