@@ -1,17 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
-using Duende.IdentityServer.EntityFramework.Storage;
-using Duende.IdentityServer.Models;
-using Duende.IdentityServer.Services.KeyManagement;
-using Duende.IdentityServer.Stores;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using ProtoBuf.Grpc.Server;
@@ -25,22 +18,14 @@ using Stemmesystem.Server.Features.MinSpeiding;
 using Stemmesystem.Server.Hubs;
 using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
-using Stemmesystem.Shared;
 using Stemmesystem.Shared.Tools;
 using ZiggyCreatures.Caching.Fusion;
 using IConfigurationProvider = AutoMapper.IConfigurationProvider;
-using Secret = Duende.IdentityServer.Models.Secret;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddAppDbContext();
-builder.Services.AddOperationalDbContext<StemmesystemContext>(options =>
-{
-    options.EnableTokenCleanup = true;
-    options.RemoveConsumedTokens = true;
-    options.TokenCleanupInterval = 3600; // interval in seconds (default is 3600)
-});
 builder.Services.AddDataProtection()
     .PersistKeysToDbContext<StemmesystemContext>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -52,39 +37,13 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
-builder.Services.AddIdentityServer()
-    .AddExtensionGrantValidator<KodeExtensionGrantValidator>()
-    .AddApiAuthorization<ApplicationUser, StemmesystemContext>(options =>
-    {
-        options.IdentityResources["openid"].UserClaims.Add("name");
-        options.ApiResources.Single().UserClaims.Add("name");
-        options.IdentityResources["openid"].UserClaims.Add("role");
-        options.ApiResources.Single().UserClaims.Add("role");
-        options.Clients.Add(new Client
-        {
-            ClientId = AuthConstants.DelegatkodeClientId, 
-            ClientSecrets = new List<Secret>
-            {
-                new("passord".Sha256())
-            },
-            AllowedGrantTypes = {AuthConstants.DelegatkodeGrantType}
-        });
-    })
-    .AddProfileService<StemmeProfileService>()
-    .AddInMemoryCaching();
-
-builder.Services.RemoveAll(typeof(IValidationKeysStore));
-builder.Services.RemoveAll(typeof(ISigningCredentialStore));
-builder.Services.AddTransient<ISigningCredentialStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
-builder.Services.AddTransient<IValidationKeysStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
-
 builder.Services.AddAuthentication()
     .AddGoogle("Google", options =>
     {
         options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
         options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
     })
-    .AddIdentityServerJwt();
+    .AddJwtBearer();
 
 builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>());
 
@@ -164,7 +123,6 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseIdentityServer();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });

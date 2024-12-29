@@ -1,5 +1,5 @@
 ﻿using Blazored.SessionStorage;
-using IdentityModel.Client;
+using Duende.IdentityModel.Client;
 using Microsoft.AspNetCore.Components.Authorization;
 using Stemmesystem.Shared;
 

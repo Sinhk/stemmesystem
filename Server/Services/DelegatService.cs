@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Duende.IdentityServer.Extensions;
 using Google.Protobuf.WellKnownTypes;
 using Google.Rpc;
 using Grpc.Core;
@@ -13,7 +12,6 @@ using Stemmesystem.Data.Entities;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.Interfaces;
 using Stemmesystem.Shared.Models;
-using Stemmesystem.Shared.SignalR;
 using Stemmesystem.Shared.Tools;
 
 namespace Stemmesystem.Server.Services;

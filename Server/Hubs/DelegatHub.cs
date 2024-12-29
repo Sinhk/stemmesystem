@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using Duende.IdentityServer.Extensions;
 using Microsoft.AspNetCore.SignalR;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.SignalR;

@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AsyncKeyedLock;
 using AutoMapper;
-using Duende.IdentityServer.Extensions;
 using Google.Rpc;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
