@@ -1,4 +1,4 @@
-using AutoMapper;
+/*using AutoMapper;
 using Stemmesystem.Client.Services.CSV;
 using Stemmesystem.Shared.Models;
 using Stemmesystem.Web.Services.CSV;
@@ -28,4 +28,4 @@ namespace Stemmesystem.Client
 
         }
     }
-}
+}*/

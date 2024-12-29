@@ -19,7 +19,7 @@
             <label class="form-check-label" for="numCheck">Generer nummer</label>
         </div>
 
-        <button class="btn btn-primary ml-3" @onclick="@(e => LagreImport())">Lagre alle</button>
+        <button class="btn btn-primary ml-3" @onclick="@(_ => LagreImport())">Lagre alle</button>
         for (var i = 0; i < _importDelegater.Count; i++)
         {
             var index = i;
@@ -30,7 +30,7 @@
 <hr/>
 @code {
     private string? _error;
-    private List<DelegatInputModel> _importDelegater = new();
+    private List<DelegatFormModel> _importDelegater = new();
     private bool _genererNummer;
     private IDictionary<int,DelegatFormInline> _delegatForms = new Dictionary<int, DelegatFormInline>();
 
@@ -47,7 +47,13 @@
             await using var stream = e.File.OpenReadStream();
             using var reader = new StreamReader(stream);
             var delegater = await Import.LesDelagater(reader);
-            _importDelegater = new List<DelegatInputModel>(delegater);
+
+
+            _importDelegater = new List<DelegatFormModel>();
+            foreach (var delegat in delegater)
+            {
+                _importDelegater.Add(new DelegatFormModel(delegat));
+            }
         }
         catch (Exception ex)
         {

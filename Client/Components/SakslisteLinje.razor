@@ -144,7 +144,7 @@
     [CascadingParameter(Name = "DelegaterTilestede")]
     public int DelegaterTilstede { get; set; }
     
-    private VoteringInputModel? _nyRunde;
+    private VoteringFormModel _nyRunde;
     private bool _visDetaljer;
     private ConcurrentDictionary<int, bool> _harStemt = new();
     private IDisposable? _subscription;
@@ -193,7 +193,8 @@
 
     private async Task NyRunde(int arrangementId, int voteringId)
     {
-        _nyRunde = await StemmeService.KopierVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        var kopierVotering = await StemmeService.KopierVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        _nyRunde = new VoteringFormModel(kopierVotering);
         var num = 2;
         if (_nyRunde.Tittel.Contains(". runde", StringComparison.OrdinalIgnoreCase))
         {
@@ -212,7 +213,7 @@
                 int.TryParse(numStr.Trim(), out num);
                 num++;
             }
-            _nyRunde = _nyRunde with{ Tittel = $"{split[0].TrimEnd('-', ' ')} - Runde {num}"};
+            _nyRunde.Tittel = $"{split[0].TrimEnd('-', ' ')} - Runde {num}";
         }
 
         StateHasChanged();
@@ -222,5 +223,4 @@
     {
         _subscription?.Dispose();
     }
-
 }

@@ -1,79 +1,67 @@
-﻿@using Microsoft.AspNetCore.Components
-@using Stemmesystem.Shared.Interfaces
+﻿@using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
-@using AutoMapper
-@inject ISakService _sakService
-@inject IMapper _mapper
+@inject ISakService SakService
 
-
-@if (Votering.Startet)
-{
+<EditForm class="mb-2" Model="@Votering" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <CustomValidator @ref="_customValidator" />
+    <ValidationSummary />
     <div class="card">
         <div class="card-header">
-            @Votering.Tittel
+            <div class="form-row">
+                <div class="col-6">
+                    <InputText class="form-control" placeholder="Tittel" @bind-Value="Votering.Tittel"/>
+                </div>
+                <div class="col-2">
+                    <InputNumber class="form-control" placeholder="Kan velge" @bind-Value="Votering.KanVelge"/>
+                </div>
+                <div class="form-group">
+                    <div class="form-check col-3 mt-2">
+                        <InputCheckbox class="form-check-input" placeholder="Hemmelig" @bind-Value="Votering.Hemmelig" id="hemmeligCheck"/>
+                        <label class="form-check-label" for="hemmeligCheck">Hemmelig</label>
+                    </div>
+                </div>
+                <div class="col-10">
+                    <InputText class="form-control" placeholder="Beskrivelse" @bind-Value="Votering.Beskrivelse"/>
+                </div>
+                <button type="submit" class="btn btn-primary">Lagre</button>
+            </div>
         </div>
         <div class="card-body">
-            <em>Votering har startet og kan ikke endres</em>
+            <h6>Valg</h6>
+            @foreach (var valg in Votering.Valg)
+            {
+                <ValgInline Valg="@valg" OnTaVekkValg="@TaVekkValg"></ValgInline>
+            }
+            <button type="button" class="btn btn-success btn-sm mt-1" @onclick=LeggTilValg>Legg til valg</button>
         </div>
     </div>
-}
-else
-{
-    <EditForm class="mb-2" Model="@Votering" OnValidSubmit="@HandleValidSubmit">
-        <DataAnnotationsValidator />
-        <CustomValidator @ref="_customValidator" />
-        <ValidationSummary />
-        <div class="card">
-            <div class="card-header">
-                <div class="form-row">
-                    <div class="col-6">
-                        <InputText class="form-control" placeholder="Tittel" @bind-Value="Votering.Tittel"/>
-                    </div>
-                    <div class="col-2">
-                        <InputNumber class="form-control" placeholder="Kan velge" @bind-Value="Votering.KanVelge"/>
-                    </div>
-                    <div class="form-group">
-                        <div class="form-check col-3 mt-2">
-                            <InputCheckbox class="form-check-input" placeholder="Hemmelig" @bind-Value="Votering.Hemmelig" id="hemmeligCheck"/>
-                            <label class="form-check-label" for="hemmeligCheck">Hemmelig</label>
-                        </div>
-                    </div>
-                    <div class="col-10">
-                        <InputText class="form-control" placeholder="Beskrivelse" @bind-Value="Votering.Beskrivelse"/>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Lagre</button>
-                </div>
-            </div>
-            <div class="card-body">
-                <h6>Valg</h6>
-                @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
-                {
-                    <ValgInline Valg="@valg" OnTaVekkValg="@TaVekkValg"></ValgInline>
-                }
-                <button type="button" class="btn btn-success btn-sm mt-1" @onclick=LeggTilValg>Legg til valg</button>
-            </div>
-        </div>
-    </EditForm>
-}
+</EditForm>
+
 
 @code {
 
     [Parameter]
-    public VoteringInputModel Votering { get; set; } = null!;
+    public int SakId { get; init; }
+    
+    [Parameter]
+    public VoteringFormModel Votering { get; init; } = new();
+
 
     [Parameter]
     public EventCallback OnSuccess { get; set; }
 
     private CustomValidator? _customValidator;
-    
+    private readonly VoteringDto _votering = null!;
+
     private async Task HandleValidSubmit(){
         _customValidator?.ClearErrors();
 
-        Votering.Valg.RemoveAll(v => string.IsNullOrEmpty(v.Navn));
+        var inputModel = Votering.ToInputModel(SakId);
         if (Votering.Id.GetValueOrDefault() != default)
         {
-            var (votering, errors) = await _sakService.OppdaterVotering(Votering);
+            var (votering, errors) = await SakService.OppdaterVotering(inputModel);
 
             if (errors?.Count > 0)
             {
@@ -82,13 +70,13 @@ else
             }
             if (votering != null)
             {
-                _mapper.Map(votering, Votering);  
+                Votering.ApplyChanges(votering);
                 await OnSuccess.InvokeAsync();    
             }
         }
         else
         {
-            var (votering, errors) = await _sakService.LagreNyVotering(Votering);
+            var (votering, errors) = await SakService.LagreNyVotering(inputModel);
             
             if (errors?.Count > 0)
             {
@@ -98,7 +86,7 @@ else
             
             if(votering != null)
             {
-                _mapper.Map(votering, Votering);
+                Votering.ApplyChanges(votering);
                 await OnSuccess.InvokeAsync();    
             }
         }
@@ -106,7 +94,12 @@ else
 
     private void LeggTilValg()
     {
-        Votering.Valg.Add(new ValgDto {Id = Guid.NewGuid(),SortId = Votering.Valg.Count});
+        var sortId = Votering.Valg.Count;
+        Votering.Valg.Add(new ValgDto
+        {
+            Id = Guid.NewGuid(), 
+            SortId = sortId
+        });
     }
 
     private void TaVekkValg(Guid valgId)

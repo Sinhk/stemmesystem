@@ -4,7 +4,6 @@
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
 @using Microsoft.AspNetCore.Authorization
-@using AutoMapper
 @inject IArrangementService ArrangementService
 @inject NavigationManager Navigation
 
@@ -57,13 +56,14 @@ else
         {
             <DelegatImport ArrangementId="@_arrangement.Id.Value"/>
             <div class="row">
-                @foreach (var delegat in Delegater.OrderBy(d => d.Delegatnummer ?? int.MaxValue))
+                @foreach (var delegat in _delegater.OrderBy(d => d.Delegatnummer ?? int.MaxValue))
                 {
-                    <DelegatFormInline Delegat="@delegat" ArrangementId="@_arrangement.Id.Value" OnDelete="() => Delegater.Remove(delegat)" />
+                    var formModel = new DelegatFormModel(delegat);
+                    <DelegatFormInline Delegat="@formModel" ArrangementId="@_arrangement.Id.Value" OnDelete="() => _delegater.Remove(delegat)" />
                 }
             </div>
             <div class="row">
-                <button class="btn btn-success" @onclick="@(_ => Delegater.Add(new DelegatInputModel()))">Legg til</button>
+                <button class="btn btn-success" @onclick="@(_ => _delegater.Add(new DelegatDto()))">Legg til</button>
             </div>
         }
         
@@ -81,7 +81,7 @@ else
                 }
             </div>
             <div class="row">
-                <button class="btn btn-success" @onclick="@(_ => Saker.Add(new SakInputModel()))">Legg til</button>
+                <button class="btn btn-success" @onclick="@(_ => Saker.Add(new SakFormModel()))">Legg til</button>
             </div>
         }
         <div class="row mt-2" @onclick=@(_ => _minSpeidingExpanded=!_minSpeidingExpanded)>
@@ -104,25 +104,17 @@ else
     private CustomValidator? _customValidator;
 
     private bool _delegaterExpanded;
-    public ICollection<DelegatInputModel> Delegater
-    {
-        get => _delegater ??= new List<DelegatInputModel>();
-        private set => _delegater = value;
-    }
-
-    [Inject]
-    private IMapper Automapper { get; init; } = default!;
-
+    
     private bool _minSpeidingExpanded;
     
     private bool _sakerExpanded;
-    public ICollection<SakInputModel> Saker
+    public ICollection<SakFormModel> Saker
     {
-        get => _saker ??= new List<SakInputModel>();
+        get => _saker ??= new List<SakFormModel>();
         private set => _saker = value;
     }
-    private ICollection<DelegatInputModel>? _delegater;
-    private ICollection<SakInputModel>? _saker;
+    private ICollection<DelegatDto>? _delegater;
+    private ICollection<SakFormModel>? _saker;
     private bool _ready;
 
     protected override async Task OnInitializedAsync(){
@@ -130,10 +122,10 @@ else
             var arrangement = await ArrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId.Value});
             if(arrangement != null)
             {
-                _arrangement = Automapper.Map<ArrangementInputModel>(arrangement);
+                _arrangement = arrangement.ToInputModel();
 
-                Delegater = Automapper.Map<ICollection<DelegatInputModel>>(arrangement.Delegater);
-                Saker = Automapper.Map<ICollection<SakInputModel>>(arrangement.Saker);
+                _delegater = arrangement.Delegater;
+                Saker = arrangement.Saker.Select(s => new SakFormModel(s)).ToList();
             }
         }
 
@@ -160,7 +152,7 @@ else
         if (errors.Count <= 0)
         {
             var arrangement = await ArrangementService.OppdaterArrangement(_arrangement);
-            Automapper.Map(arrangement, _arrangement);
+            _arrangement = arrangement.ToInputModel();
         }
     }
 
@@ -169,7 +161,7 @@ else
         if (errors.Count <= 0)
         {
             var arrangement = await ArrangementService.NyttArrangement(_arrangement);
-            Automapper.Map(arrangement, _arrangement);
+            _arrangement = arrangement.ToInputModel();
             Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}");
         }
     }

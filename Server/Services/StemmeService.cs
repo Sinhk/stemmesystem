@@ -265,7 +265,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     }
 
     [Authorize(Roles = "admin")]
-    public async Task<VoteringInputModel> KopierVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
+    public async Task<VoteringDto> KopierVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default)
     {
         var (arrangementId, voteringId) = request;
         var votering = await _arrangementRepository.FinnVoteringAsync(arrangementId, voteringId, cancellationToken);
@@ -273,7 +273,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             throw new StemmeException("Fant ikke valgt votering");
 
         var kopi = votering.Kopier();
-        return _mapper.Map<VoteringInputModel>(kopi);
+        return _mapper.Map<VoteringDto>(kopi);
     }
 
     [Authorize(Roles = "admin")]

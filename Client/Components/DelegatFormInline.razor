@@ -1,10 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Components
 @using Stemmesystem.Shared.Interfaces
-@using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
-@using AutoMapper
-@inject IAdminDelegatService _delegatService
-@inject IMapper _mapper
+@inject IAdminDelegatService DelegatService
 
 <EditForm class="form-inline" EditContext="EditContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -16,11 +13,9 @@
     <InputText class="form-control" placeholder="Gruppe" @bind-Value="Delegat.Gruppe"/>
     <InputText class="form-control" placeholder="Epost" @bind-Value="Delegat.Epost"/>
     <InputText class="form-control" placeholder="Telefon" @bind-Value="Delegat.Telefon"/>
-    @if (ArrangementId != null)
-    {
-        <button type="submit" class="btn btn-primary" disabled="@(Delegat.Id != null && !context.IsModified())">Lagre</button>    
-        <button type="button" class="btn btn-danger" @onclick="() => SlettDelegat(Delegat.Id)">Slett</button>    
-    }
+
+    <button type="submit" class="btn btn-primary" disabled="@(Delegat.Id != null && !context.IsModified())">Lagre</button>    
+    <button type="button" class="btn btn-danger" @onclick="() => SlettDelegat(Delegat.Id)">Slett</button>    
 </EditForm>
 
 @code {
@@ -28,10 +23,10 @@
     private ElementReference numInput;
 
     [Parameter]
-    public DelegatInputModel Delegat { get; set; } = null!;
+    public DelegatFormModel Delegat { get; set; } = null!;
 
     [Parameter]
-    public int? ArrangementId { get; set; }
+    public int ArrangementId { get; set; }
     
     [Parameter]
     public EventCallback OnDelete { get; set; }
@@ -50,37 +45,35 @@
     }
 
     internal async Task<bool> HandleValidSubmit(EditContext context){
-        if (ArrangementId == null) return false;
         customValidator?.ClearErrors();
         if (Delegat.Id == null)
-            await LeggTilDelegat(ArrangementId.Value);
+            await LeggTilDelegat();
         else
-            await OppdaterDelegat(ArrangementId.Value);
+            await OppdaterDelegat();
         
         context.MarkAsUnmodified();
         return true;
     }
 
-    private async Task OppdaterDelegat(int arrangementId)
+    private async Task OppdaterDelegat()
     {
-        Delegat.ArrangementId = arrangementId;
-        var delegat = await _delegatService.OppdaterDelegat(Delegat);
-        _mapper.Map(delegat, Delegat);
-        
+        var inputModel = Delegat.ToInputModel(ArrangementId);
+        var delegat = await DelegatService.OppdaterDelegat(inputModel);
+        Delegat.ApplyChanges(delegat);
     }
 
-    private async Task LeggTilDelegat(int arrangementId)
+    private async Task LeggTilDelegat()
     {
-        Delegat.ArrangementId = arrangementId;
-        var delegat = await _delegatService.RegistrerNyDelegat(Delegat);
-        _mapper.Map(delegat, Delegat);
+        var inputModel = Delegat.ToInputModel(ArrangementId);
+        var delegat = await DelegatService.RegistrerNyDelegat(inputModel);
+        Delegat.ApplyChanges(delegat);
     }
     
     private async Task SlettDelegat(int? delegatId, CancellationToken cancellationToken = default)
     {
-        if (delegatId != null && ArrangementId != null)
+        if (delegatId != null)
         {
-            await _delegatService.SlettDelegat(new SlettDelegatRequest(ArrangementId.Value, delegatId.Value), cancellationToken);
+            await DelegatService.SlettDelegat(new SlettDelegatRequest(ArrangementId, delegatId.Value), cancellationToken);
         }
         
         await OnDelete.InvokeAsync();

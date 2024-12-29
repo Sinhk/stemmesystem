@@ -27,5 +27,5 @@ public interface IAdminStemmeService
     Task<HentResult<AdminVoteringDto>> StoppVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
     Task<HentResult<AdminVoteringDto>> PubliserVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
     Task<HentResult<AdminVoteringDto>> LukkVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
-    Task<VoteringInputModel> KopierVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
+    Task<VoteringDto> KopierVotering(AdminStemmeRequest request, CancellationToken cancellationToken = default);
 }

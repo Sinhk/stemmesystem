@@ -34,6 +34,23 @@ public record VoteringDto
     public bool Hemmelig { get; set; }
 
     public bool Startet => StartTid.GetValueOrDefault() > default(DateTime);
+    
+    public VoteringDto Kopier() =>
+        new()
+        {
+            Tittel = Tittel,
+            Hemmelig  = Hemmelig,
+            Aktiv = false
+            , Beskrivelse = Beskrivelse
+            , KanVelge = KanVelge
+            , SakId = SakId
+            , Valg = new List<ValgDto>(Valg.Select(v => new ValgDto
+            {
+                Id = Guid.NewGuid(),
+                Navn = v.Navn,
+                SortId = v.SortId
+            }))
+        };
 }
 [ProtoContract]
 public record AdminVoteringDto : VoteringDto
@@ -154,7 +171,5 @@ public record VoteringInputModel
     public int KanVelge { get; set; } =1;
         
     [ProtoMember(8)]
-    public List<ValgDto> Valg { get; set; } = new();
-
-    public bool Startet { get; set; }
+    public List<ValgDto>? Valg { get; set; } = new();
 }
