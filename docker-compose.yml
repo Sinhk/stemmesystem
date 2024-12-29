@@ -1,0 +1,15 @@
+﻿services:
+  postgres:
+    image: postgres:16
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      # change this for a "real" app!
+      POSTGRES_USER: stemme
+      POSTGRES_PASSWORD: Dcv2Zf:z{Fc_]66J
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
