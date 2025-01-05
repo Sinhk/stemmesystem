@@ -76,7 +76,6 @@ builder.Services.AddOptions<EmailSettings>()
     .BindConfiguration("EmailSettings")
     .ValidateDataAnnotations();
 
-builder.Services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
 builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
 
 builder.Services.AddFusionCache()

@@ -38,7 +38,7 @@ namespace Stemmesystem.Data.Entities
             Delegatnummer = delegatnummer;
             Navn = navn;
 
-            delegatkode ??= RngKeyGenerator.GenerateKey(6);
+            delegatkode ??= KeyGenerator.GenerateKey(6);
             Delegatkode = delegatkode;
         }
     }

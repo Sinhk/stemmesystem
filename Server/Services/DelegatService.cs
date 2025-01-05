@@ -19,15 +19,13 @@ public class DelegatService : IDelegatService, IAdminDelegatService
 {
     private static readonly int KeyLength = 6;
     private readonly StemmesystemContext _context;
-    private readonly IKeyGenerator _keyGenerator;
     private readonly ILogger<DelegatService> _logger;
     private readonly NotificationManager _notificationManager;
 
     private int? _tilstedeCount;
 
-    public DelegatService(IKeyGenerator keyGenerator, StemmesystemContext context, ILogger<DelegatService> logger, NotificationManager notificationManager)
+    public DelegatService(StemmesystemContext context, ILogger<DelegatService> logger, NotificationManager notificationManager)
     {
-        _keyGenerator = keyGenerator;
         _context = context;
         _logger = logger;
         _notificationManager = notificationManager;
@@ -115,7 +113,7 @@ public class DelegatService : IDelegatService, IAdminDelegatService
         if (!await IsValidNo(dto.ArrangementId, delegatnummer))
             throw new StemmeException("Delegatnummer er allerede brukt");
 
-        var delegatkode = _keyGenerator.GenerateKey(KeyLength);
+        var delegatkode = KeyGenerator.GenerateKey(KeyLength);
         var delegat = new Delegat(delegatnummer, dto.Navn, delegatkode)
             {
                 ArrangementId = dto.ArrangementId,

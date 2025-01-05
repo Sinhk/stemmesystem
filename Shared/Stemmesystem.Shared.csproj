@@ -15,6 +15,7 @@
     <PackageReference Include="JsonPath.Net" Version="1.1.6" />
     <PackageReference Include="JsonPointer.Net" Version="5.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="6.0.33" />
+    <PackageReference Include="Nanoid" Version="3.1.0" />
     <PackageReference Include="protobuf-net" Version="3.2.30" />
     <PackageReference Include="protobuf-net.Grpc" Version="1.1.1" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.10.3" />
