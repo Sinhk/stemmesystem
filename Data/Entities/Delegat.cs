@@ -33,12 +33,12 @@ namespace Stemmesystem.Data.Entities
         
         public int? MemberId { get; set; }
 
-        internal Delegat(int delegatnummer, string? navn, string? delegatkode = null)
+        public Delegat(int delegatnummer, string? navn, string? delegatkode = null)
         {
             Delegatnummer = delegatnummer;
             Navn = navn;
 
-            delegatkode ??= RngKeyGenerator.GenerateKey(4);
+            delegatkode ??= RngKeyGenerator.GenerateKey(6);
             Delegatkode = delegatkode;
         }
     }

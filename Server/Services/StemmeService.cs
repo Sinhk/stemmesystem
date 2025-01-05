@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AsyncKeyedLock;
-using AutoMapper;
 using Google.Rpc;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
@@ -26,12 +25,11 @@ public class StemmeService : IStemmeService, IAdminStemmeService
     private readonly IKeyHasher _keyHasher;
     private readonly IArrangementRepository _arrangementRepository;
     private readonly NotificationManager _notificationManager;
-    private readonly IMapper _mapper;
     private readonly IFusionCache _cache;
 
     private static readonly AsyncKeyedLocker<string> AsyncKeyedLocker = new();
 
-    public StemmeService(IDelegatRepository delegatRepository, IArrangementRepository arrangementRepository, StemmesystemContext context, IKeyHasher keyHasher, NotificationManager notificationManager, IMapper mapper, IFusionCache cache)
+    public StemmeService(IDelegatRepository delegatRepository, IArrangementRepository arrangementRepository, StemmesystemContext context, IKeyHasher keyHasher, NotificationManager notificationManager, IFusionCache cache)
     {
         _delegatRepository = delegatRepository;
         _arrangementRepository = arrangementRepository;
@@ -39,7 +37,6 @@ public class StemmeService : IStemmeService, IAdminStemmeService
 
         _keyHasher = keyHasher;
         _notificationManager = notificationManager;
-        _mapper = mapper;
         _cache = cache;
     }
 
@@ -105,7 +102,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             await Parallel.ForEachAsync(fjernes, cancellationToken, async (s, token) => await notifier.StemmeFjernet(new StemmeFjernetEvent(votering.Id, s.Id), token));
         await Parallel.ForEachAsync(stemmer, cancellationToken, async (s, token) => await notifier.NyStemme(new NyStemmeEvent(votering.Id, new StemmeDto(s.Id, s.ValgId, null)), token));
         await notifier.HarStemt(new HarStemtEvent(votering.Id, delegat.Id), cancellationToken);
-        var dto = _mapper.Map<List<StemmeDto>>(stemmer);
+        var dto = stemmer.Select(s => s.ToDto()).ToList();
         return dto;
     }
 
@@ -118,12 +115,13 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         votering.StartVotering();
 
         await _context.SaveChangesAsync(cancellationToken);
-        var e = new VoteringStartetEvent(_mapper.Map<AdminVoteringDto>(votering));
+        var dto = votering.ToAdminDto();
+        var e = new VoteringStartetEvent(dto);
 
         await _cache.RemoveAsync($"aktive-{request.ArrangementId}", token: cancellationToken);
         await _notificationManager.ForArrangement(request.ArrangementId).VoteringStartet(e, cancellationToken);
         await _notificationManager.ForAdmin(request.ArrangementId).VoteringStartet(e, cancellationToken);
-        return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
+        return new HentResult<AdminVoteringDto>(dto);
     }
 
     [Authorize(Roles = "admin")]
@@ -134,7 +132,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             throw new StemmeException("Fant ikke valgt votering");
 
         await StoppVotering(votering, request.ArrangementId, cancellationToken: cancellationToken);
-        return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
+        return new HentResult<AdminVoteringDto>(votering.ToAdminDto());
     }
 
     private async Task StoppVotering(Votering votering, int arrangementId, bool lagre = true, CancellationToken cancellationToken = default)
@@ -167,11 +165,11 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             .SelectMany(v => v.AvgitStemme)
             .AnyAsync(s => s.Id == delegat.Id, cancellationToken);
 
-        List<StemmeDto>? stemmer = null;
+        StemmeDto[]? stemmer = null;
         if (harStemmt)
         {
             var tmp = await GetFinnStemmeQuery(_context, request.VoteringId, delegat, cancellationToken);
-            stemmer = _mapper.Map<List<StemmeDto>>(tmp);
+            stemmer = tmp.Select(x => x.ToDto()).ToArray();
         }
         var result = new HarStemmtResult(harStemmt, stemmer);
         return result;
@@ -189,7 +187,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         return delegat;
     }
 
-    public async Task<StemmeDto> FinnStemme(int voteringId, Guid stemmeId, CancellationToken cancellationToken = default)
+    public async Task<StemmeDto?> FinnStemme(int voteringId, Guid stemmeId, CancellationToken cancellationToken = default)
     {
         var stemme = await _context.Votering
             .Where(v => v.Id == voteringId)
@@ -197,13 +195,13 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             .Where(s => s.Id == stemmeId)
             .FirstOrDefaultAsync(cancellationToken);
 
-        return _mapper.Map<StemmeDto>(stemme);
+        return stemme?.ToDto();
     }
 
     public async Task<List<StemmeDto>> FinnStemmer(int voteringId, string delegatKode, CancellationToken cancellationToken = default)
     {
         var stemmer = await GetFinnStemmeQuery(_context, voteringId, delegatKode, cancellationToken);
-        return _mapper.Map<List<StemmeDto>>(stemmer);
+        return stemmer.Select(x => x.ToDto()).ToList();
     }
 
     private async Task<List<Stemme>> GetFinnStemmeQuery(StemmesystemContext context, int voteringId, string delegatkode, CancellationToken cancellationToken = default)
@@ -245,7 +243,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         await _context.SaveChangesAsync(cancellationToken);
 
         await _notificationManager.ForAdmin(arrangementId).VoteringLukket(new VoteringLukketEvent(votering.SakId, votering.Id, votering.DelegaterTilstede), cancellationToken);
-        return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
+        return new HentResult<AdminVoteringDto>(votering.ToAdminDto());
     }
 
     [Authorize(Roles = "admin")]
@@ -261,7 +259,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         await _cache.RemoveAsync($"resultater-{request.ArrangementId}", token: cancellationToken);
         await _notificationManager.ForAdmin().VoteringPublisert(new VoteringPublisertEvent(arrangementId, votering.SakId, votering.Id), cancellationToken);
         await _notificationManager.ForArrangement(arrangementId).VoteringPublisert(new VoteringPublisertEvent(arrangementId, votering.SakId, votering.Id), cancellationToken);
-        return new HentResult<AdminVoteringDto>(_mapper.Map<AdminVoteringDto>(votering));
+        return new HentResult<AdminVoteringDto>(votering.ToAdminDto());
     }
 
     [Authorize(Roles = "admin")]
@@ -273,7 +271,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
             throw new StemmeException("Fant ikke valgt votering");
 
         var kopi = votering.Kopier();
-        return _mapper.Map<VoteringDto>(kopi);
+        return kopi.ToDto();
     }
 
     [Authorize(Roles = "admin")]

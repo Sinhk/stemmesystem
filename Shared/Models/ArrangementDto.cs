@@ -34,11 +34,11 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(3)]
         public string? Beskrivelse { get; set; }
         [ProtoMember(4)]
-        public int DelegaterCount { get; set; }
+        public int AntallDelegater { get; set; }
         [ProtoMember(5)]
-        public int SakerCount { get; set; }
+        public int AntallSaker { get; set; }
         [ProtoMember(6)]
-        public int VoteringerCount { get; set; }
+        public int AntellVoteringer { get; set; }
     }
 
     [ProtoContract]

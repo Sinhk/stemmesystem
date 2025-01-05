@@ -27,8 +27,8 @@ else
             <tr>
                 <td>@arrangement.Navn</td>
                 <td>@arrangement.Beskrivelse</td>
-                <td>@arrangement.SakerCount (@arrangement.VoteringerCount) </td>
-                <td>@arrangement.DelegaterCount</td>
+                <td>@arrangement.AntallSaker (@arrangement.AntellVoteringer) </td>
+                <td>@arrangement.AntallDelegater</td>
                 <td>
                     <button class="btn btn-secondary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}"))">Rediger</button>
                     <button class="btn btn-primary" @onclick="@(_ => Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}/dashboard"))">Gå til</button>

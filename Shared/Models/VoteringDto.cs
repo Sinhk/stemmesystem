@@ -13,7 +13,7 @@ public record VoteringDto
     [ProtoMember(2)]
     public string Tittel { get; init; }
     [ProtoMember(3)]
-    public string Beskrivelse { get; init; }
+    public string? Beskrivelse { get; init; }
     [ProtoMember(4)]
     public int KanVelge { get; init; }
     [ProtoMember(5)]
@@ -55,15 +55,14 @@ public record VoteringDto
 [ProtoContract]
 public record AdminVoteringDto : VoteringDto
 {
-    [ProtoMember(1)] public List<DelegatDto> AvgitStemme { get; init; } = new();
+    [ProtoMember(1)] public List<int> AvgitStemme { get; init; } = new();
     [ProtoMember(2)] public List<StemmeDto> Stemmer { get; init; } = new();
-    
     [ProtoMember(13)] public int? DelegaterTilstede { get; init; }
-    
-
 }
+
+public record HarStemtDelegat(int Id);
     
-public record SakInfoDto(int Id, string Tittel, string Beskrivelse);
+public record SakInfoDto(int Id, string Tittel, string? Beskrivelse);
 
 
 [ProtoContract]
@@ -73,7 +72,7 @@ public record VoteringResultatDto
     public int Id { get; init; }
     [ProtoMember(2)]
     public string Tittel { get; init; }
-    [ProtoMember(3)] public string Beskrivelse { get; init; }
+    [ProtoMember(3)] public string? Beskrivelse { get; init; }
     [ProtoMember(4)] public List<StemmeDto> Stemmer { get; init; } = new();
     [ProtoMember(5)] public List<ValgDto> Valg { get; init; } = new();
     [ProtoMember(6)] public string SakNavn { get; init; }

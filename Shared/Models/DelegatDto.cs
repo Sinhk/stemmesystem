@@ -8,19 +8,19 @@ namespace Stemmesystem.Shared.Models
     public record DelegatDto
     {
         [ProtoMember(1)]
-        public int Id { get; internal set; }
+        public int Id { get; init; }
         [ProtoMember(2)]
-        public int? Delegatnummer { get; set; }
+        public int? Delegatnummer { get; init; }
         [ProtoMember(3)]
         public string? Navn { get; set; }
         [ProtoMember(4)]
-        public string? Gruppe { get; set; }
+        public string? Gruppe { get; init; }
         [ProtoMember(5)]
         public string? Epost { get; set; }
         [ProtoMember(6)]
         public string? Telefon { get; set; }
         [ProtoMember(7)]
-        public int ArrangementId { get; set; }
+        public int ArrangementId { get; init; }
     }
 
     [ProtoContract]

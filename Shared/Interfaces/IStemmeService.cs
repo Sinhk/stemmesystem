@@ -17,7 +17,7 @@ public interface IStemmeService
 
 public record StemmeRequest(int VoteringId);
 public record AvgiStemmeRequest(int VoteringId, IEnumerable<Guid> ValgIder);
-public record HarStemmtResult(bool HarStemmt, List<StemmeDto>? Stemmer);
+public record HarStemmtResult(bool HarStemmt, IReadOnlyCollection<StemmeDto>? Stemmer);
 public record AdminStemmeRequest(int ArrangementId, int VoteringId);
 
 [Service]

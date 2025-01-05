@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using ProtoBuf.Grpc.Server;
-using Stemmesystem.Api;
 using Stemmesystem.Data;
 using Stemmesystem.Data.Models;
 using Stemmesystem.Data.Repositories;
@@ -20,7 +19,6 @@ using Stemmesystem.Server.InternalServices;
 using Stemmesystem.Server.Services;
 using Stemmesystem.Shared.Tools;
 using ZiggyCreatures.Caching.Fusion;
-using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,7 +79,6 @@ builder.Services.AddOptions<EmailSettings>()
 builder.Services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
 builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
 
-builder.Services.AddAutoMapper(typeof(ApiAutoMapperProfile));
 builder.Services.AddFusionCache()
     .WithDefaultEntryOptions(new FusionCacheEntryOptions {
         Duration = TimeSpan.FromMinutes(1),
@@ -103,9 +100,6 @@ await MigrateDatabase(app);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    var mapperConfig = app.Services.GetRequiredService<IConfigurationProvider>();
-    mapperConfig.AssertConfigurationIsValid();
-    
     app.UseMigrationsEndPoint();
     app.UseWebAssemblyDebugging();
 }

@@ -68,6 +68,13 @@ namespace Stemmesystem.Data.Entities
             StartTid = DateTime.UtcNow;
         }
 
+        public Valg LeggTilValg(string tekst, int? sortId = null)
+        {
+            var valg = new Valg(tekst, sortId ?? _valg.Count);
+            _valg.Add(valg);
+            return valg;
+        }
+
         [MemberNotNull(nameof(SluttTid))]
         public void AvsluttVotering(int delegaterTilstede)
         {
@@ -115,11 +122,27 @@ namespace Stemmesystem.Data.Entities
             return (stemmer,fjernes);
         }
 
+        public void OppdaterValg(IEnumerable<ValgDto> valg)
+        {
+            foreach (var v in valg)
+            {
+                var existing = _valg.FirstOrDefault(vv => vv.Id == v.Id);
+                if (existing == null)
+                {
+                    LeggTilValg(v.Navn, v.SortId);
+                    continue;
+                }
+
+                existing.Navn = v.Navn;
+                existing.SortId = v.SortId;
+            }
+        }
+
         public void LukkVotering()
         {
             Lukket = true;
         }
-        
+
         public void PubliserVotering()
         {
             if (!Lukket)

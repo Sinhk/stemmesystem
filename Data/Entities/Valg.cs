@@ -8,7 +8,7 @@ namespace Stemmesystem.Server.Data.Entities
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; internal set; }
-        public string Navn { get; init; }
+        public string Navn { get; set; }
         public int? SortId { get; set; }
 
         public Valg(string navn, int? sortId = null)

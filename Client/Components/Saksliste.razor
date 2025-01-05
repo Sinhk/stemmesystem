@@ -223,7 +223,7 @@
 
     public record DashboardVoteringModel
     {
-        public DashboardVoteringModel(int Id, string tittel, string beskrivelse, IEnumerable<ValgDto> valg, IEnumerable<DelegatDto> avgitStemme, int kanVelge, IEnumerable<StemmeDto>? Stemmer = null)
+        public DashboardVoteringModel(int Id, string tittel, string beskrivelse, IEnumerable<ValgDto> valg, IEnumerable<int> avgitStemme, int kanVelge, IEnumerable<StemmeDto>? Stemmer = null)
         {
             this.Id = Id;
             Tittel = tittel;
@@ -233,9 +233,7 @@
                 .Select(v => new DashboardValgModel(v.Id,v.Navn,v.SortId))
                 .ToArray();
 
-            AvgitStemme = avgitStemme
-                .Select(d => d.Id)
-                .ToArray();
+            AvgitStemme = avgitStemme.ToArray();
 
             this.Stemmer = Stemmer is null 
                 ? new ConcurrentDictionary<Guid, StemmeDto>() 
