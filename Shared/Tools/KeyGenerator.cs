@@ -2,10 +2,10 @@
 
 namespace Stemmesystem.Shared.Tools;
 
-public class KeyGenerator
+public static class KeyGenerator
 {
-    private static readonly string Alphabet = Nanoid.Alphabets.NoLookAlikes;
-        
+    private const string Alphabet = Nanoid.Alphabets.NoLookAlikes;
+
     public static string GenerateKey(int length)
     {
         return Nanoid.Generate(Alphabet, length);

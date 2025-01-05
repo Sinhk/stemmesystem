@@ -122,9 +122,13 @@ public class SakService : ISakService
             throw new StemmeException($"Sak med id {model.SakId} ble ikke funnet");
 
         var votering = new Votering(model.Tittel, model.Hemmelig, model.KanVelge);
-        foreach (var valgDto in model.Valg)
+
+        if (model.Valg != null)
         {
-            votering.LeggTilValg(valgDto.Navn);
+            foreach (var valgDto in model.Valg)
+            {
+                votering.LeggTilValg(valgDto.Navn);
+            }
         }
 
         sak.LeggTil(votering);
