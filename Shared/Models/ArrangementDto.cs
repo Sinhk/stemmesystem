@@ -11,7 +11,7 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(2)]
         [Required(ErrorMessage = "Navn er påkrevd")]
         [StringLength(20)]
-        public string Navn { get; init; }
+        public required string Navn { get; init; } 
         [ProtoMember(3)]
         public string? Beskrivelse { get; set; }
         
@@ -20,8 +20,8 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(5)]
         public DateTime? Sluttdato { get; set; }
 
-        [ProtoMember(6)] public List<DelegatDto> Delegater { get; init; } = new();
-        [ProtoMember(7)] public List<SakDto> Saker { get; init; } = new();
+        [ProtoMember(6, IsRequired = true)] public List<DelegatDto> Delegater { get; init; } = [];
+        [ProtoMember(7, IsRequired = true)] public List<SakDto> Saker { get; init; } = [];
     }
     
     [ProtoContract]
@@ -29,7 +29,7 @@ namespace Stemmesystem.Shared.Models
     {
         [ProtoMember(1)]
         public int Id { get; init; }
-        [ProtoMember(2)]
+        [ProtoMember(2, IsRequired = true)]
         public string Navn { get; init; } = null!;
         [ProtoMember(3)]
         public string? Beskrivelse { get; set; }

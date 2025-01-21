@@ -1,10 +1,12 @@
-﻿using ProtoBuf.Grpc;
+﻿using System.Diagnostics.CodeAnalysis;
+using ProtoBuf.Grpc;
 using ProtoBuf.Grpc.Configuration;
 using Stemmesystem.Shared.Models;
 
 namespace Stemmesystem.Shared.Interfaces;
 
 [Service]
+[SuppressMessage("Usage", "PBN2008:ServiceContractAnalyzer.PossiblyNotSerializable")]
 public interface IDelegatService
 {
     // Task<DelegatDto?> ValiderKode(string delegatKode, CancellationToken cancellationToken = default);

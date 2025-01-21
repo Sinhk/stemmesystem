@@ -3,7 +3,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>PBN2008</NoWarn>
   </PropertyGroup>
+  
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>

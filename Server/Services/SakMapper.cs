@@ -14,6 +14,8 @@ public static partial class SakMapper
         new SakDto
         {
             Id = s.Id,
+            ArrangementId = s.ArrangementId,
+            Nummer = s.Nummer,
             Tittel = s.Tittel,
             Beskrivelse = s.Beskrivelse,
             Voteringer = s.Voteringer.AsQueryable().ToDtos().ToList()
@@ -22,6 +24,8 @@ public static partial class SakMapper
     public static SakDto ToDto(this Sak sak) => new()
     {
         Id = sak.Id,
+        ArrangementId = sak.ArrangementId,
+        Nummer = sak.Nummer,
         Tittel = sak.Tittel,
         Beskrivelse = sak.Beskrivelse,
         Voteringer = sak.Voteringer.Select(v => v.ToDto()).ToList()
