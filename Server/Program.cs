@@ -35,13 +35,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
-builder.Services.AddAuthentication()
-    .AddGoogle("Google", options =>
-    {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    })
-    .AddJwtBearer();
+builder.AddAuthentication();
 
 builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>());
 
@@ -51,8 +45,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddHealthChecks();
 builder.Services.AddResponseCompression(opts =>
 {
-    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-        new[] { "application/octet-stream" });
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(["application/octet-stream"]);
 });
 
 builder.Services.AddCodeFirstGrpc();
@@ -155,4 +148,4 @@ async Task MigrateDatabase(WebApplication webApplication)
     await userManager.AddMissingAdminUsers();
 }
 
-public partial class Program { }
+public partial class Program;

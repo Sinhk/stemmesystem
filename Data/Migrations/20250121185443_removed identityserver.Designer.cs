@@ -13,7 +13,7 @@ namespace StemmeSystem.Data.Migrations
 {
     [DbContext(typeof(StemmesystemContext))]
     [Migration("20250121185443_removed identityserver")]
-    partial class removedidentityserver
+    partial class RemovedIdentityServer
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

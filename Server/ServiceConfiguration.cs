@@ -3,6 +3,7 @@ using Stemmesystem.Data;
 using Stemmesystem.Server.Features.MinSpeiding;
 using Stemmesystem.Server.Services;
 
+
 namespace Stemmesystem.Server;
 
 internal static class ServiceConfiguration
@@ -16,7 +17,22 @@ internal static class ServiceConfiguration
         webApplication.MapGrpcService<PinSender>();
         webApplication.MapGrpcService<MinSpeidingOptionsRepository>();
     }
-    
+
+    internal static void AddAuthentication(this WebApplicationBuilder app)
+    {
+        var authBuilder = app.Services
+            .AddAuthentication()
+            .AddJwtBearer();
+        var googleSection = app.Configuration.GetSection("Authentication:Google");
+        if (googleSection.Exists())
+        {
+            authBuilder.AddGoogle("Google", options =>
+            {
+                googleSection.Bind(options);
+            });
+        }
+    }
+
     public static void AddAppDbContext(this IServiceCollection services)
     {
         services.AddDbContext<StemmesystemContext>((provider, builder) =>

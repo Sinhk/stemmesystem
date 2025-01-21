@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace StemmeSystem.Data.Migrations
 {
-    public partial class removedhemmelig : Migration
+    public partial class RemovedHemmelig : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

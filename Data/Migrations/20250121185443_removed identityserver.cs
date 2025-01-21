@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace StemmeSystem.Data.Migrations
 {
-    public partial class removedidentityserver : Migration
+    public partial class RemovedIdentityServer : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

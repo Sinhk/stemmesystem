@@ -118,8 +118,13 @@ public class SakService : ISakService
             .Where(a => a.Id == model.SakId)
             .Include(a => a.Voteringer)
             .FirstOrDefaultAsync();
+
         if (sak == null)
             throw new StemmeException($"Sak med id {model.SakId} ble ikke funnet");
+        
+        if (model.Tittel == null)
+            throw new StemmeException("Saktittel er påkrevd");
+
 
         var votering = new Votering(model.Tittel, model.KanVelge);
 
@@ -150,8 +155,10 @@ public class SakService : ISakService
 
         if (votering.StartTid.HasValue)
             return LagreResult<VoteringDto>.Error("Votering er startet, og kan ikke oppdateres");
-        
-        votering.Tittel = model.Tittel;
+
+        if (model.Tittel != null) 
+            votering.Tittel = model.Tittel;
+
         votering.KanVelge = model.KanVelge;
         if (model.Valg != null)
         {

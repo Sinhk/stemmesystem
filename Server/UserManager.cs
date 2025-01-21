@@ -74,11 +74,11 @@ public  class UserManager
             .Select(u => u.Email)
             .ToArrayAsync();
 
-        var toAdd = adminUsers.Except(existing);
+        var toAdd = adminUsers.Except(existing, StringComparer.OrdinalIgnoreCase);
 
         foreach (var username in toAdd)
         {
-            await CreateUser(username);
+            await CreateUser(username!);
         }
     }
 

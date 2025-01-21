@@ -13,7 +13,7 @@ namespace StemmeSystem.Data.Migrations
 {
     [DbContext(typeof(StemmesystemContext))]
     [Migration("20250121185159_removed hemmelig")]
-    partial class removedhemmelig
+    partial class RemovedHemmelig
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
