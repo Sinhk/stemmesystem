@@ -57,7 +57,6 @@ public class VoteringFormModel
             Tittel = Tittel,
             Beskrivelse = Beskrivelse,
             KanVelge = KanVelge,
-            Hemmelig = Hemmelig,
             SakId = sakId,
             Valg = Valg.Select(v => new ValgDto
             {
@@ -73,7 +72,6 @@ public class VoteringFormModel
         Tittel = votering.Tittel;
         Beskrivelse = votering.Beskrivelse;
         KanVelge = votering.KanVelge;
-        Hemmelig = votering.Hemmelig;
         Valg.Clear();
         foreach (var v in votering.Valg.OrderBy(v => v.SortId))
         {

@@ -54,7 +54,6 @@ public class CsvImport
                     {
                         Tittel = sak.Votering ?? "" 
                         , Beskrivelse = sak.VoteringBeskrivelse
-                        , Hemmelig = sak.HemmeligVotering.GetValueOrDefault()
                         , KanVelge = sak.KanVelge ?? 1
                         , Valg = new List<ValgDto>(sak.Valg?.Select(v => new ValgDto
                         {
@@ -82,7 +81,6 @@ public class CsvImport
             {
                 Tittel = "Import sak",
                 Beskrivelse = "beskrivelse",
-                HemmeligVotering = true,
                 Nummer = "1.2.3",
                 Votering = "kun 1 votering",
                 VoteringBeskrivelse = "med beskrivelse",

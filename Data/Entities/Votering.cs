@@ -16,7 +16,6 @@ namespace Stemmesystem.Data.Entities
         public int Id { get; internal set; }
         public string Tittel { get; set; }
         public string? Beskrivelse { get; set; }
-        public bool Hemmelig { get; set; }
         public bool Aktiv { get; set; } = false;
 
         public int KanVelge { get; set; } = 1;
@@ -32,29 +31,28 @@ namespace Stemmesystem.Data.Entities
         public bool Lukket { get; set; }
         public bool Publisert { get; set; }
 
-        public Votering(string tittel, bool hemmelig)
+        public Votering(string tittel)
         {
             Tittel = tittel;
-            Hemmelig = hemmelig;
         }
 
-        public Votering(string tittel, bool hemmelig, params string[] valgtekst) : this(tittel, hemmelig)
+        public Votering(string tittel, params string[] valgtekst) : this(tittel)
         {
             var i = 0;
             foreach (var tekst in valgtekst)
             {
-                _valg.Add(new(tekst, i));
+                _valg.Add(new Valg(tekst, i));
                 i++;
             }
         }
-        public Votering(string tittel, bool hemmelig, int? kanVelge, params string[] valgtekst) : this (tittel, hemmelig, valgtekst)
+        public Votering(string tittel, int? kanVelge, params string[] valgtekst) : this (tittel, valgtekst)
         {
             KanVelge = kanVelge.GetValueOrDefault(1);
         }
 
-        public static Votering EnkelVotering(string tittel, bool hemmelig = false) 
+        public static Votering EnkelVotering(string tittel) 
         {
-            Votering v = new(tittel, hemmelig);
+            Votering v = new(tittel);
             v._valg.Add(new Valg("For"));
             v._valg.Add(new Valg("Mot"));
             return v;
@@ -100,7 +98,7 @@ namespace Stemmesystem.Data.Entities
             List<Stemme>? fjernes = null;
             if (_avgitStemme.Any(d => d.Id == delegat.Id))
             {
-                fjernes = Hemmelig ? _stemmer.Where(s => keyHasher.VerifyHash(s.StemmeHash, delegatkode)).ToList() : _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
+                fjernes = _stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
                 _stemmer.RemoveAll(s=>  fjernes.Contains(s));
             }
 
@@ -110,9 +108,6 @@ namespace Stemmesystem.Data.Entities
                 if (valgId != Konstanter.BlankStemme && _valg.All(v => v.Id != valgId))
                     throw new StemmeException("Ugyldig valg");
                 Stemme stemme = new(valgId);
-                if (!Hemmelig)
-                    stemme.DelegatId = delegat.Id;
-                stemme.StemmeHash = keyHasher.CreateHash(delegatkode);
                 stemmer.Add(stemme);
             }
 
@@ -151,7 +146,7 @@ namespace Stemmesystem.Data.Entities
         }
 
         public Votering Kopier() =>
-            new(Tittel, Hemmelig)
+            new(Tittel)
             {
                 Aktiv = false
                 , Beskrivelse = Beskrivelse

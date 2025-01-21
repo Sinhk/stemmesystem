@@ -32,7 +32,7 @@ public class SakService : ISakService
         return sak;
     }
 
-    public async Task<VoteringDto> HentVotering(HentVoteringRequest request, CancellationToken cancellationToken = default)
+    public async Task<VoteringDto?> HentVotering(HentVoteringRequest request, CancellationToken cancellationToken = default)
     {
         var (sakId, voteringId) = request;
         return await _context.Arrangement
@@ -41,7 +41,7 @@ public class SakService : ISakService
             .SelectMany(s=> s.Voteringer)
             .Where(v=> v.Id == voteringId)
             .ToDtos()
-            .FirstAsync(cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<ICollection<VoteringDto>> HentVoteringer(HentVoteringerRequest request, CancellationToken cancellationToken = default)
@@ -121,7 +121,7 @@ public class SakService : ISakService
         if (sak == null)
             throw new StemmeException($"Sak med id {model.SakId} ble ikke funnet");
 
-        var votering = new Votering(model.Tittel, model.Hemmelig, model.KanVelge);
+        var votering = new Votering(model.Tittel, model.KanVelge);
 
         if (model.Valg != null)
         {
@@ -152,7 +152,6 @@ public class SakService : ISakService
             return LagreResult<VoteringDto>.Error("Votering er startet, og kan ikke oppdateres");
         
         votering.Tittel = model.Tittel;
-        votering.Hemmelig = model.Hemmelig;
         votering.KanVelge = model.KanVelge;
         if (model.Valg != null)
         {

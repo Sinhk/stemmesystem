@@ -27,9 +27,9 @@ public  class UserManager
         await using var transaction =  await db.Database.BeginTransactionAsync();
         Arrangement arrangement = new("Testarrangement") { Beskrivelse = "Bare en test" };
         Sak sak = new(1, "Testsak 1") { Beskrivelse = "Sak for å teste stemmesystemet" };
-        var votering1 = new Votering("Skal vi ha kretsting?", false, "Ja", "Nai", "Kanskje");
-        var votering2 = new Votering("Beste farge", true, 2, new[] { "Rød", "Gul", "Grønn", "Blå" });
-        var votering3 = new Votering("Valg av person", false, 2, "Patrick","Elin","Torbjørn","Annette", "Kjetil", "May Britt", "Odd Kjetil", "Ole", "Silje", "Synnøve","Åge");
+        var votering1 = new Votering("Skal vi ha kretsting?", "Ja", "Nai", "Kanskje");
+        var votering2 = new Votering("Beste farge", 2, new[] { "Rød", "Gul", "Grønn", "Blå" });
+        var votering3 = new Votering("Valg av person", 2, "Patrick","Elin","Torbjørn","Annette", "Kjetil", "May Britt", "Odd Kjetil", "Ole", "Silje", "Synnøve","Åge");
         sak.LeggTil(votering1, votering2, votering3);
         arrangement.LeggTil(sak);
 

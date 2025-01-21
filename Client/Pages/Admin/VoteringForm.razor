@@ -30,10 +30,6 @@ else
     <div class="form-group">
         <label>Kan velge<InputNumber class="form-control" placeholder="Kan velge" @bind-Value="_voteringInput.KanVelge"/></label>
     </div>
-    <div class="form-check">
-        <InputCheckbox class="form-check-input" placeholder="Hemmelig" @bind-Value="_voteringInput.Hemmelig" id="hemmeligCheck"/>
-        <label class="form-check-label" for="hemmeligCheck">Hemmelig</label>
-    </div>
 
     <h4>Valg</h4>
     @foreach (var valg in _voteringInput.Valg.OrderBy(v => v.SortId))
@@ -72,7 +68,6 @@ else
                 {
                     SakId = SakId,
                     Beskrivelse = votering.Beskrivelse,
-                    Hemmelig = votering.Hemmelig,
                     Tittel = votering.Tittel,
                     KanVelge = votering.KanVelge,
                     Valg = votering.Valg

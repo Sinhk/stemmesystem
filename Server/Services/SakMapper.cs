@@ -11,7 +11,7 @@ namespace Stemmesystem.Server.Services;
 public static partial class SakMapper
 {
     public static IQueryable<SakDto> ToDtos(this IQueryable<Sak> query) => query.Select(s =>
-        new SakDto()
+        new SakDto
         {
             Id = s.Id,
             Tittel = s.Tittel,
@@ -47,7 +47,6 @@ public static partial class SakMapper
     public static partial AdminVoteringDto ToAdminDto(this Votering votering);
     
     [MapperIgnoreSource(nameof(Stemme.Delegat))]
-    [MapperIgnoreSource(nameof(Stemme.StemmeHash))]
     public static partial StemmeDto ToDto(this Stemme stemme);
     
     public static partial ValgDto ToDto(this Valg stemme);

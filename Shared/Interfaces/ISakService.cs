@@ -12,7 +12,7 @@ public interface ISakService
     //Task<bool> ErNummerBrukt(int arrangementId, string? nummer);
     Task<LagreResult<SakDto>> LagreNySak(SakInputModel sak);
     Task<SakDto> OppdaterSak(SakInputModel sak);
-    Task<VoteringDto> HentVotering(HentVoteringRequest request, CancellationToken cancellationToken = default);
+    Task<VoteringDto?> HentVotering(HentVoteringRequest request, CancellationToken cancellationToken = default);
     Task<ICollection<VoteringDto>> HentVoteringer(HentVoteringerRequest request, CancellationToken cancellationToken = default);
     Task<LagreResult<VoteringDto>> LagreNyVotering(VoteringInputModel votering);
     Task<LagreResult<VoteringDto>> OppdaterVotering(VoteringInputModel votering);

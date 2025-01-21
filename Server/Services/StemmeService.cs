@@ -204,7 +204,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         return stemmer.Select(x => x.ToDto()).ToList();
     }
 
-    private async Task<List<Stemme>> GetFinnStemmeQuery(StemmesystemContext context, int voteringId, string delegatkode, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyCollection<Stemme>> GetFinnStemmeQuery(StemmesystemContext context, int voteringId, string delegatkode, CancellationToken cancellationToken = default)
     {
         var delegat = await _delegatRepository.ValiderKode(delegatkode, cancellationToken);
         if (delegat == null)
@@ -212,18 +212,13 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         return await GetFinnStemmeQuery(context, voteringId, delegat, cancellationToken);
     }
 
-    private async Task<List<Stemme>> GetFinnStemmeQuery(StemmesystemContext context, int voteringId, Delegat delegat, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyCollection<Stemme>> GetFinnStemmeQuery(StemmesystemContext context, int voteringId, Delegat delegat, CancellationToken cancellationToken = default)
     {
-        var votering = await context.Votering
+        var stemmer = await context.Votering
             .Where(v => v.Id == voteringId)
-            .Include(v => v.Stemmer)
-            .FirstOrDefaultAsync(cancellationToken);
-        if (votering == null)
-            throw new StemmeException($"Votering med id {voteringId} ble ikke funnet");
-
-        var stemmer = votering.Hemmelig
-            ? votering.Stemmer.Where(s => s.StemmeHash != null && _keyHasher.VerifyHash(s.StemmeHash, delegat.Delegatkode)).ToList()
-            : votering.Stemmer.Where(s => s.DelegatId == delegat.Id).ToList();
+            .SelectMany(v => v.Stemmer)
+            .Where(s => s.DelegatId == delegat.Id)
+            .ToArrayAsync(cancellationToken);
 
         return stemmer;
     }
@@ -235,6 +230,7 @@ public class StemmeService : IStemmeService, IAdminStemmeService
         var votering = await _arrangementRepository.FinnVoteringAsync(arrangementId, voteringId, cancellationToken);
         if (votering == null)
             throw new StemmeException("Fant ikke valgt votering");
+
         if (votering.Aktiv)
         {
             await StoppVotering(votering, arrangementId, false, cancellationToken);

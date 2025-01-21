@@ -13,7 +13,6 @@ public static class VoteringMapper
             Tittel = dto.Tittel,
             Beskrivelse = dto.Beskrivelse,
             KanVelge = dto.KanVelge,
-            Hemmelig = dto.Hemmelig,
             Valg = dto.Valg.Select(v => new ValgDto
             {
                 Id = v.Id,

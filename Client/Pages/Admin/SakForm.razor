@@ -58,7 +58,7 @@ else
                     Tittel = sak.Tittel,
                     Voteringer = sak.Voteringer.Select(v => new VoteringInputModel
                     {
-                        Beskrivelse = v.Beskrivelse, Hemmelig = v.Hemmelig, KanVelge = v.KanVelge, Tittel = v.Tittel, Valg = v.Valg
+                        Beskrivelse = v.Beskrivelse, KanVelge = v.KanVelge, Tittel = v.Tittel, Valg = v.Valg
                     }).ToList()
                 };
         }
@@ -81,7 +81,7 @@ else
                 return;
             }
             var (sak, err) = await SakService.LagreNySak(_sak);
-            if(err.Any())
+            if(err is not null && err.Count > 0)
             {
                 customValidator?.DisplayErrors(err);
                 return;

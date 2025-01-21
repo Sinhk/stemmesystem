@@ -30,8 +30,6 @@ public record VoteringDto
     public bool Lukket { get; init; }
     [ProtoMember(11)]
     public bool Publisert { get; init; }
-    [ProtoMember(12)]
-    public bool Hemmelig { get; set; }
 
     public bool Startet => StartTid.GetValueOrDefault() > default(DateTime);
     
@@ -39,7 +37,6 @@ public record VoteringDto
         new()
         {
             Tittel = Tittel,
-            Hemmelig  = Hemmelig,
             Aktiv = false
             , Beskrivelse = Beskrivelse
             , KanVelge = KanVelge
@@ -162,8 +159,6 @@ public record VoteringInputModel
     public string Tittel { get; set; }
     [ProtoMember(5)]
     public string? Beskrivelse { get; set; }
-    [ProtoMember(6)]
-    public bool Hemmelig { get; set; }
     [ProtoMember(7)]
     [DefaultValue(1)]
     [Required, Range(1,int.MaxValue,ErrorMessage = "\"Kan velge\" må være 1 eller mer") ]

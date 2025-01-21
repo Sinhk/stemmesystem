@@ -10,7 +10,6 @@ namespace Stemmesystem.Client.Services.CSV
         public string? Beskrivelse { get; set; }
         public string? Votering { get; set; }
         public string? VoteringBeskrivelse { get; set; }
-        public bool? HemmeligVotering { get; set; }
         public List<string>? Valg { get; set; }
         public int? KanVelge { get; set; }
     }
