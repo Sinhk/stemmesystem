@@ -62,12 +62,6 @@ else
     private string? _pin;
     private string? _error;
     
-    /*
-    protected override async Task OnInitializedAsync()
-    {
-        arrangementer = await ArrangementService.HentArrangementAsync();
-    }
-    */
     private async Task DelegatLogin(){
         _error = null;
         if (_pin == null)
@@ -85,6 +79,10 @@ else
             _error = "Ikke en gyldig PIN";
             return;
         }
-        NavigationManager.NavigateTo($"/arrangement/{_delegat.ArrangementId}");
+
+        if (_delegat != null)
+        {
+            NavigationManager.NavigateTo($"/arrangement/{_delegat.ArrangementId}");
+        }
     }
 }

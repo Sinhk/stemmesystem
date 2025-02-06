@@ -50,7 +50,7 @@ builder.Services.AddGrpcClient<IMinSpeidingOptionsRepository>();
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<IDelegatkodeAuthService, DelegatkodeAuthService>();
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationProvider>();
+//builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationProvider>();
 builder.Services.AddScoped<IDelegatNotifierService, DelegatNotifierService>();
 builder.Services.AddScoped<IAdminNotifierService, AdminNotifierService>();
 

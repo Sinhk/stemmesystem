@@ -42,8 +42,7 @@
 
 
     private bool _expanded;
-    private bool _inconsistentState;
-    private readonly List<IDisposable?> _subscriptions = new();
+    private readonly List<IDisposable?> _subscriptions = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,7 +57,7 @@
 
             foreach (var voteringDto in sakDto.Voteringer)
             {
-                var votering = new DashboardVoteringModel(voteringDto.Id, voteringDto.Tittel, voteringDto.Beskrivelse, voteringDto.Valg, voteringDto.AvgitStemme, voteringDto.KanVelge, voteringDto.Stemmer)
+                var votering = new DashboardVoteringModel(voteringDto.Id, voteringDto.Tittel ?? "", voteringDto.Beskrivelse, voteringDto.Valg, voteringDto.AvgitStemme, voteringDto.KanVelge, voteringDto.Stemmer)
                 {
                     Aktiv = voteringDto.Aktiv,
                     Lukket = voteringDto.Lukket,
@@ -71,8 +70,7 @@
             }
         }
 
-        _subscriptions.AddRange(new[]
-        {
+        _subscriptions.AddRange([
             Notifier.OnVoteringStartet(OnVoteringStartet),
             Notifier.OnVoteringStoppet(OnVoteringStoppet),
             Notifier.OnVoteringLukket(OnVoteringLukket),
@@ -80,7 +78,7 @@
             Notifier.OnNyVotering(NyVotering),
             Notifier.OnNyStemme(OnNyStemme),
             Notifier.OnStemmeFjernet(OnStemmeFjernet)
-        });
+        ]);
         await Notifier.Start();
         await Notifier.KobleTilArrangement(ArrangementId);
     }
@@ -94,10 +92,7 @@
         {
             votering.Stemmer[stemme.Id] = stemme;
         }
-        else
-        {
-            _inconsistentState = true;
-        }
+
         StateHasChanged();
     }
 
@@ -109,10 +104,7 @@
         {
             votering.Stemmer.Remove(stemmeId, out _);
         }
-        else
-        {
-            _inconsistentState = true;
-        }
+
         StateHasChanged();
     }
 
@@ -131,38 +123,24 @@
                 votering.Stemmer[stemme.Id] = stemme;
             }
         }
-        else
-        {
-            _inconsistentState = true;
-        }
+
         StateHasChanged();
     }
 
     private void OnVoteringStartet(VoteringStartetEvent e)
     {
-        if(_voteringer.TryGetValue(e.Votering.Id, out var votering))
-        {
-            votering.Aktiv = true;
-            StateHasChanged();
-        }
-        else
-        {
-            _inconsistentState = true;
-        }
+        if (!_voteringer.TryGetValue(e.Votering.Id, out var votering)) return;
+        votering.Aktiv = true;
+        StateHasChanged();
     }
 
     private void OnVoteringLukket(VoteringLukketEvent e)
     {
-        if (_voteringer.TryGetValue(e.VoteringId, out var votering))
-        {
-            votering.Lukket = true;
-            votering.DelegaterTilstede = e.DelegaterTilstede;
-            StateHasChanged();
-        }
-        else
-        {
-            _inconsistentState = true;
-        }
+        if (!_voteringer.TryGetValue(e.VoteringId, out var votering)) 
+            return;
+        votering.Lukket = true;
+        votering.DelegaterTilstede = e.DelegaterTilstede;
+        StateHasChanged();
     }
 
     private void OnVoteringPublisert(VoteringPublisertEvent e)
@@ -171,15 +149,11 @@
         if (arrangementId != ArrangementId)
             return;
 
-        if (_voteringer.TryGetValue(voteringId, out var votering))
-        {
-            votering.Publisert = true;
-            StateHasChanged();
-        }
-        else
-        {
-            _inconsistentState = true;
-        }
+        if (!_voteringer.TryGetValue(voteringId, out var votering)) 
+            return;
+
+        votering.Publisert = true;
+        StateHasChanged();
     }
 
     private void NyVotering(NyVoteringEvent e)
@@ -223,10 +197,10 @@
 
     public record DashboardVoteringModel
     {
-        public DashboardVoteringModel(int Id, string tittel, string beskrivelse, IEnumerable<ValgDto> valg, IEnumerable<int> avgitStemme, int kanVelge, IEnumerable<StemmeDto>? Stemmer = null)
+        public DashboardVoteringModel(int Id, string? tittel, string? beskrivelse, IEnumerable<ValgDto> valg, IEnumerable<int> avgitStemme, int kanVelge, IEnumerable<StemmeDto>? Stemmer = null)
         {
             this.Id = Id;
-            Tittel = tittel;
+            Tittel = tittel ?? "[Uten tittel]";
             Beskrivelse = beskrivelse;
             KanVelge = kanVelge;
             Valg = valg
@@ -242,7 +216,7 @@
 
         public int Id { get; }
         public string Tittel { get; }
-        public string Beskrivelse { get; }
+        public string? Beskrivelse { get; }
         public bool Aktiv { get; set; }
         public bool Lukket { get; set; }
         public bool Publisert { get; set; }

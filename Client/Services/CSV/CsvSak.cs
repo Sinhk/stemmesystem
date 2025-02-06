@@ -21,9 +21,9 @@ namespace Stemmesystem.Client.Services.CSV
             AutoMap(CultureInfo.InvariantCulture);
             Map(s => s.Valg).Convert(args =>
             {
-                if (args.Row.TryGetField<string>("valg", out var valg))
+                if (args.Row.TryGetField<string>("valg", out var valg) && valg is not null)
                     return valg.Split(',').ToList();
-                return new List<string>();
+                return [];
             });
         }
     } 

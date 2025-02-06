@@ -144,7 +144,7 @@
     [CascadingParameter(Name = "DelegaterTilestede")]
     public int DelegaterTilstede { get; set; }
     
-    private VoteringFormModel _nyRunde;
+    private VoteringFormModel? _nyRunde;
     private bool _visDetaljer;
     private ConcurrentDictionary<int, bool> _harStemt = new();
     private IDisposable? _subscription;

@@ -53,9 +53,7 @@ namespace Stemmesystem.Client.Pages
             StateHasChanged();
         }
 
-        public void Dispose() => Dispose(true);
-
-        private void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (_disposed)
                 return;

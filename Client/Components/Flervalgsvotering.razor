@@ -1,6 +1,6 @@
 ﻿@using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared
-@inject IStemmeService _stemmeService
+@inject IStemmeService StemmeService
 
 <h6>Du har valgt @_valg.Count, du kan velge @Base.Votering.KanVelge</h6>
 <div class="btn-group-toggle btn-group-vertical btn-block" data-toggle="buttons">
@@ -26,7 +26,7 @@
     [Parameter]
     public EventCallback<string> ErrorChanged { get; set; }
 
-    private HashSet<Guid> _valg = new();
+    private HashSet<Guid> _valg = [];
 
     protected override void OnInitialized()
     {

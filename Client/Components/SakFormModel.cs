@@ -10,7 +10,7 @@ public class SakFormModel
         ApplyChanges(dto);
     }
 
-    public int Id { get; set; }
+    public int Id { get; private set; }
     public string? Nummer { get; set; }
     public string Tittel { get; set; } = string.Empty;
     public string? Beskrivelse { get; set; }
@@ -41,7 +41,7 @@ public class VoteringFormModel
     public string? Beskrivelse { get; set; }
     public int KanVelge { get; set; }
     public bool Hemmelig { get; set; }
-    public List<ValgDto> Valg { get; set; } = new();
+    public List<ValgDto> Valg { get; set; } = [];
 
     public VoteringFormModel() { }
     public VoteringFormModel(VoteringDto votering)
@@ -60,7 +60,7 @@ public class VoteringFormModel
             SakId = sakId,
             Valg = Valg.Select(v => new ValgDto
             {
-                Id = new Guid(),
+                Id = Guid.Empty,
                 Navn = v.ToString()
             }).ToList()
         };
@@ -69,7 +69,7 @@ public class VoteringFormModel
     public void ApplyChanges(VoteringDto votering)
     {
         Id = votering.Id;
-        Tittel = votering.Tittel;
+        Tittel = votering.Tittel ?? "";
         Beskrivelse = votering.Beskrivelse;
         KanVelge = votering.KanVelge;
         Valg.Clear();

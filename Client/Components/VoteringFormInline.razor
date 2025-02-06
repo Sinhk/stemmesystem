@@ -53,7 +53,6 @@
     public EventCallback OnSuccess { get; set; }
 
     private CustomValidator? _customValidator;
-    private readonly VoteringDto _votering = null!;
 
     private async Task HandleValidSubmit(){
         _customValidator?.ClearErrors();

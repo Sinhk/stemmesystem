@@ -55,16 +55,19 @@ else
         if (_delegaterExpanded)
         {
             <DelegatImport ArrangementId="@_arrangement.Id.Value"/>
-            <div class="row">
-                @foreach (var delegat in _delegater.OrderBy(d => d.Delegatnummer ?? int.MaxValue))
-                {
-                    var formModel = new DelegatFormModel(delegat);
-                    <DelegatFormInline Delegat="@formModel" ArrangementId="@_arrangement.Id.Value" OnDelete="() => _delegater.Remove(delegat)" />
-                }
-            </div>
-            <div class="row">
-                <button class="btn btn-success" @onclick="@(_ => _delegater.Add(new DelegatDto()))">Legg til</button>
-            </div>
+            if (_delegater is not null)
+            {
+                <div class="row">
+                    @foreach (var delegat in _delegater.OrderBy(d => d.Delegatnummer ?? int.MaxValue))
+                    {
+                        var formModel = new DelegatFormModel(delegat);
+                        <DelegatFormInline Delegat="@formModel" ArrangementId="@_arrangement.Id.Value" OnDelete="() => _delegater.Remove(delegat)" />
+                    }
+                </div>
+                <div class="row">
+                    <button class="btn btn-success" @onclick="@(_ => _delegater.Add(new DelegatDto()))">Legg til</button>
+                </div>
+            }
         }
         
         <div class="row mt-2" @onclick=@(_ => _sakerExpanded=!_sakerExpanded)>

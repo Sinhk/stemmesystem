@@ -168,5 +168,5 @@ public record VoteringInputModel
     public int KanVelge { get; set; } =1;
         
     [ProtoMember(8, IsRequired = true)]
-    public List<ValgDto>? Valg { get; set; } = [];
+    public List<ValgDto> Valg { get; set; } = [];
 }

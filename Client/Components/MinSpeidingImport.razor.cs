@@ -14,7 +14,6 @@ public partial class MinSpeidingImport
     private JsonArray? _rawParticipants;
     private IReadOnlyCollection<string> _participantProperties = Array.Empty<string>();
     private IReadOnlyCollection<Participant>? _participants;
-    private Labels? _labels;
     private string? _participantError;
     private bool _rawResultExpanded;
     private RunImportResult? _importResult;
