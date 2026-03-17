@@ -8,7 +8,7 @@ Stemmesystem is a full-stack **voting/election management system** for Scouting 
 - **Backend:** ASP.NET Core 6.0 Web API + Duende IdentityServer 6.0
 - **Frontend:** Blazor WebAssembly (C#)
 - **Communication:** gRPC (code-first via ProtoBuf.Net.Grpc) + SignalR for real-time updates
-- **Database:** PostgreSQL (SQLite for local dev)
+- **Database:** PostgreSQL
 - **ORM:** Entity Framework Core 6.0
 
 ## Build & Test
@@ -81,7 +81,7 @@ Hub client interfaces live in `Shared/SignalR/`. Admin and delegate hubs are sep
 - Default schema: `stemme`
 - The database is auto-migrated on startup (`MigrateDatabase()` in `Program.cs`)
 - Add new migrations with: `dotnet ef migrations add <MigrationName> --project Data --startup-project Server`
-- Connection string: configured via `ConnectionStrings:DefaultConnection`; provider selected by `"Provider": "Postgres"`
+- Connection string: configured via `ConnectionStrings:PostgresConnection` (used by `AddAppDbContext()` and tests); the database provider is currently fixed to PostgreSQL in code and the `"Provider"` config value is not read at runtime
 
 ### Authentication
 - **Duende IdentityServer** handles OAuth2/OIDC
