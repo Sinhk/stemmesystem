@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 using Stemmesystem.Api;
 using Xunit;
 
@@ -9,7 +10,7 @@ public class AutoMapperTests
     [Fact]
     public void ConfigurationIsValid()
     {
-        var configuration = new MapperConfiguration(c => c.AddProfile(typeof(ApiAutoMapperProfile)));
+        var configuration = new MapperConfiguration(c => c.AddProfile(typeof(ApiAutoMapperProfile)), NullLoggerFactory.Instance);
         var mapper = configuration.CreateMapper();
         
         mapper.ConfigurationProvider.AssertConfigurationIsValid();
