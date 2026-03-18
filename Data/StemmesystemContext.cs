@@ -1,7 +1,11 @@
-﻿using Duende.IdentityServer.EntityFramework.Options;
-using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+﻿using Duende.IdentityServer.EntityFramework.Entities;
+using Duende.IdentityServer.EntityFramework.Extensions;
+using Duende.IdentityServer.EntityFramework.Interfaces;
+using Duende.IdentityServer.EntityFramework.Options;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Options;
 using Stemmesystem.Data.Entities;
 using Stemmesystem.Data.Models;
@@ -10,8 +14,10 @@ using Stemmesystem.Shared.MinSpeiding;
 
 namespace Stemmesystem.Data
 {
-    public class StemmesystemContext : ApiAuthorizationDbContext<ApplicationUser>, IDataProtectionKeyContext
+    public class StemmesystemContext : IdentityDbContext<ApplicationUser>, IPersistedGrantDbContext, IDataProtectionKeyContext
     {
+        private readonly IOptions<OperationalStoreOptions>? _operationalStoreOptions;
+
         public DbSet<Delegat> Delegat => Set<Delegat>();
         public DbSet<Arrangement> Arrangement => Set<Arrangement>();
         public DbSet<Sak> Sak => Set<Sak>();
@@ -19,14 +25,23 @@ namespace Stemmesystem.Data
 
         public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
-        public StemmesystemContext(DbContextOptions<StemmesystemContext> options, IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options,operationalStoreOptions)
+        // IPersistedGrantDbContext
+        public DbSet<PersistedGrant> PersistedGrants { get; set; } = null!;
+        public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; } = null!;
+        public DbSet<Key> Keys { get; set; } = null!;
+        public DbSet<ServerSideSession> ServerSideSessions { get; set; } = null!;
+        public DbSet<PushedAuthorizationRequest> PushedAuthorizationRequests { get; set; } = null!;
+
+        public StemmesystemContext(DbContextOptions<StemmesystemContext> options, IOptions<OperationalStoreOptions>? operationalStoreOptions) : base(options)
         {
+            _operationalStoreOptions = operationalStoreOptions;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.HasDefaultSchema("stemme");
+            modelBuilder.ConfigurePersistedGrantContext(_operationalStoreOptions?.Value ?? new OperationalStoreOptions());
 
             modelBuilder.Entity<Arrangement>(e =>
             {
@@ -69,23 +84,13 @@ namespace Stemmesystem.Data
         }
     }
     
-    /*
     public class StemmesystemContextFactory : IDesignTimeDbContextFactory<StemmesystemContext>
     {
         public StemmesystemContext CreateDbContext(string[] args)
         {
-            var provider = args[0];
             var optionsBuilder = new DbContextOptionsBuilder<StemmesystemContext>();
-            var options = provider switch
-            {
-                "Sqlite" => optionsBuilder.UseSqlite("not important",x=> x.MigrationsAssembly("SqliteMigrations")).Options
-                , "SqlServer" => optionsBuilder.UseSqlServer("not important",x=> x.MigrationsAssembly("SqlServerMigrations")).Options
-                , "Postgres" => optionsBuilder.UseNpgsql("not important",x=> x.MigrationsAssembly("PostgresMigrations")).Options
-                , _ => throw new Exception($"Unsupported provider: {provider}")
-            };
-                
-            return new StemmesystemContext(options, null);
+            optionsBuilder.UseNpgsql("Host=localhost;Database=design_time;Username=design_time");
+            return new StemmesystemContext(optionsBuilder.Options, null);
         }
     }
-*/
 }
