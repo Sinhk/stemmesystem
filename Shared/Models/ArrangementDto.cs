@@ -45,7 +45,7 @@ namespace Stemmesystem.Shared.Models
     public class ArrangementInputModel
     {
         [ProtoMember(1)]
-        public int? Id { get; init; }
+        public int? Id { get; set; }
         [Required(ErrorMessage = "Navn er påkrevd")]
         [ProtoMember(2)]
         public string? Navn { get; set; }

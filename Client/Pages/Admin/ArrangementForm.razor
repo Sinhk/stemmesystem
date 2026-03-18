@@ -4,7 +4,7 @@
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
 @using Microsoft.AspNetCore.Authorization
-@using AutoMapper
+
 @inject IArrangementService ArrangementService
 @inject NavigationManager Navigation
 
@@ -110,9 +110,6 @@ else
         private set => _delegater = value;
     }
 
-    [Inject]
-    private IMapper Automapper { get; init; } = default!;
-
     private bool _minSpeidingExpanded;
     
     private bool _sakerExpanded;
@@ -130,10 +127,10 @@ else
             var arrangement = await ArrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId.Value});
             if(arrangement != null)
             {
-                _arrangement = Automapper.Map<ArrangementInputModel>(arrangement);
+                _arrangement = arrangement.ToInputModel();
 
-                Delegater = Automapper.Map<ICollection<DelegatInputModel>>(arrangement.Delegater);
-                Saker = Automapper.Map<ICollection<SakInputModel>>(arrangement.Saker);
+                Delegater = arrangement.Delegater.ToInputModels();
+                Saker = arrangement.Saker.ToInputModels();
             }
         }
 
@@ -160,7 +157,7 @@ else
         if (errors.Count <= 0)
         {
             var arrangement = await ArrangementService.OppdaterArrangement(_arrangement);
-            Automapper.Map(arrangement, _arrangement);
+            arrangement.ApplyToInputModel(_arrangement);
         }
     }
 
@@ -169,7 +166,7 @@ else
         if (errors.Count <= 0)
         {
             var arrangement = await ArrangementService.NyttArrangement(_arrangement);
-            Automapper.Map(arrangement, _arrangement);
+            arrangement.ApplyToInputModel(_arrangement);
             Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}");
         }
     }

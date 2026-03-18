@@ -61,7 +61,7 @@ namespace Stemmesystem.Shared.Models
         public int ArrangementId { get; set; }
         
         [ProtoMember(1)]
-        public int Id { get; init; }
+        public int Id { get; set; }
         
         [ProtoMember(2)]
         [Required(ErrorMessage = "Saknummer er påkrevd")]

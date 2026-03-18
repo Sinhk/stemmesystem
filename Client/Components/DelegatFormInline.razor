@@ -2,9 +2,7 @@
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
-@using AutoMapper
 @inject IAdminDelegatService _delegatService
-@inject IMapper _mapper
 
 <EditForm class="form-inline" EditContext="EditContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -65,7 +63,7 @@
     {
         Delegat.ArrangementId = arrangementId;
         var delegat = await _delegatService.OppdaterDelegat(Delegat);
-        _mapper.Map(delegat, Delegat);
+        delegat.ApplyToInputModel(Delegat);
         
     }
 
@@ -73,7 +71,7 @@
     {
         Delegat.ArrangementId = arrangementId;
         var delegat = await _delegatService.RegistrerNyDelegat(Delegat);
-        _mapper.Map(delegat, Delegat);
+        delegat.ApplyToInputModel(Delegat);
     }
     
     private async Task SlettDelegat(int? delegatId, CancellationToken cancellationToken = default)

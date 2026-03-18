@@ -2,9 +2,7 @@
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
-@using AutoMapper
 @inject ISakService _sakService
-@inject IMapper _mapper
 
 
 @if (Votering.Startet)
@@ -82,7 +80,7 @@ else
             }
             if (votering != null)
             {
-                _mapper.Map(votering, Votering);  
+                votering.ApplyToInputModel(Votering);  
                 await OnSuccess.InvokeAsync();    
             }
         }
@@ -98,7 +96,7 @@ else
             
             if(votering != null)
             {
-                _mapper.Map(votering, Votering);
+                votering.ApplyToInputModel(Votering);
                 await OnSuccess.InvokeAsync();    
             }
         }

@@ -136,5 +136,25 @@ namespace Stemmesystem.Data.Entities
                 , SakId = SakId
                 , _valg = new List<Valg>(_valg.Select(v => new Valg(v.Navn, v.SortId){Id = Guid.NewGuid()}))
             };
+
+        public static Votering FraInputModel(VoteringInputModel model)
+        {
+            var votering = new Votering(model.Tittel, model.Hemmelig)
+            {
+                Beskrivelse = model.Beskrivelse,
+                KanVelge = model.KanVelge,
+                SakId = model.SakId
+            };
+            votering._valg.AddRange(model.Valg.Select(v => new Valg(v.Navn, v.SortId)));
+            return votering;
+        }
+
+        public void OppdaterFraInputModel(VoteringInputModel model)
+        {
+            Tittel = model.Tittel;
+            Beskrivelse = model.Beskrivelse;
+            Hemmelig = model.Hemmelig;
+            KanVelge = model.KanVelge;
+        }
     }
 }
