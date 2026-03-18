@@ -69,23 +69,4 @@ namespace Stemmesystem.Data
         }
     }
     
-    /*
-    public class StemmesystemContextFactory : IDesignTimeDbContextFactory<StemmesystemContext>
-    {
-        public StemmesystemContext CreateDbContext(string[] args)
-        {
-            var provider = args[0];
-            var optionsBuilder = new DbContextOptionsBuilder<StemmesystemContext>();
-            var options = provider switch
-            {
-                "Sqlite" => optionsBuilder.UseSqlite("not important",x=> x.MigrationsAssembly("SqliteMigrations")).Options
-                , "SqlServer" => optionsBuilder.UseSqlServer("not important",x=> x.MigrationsAssembly("SqlServerMigrations")).Options
-                , "Postgres" => optionsBuilder.UseNpgsql("not important",x=> x.MigrationsAssembly("PostgresMigrations")).Options
-                , _ => throw new Exception($"Unsupported provider: {provider}")
-            };
-                
-            return new StemmesystemContext(options, null);
-        }
-    }
-*/
 }
