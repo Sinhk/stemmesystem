@@ -46,7 +46,5 @@
     <ProjectReference Include="..\Shared\Stemmesystem.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
-  </ItemGroup>
+
 </Project>
