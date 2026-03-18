@@ -22,7 +22,7 @@ builder.Services.AddHttpClient(nameof(DelegatkodeAuthService), client => client.
 // Supply HttpClient instances that include access tokens when making requests to the server project
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Stemmesystem.ServerAPI"));
 
-builder.Services.AddAutoMapper(typeof(WebAutoMapperProfile));
+builder.Services.AddAutoMapper(c => c.AddProfile(typeof(WebAutoMapperProfile)));
 builder.Services.AddSingleton<CsvImport>();
 
 #region Grpc

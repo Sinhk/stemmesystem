@@ -47,13 +47,13 @@ public class ServerFactory : WebApplicationFactory<Program>, IAsyncLifetime
     }
 
     /// <inheritdoc />
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await _dbContainer.StartAsync();
     }
 
     /// <inheritdoc />
-    async Task IAsyncLifetime.DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await _dbContainer.DisposeAsync();
     }
