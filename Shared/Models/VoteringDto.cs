@@ -138,9 +138,9 @@ public record ValgDto
 public record VoteringInputModel
 {
     [ProtoMember(1)]
-    public int SakId { get; init; }
+    public int SakId { get; set; }
     [ProtoMember(2)]
-    public int? Id { get; init; }
+    public int? Id { get; set; }
         
     [ProtoMember(4)]
     public string Tittel { get; set; }

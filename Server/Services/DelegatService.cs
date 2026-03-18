@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Duende.IdentityServer.Extensions;
 using Google.Protobuf.WellKnownTypes;
 using Google.Rpc;
@@ -22,18 +20,16 @@ namespace Stemmesystem.Server.Services;
 public class DelegatService : IDelegatService, IAdminDelegatService
 {
     private readonly StemmesystemContext _context;
-    private readonly IMapper _mapper;
     private readonly IKeyGenerator _keyGenerator;
     private readonly ILogger<DelegatService> _logger;
     private readonly NotificationManager _notificationManager;
 
     private int? _tilstedeCount;
 
-    public DelegatService(IKeyGenerator keyGenerator, StemmesystemContext context, IMapper mapper, ILogger<DelegatService> logger, NotificationManager notificationManager)
+    public DelegatService(IKeyGenerator keyGenerator, StemmesystemContext context, ILogger<DelegatService> logger, NotificationManager notificationManager)
     {
         _keyGenerator = keyGenerator;
         _context = context;
-        _mapper = mapper;
         _logger = logger;
         _notificationManager = notificationManager;
     }
@@ -49,10 +45,10 @@ public class DelegatService : IDelegatService, IAdminDelegatService
     
     public async Task<DelegatDto?> HentDelegat(int arrangementId, int delegatId)
     {
-        return await _context.Delegat
+        var delegat = await _context.Delegat
             .Where(d => d.ArrangementId == arrangementId && d.Id == delegatId)
-            .ProjectTo<DelegatDto>(_mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
+        return delegat?.ToDto();
     }
 
     [Authorize(Roles = "admin")]
@@ -61,11 +57,12 @@ public class DelegatService : IDelegatService, IAdminDelegatService
         var (arrangementId, delgatId) = request;
         if (delgatId == null)
             throw new StemmeException("DelegatId er påkrevd");
-        return await _context.Delegat
+        var delegat = await _context.Delegat
             .Where(d => d.ArrangementId == arrangementId && d.Id == delgatId)
-            .ProjectTo<AdminDelegatDto>(_mapper.ConfigurationProvider)
             .FirstOrDefaultAsync();
+        return delegat?.ToAdminDto();
     }
+
     [Authorize(Roles = "admin")]
     public async Task<AdminDelegatDto> OppdaterDelegat(DelegatInputModel dto)
     {
@@ -84,25 +81,24 @@ public class DelegatService : IDelegatService, IAdminDelegatService
         delegat.Telefon = dto.Telefon;
             
         await _context.SaveChangesAsync();
-        return _mapper.Map<AdminDelegatDto>(delegat);
+        return delegat.ToAdminDto();
     }
 
     [Authorize(Roles = "admin")]
     public async Task<ICollection<DelegatDto>> HentDelegater(int arrangementId)
     {
-        return await _context.Delegat
+        var delegater = await _context.Delegat
             .Where(d => d.ArrangementId == arrangementId)
-            .ProjectTo<DelegatDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
+        return delegater.Select(d => d.ToDto()).ToList();
     }
 
     async Task<ICollection<AdminDelegatDto>> IAdminDelegatService.HentDelegater(HentDelegatRequest request)
     {
-        return await _context.Delegat
+        var delegater = await _context.Delegat
             .Where(d => d.ArrangementId == request.ArrangementId)
-            .ProjectTo<AdminDelegatDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
-
+        return delegater.Select(d => d.ToAdminDto()).ToList();
     }
 
     public async Task<bool> IsValidNo(int arrangement, int number)
@@ -118,12 +114,12 @@ public class DelegatService : IDelegatService, IAdminDelegatService
         if (!await IsValidNo(dto.ArrangementId, dto.Delegatnummer!.Value))
             throw new StemmeException("Delegatnummer er allerede brukt");
 
-        var delegat = _mapper.Map<Delegat>(dto);
+        var delegat = DelegatMapper.FromInputModel(dto);
         delegat.ArrangementId = dto.ArrangementId;
         delegat.Delegatkode = _keyGenerator.GenerateKey(4);
         _context.Delegat.Add(delegat);
         await _context.SaveChangesAsync();
-        return _mapper.Map<AdminDelegatDto>(delegat);
+        return delegat.ToAdminDto();
     }
 
     public async Task SlettDelegat(SlettDelegatRequest request, CancellationToken cancellationToken = default)
@@ -229,8 +225,7 @@ public class DelegatService : IDelegatService, IAdminDelegatService
         var delegat = await _context.Delegat
             .Include(d => d.Arrangement)
             .Where(d => d.Delegatkode == delegatKode)
-            .ProjectTo<DelegatDto>(_mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(cancellationToken);
-        return delegat;
+        return delegat?.ToDto();
     }
 }

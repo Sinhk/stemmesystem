@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared.MinSpeiding;
+using Stemmesystem.Shared.Models;
 using Stemmesystem.Shared.Tools;
 
 namespace Stemmesystem.Data.Entities
@@ -59,6 +60,14 @@ namespace Stemmesystem.Data.Entities
                  Gruppe = participant.GroupName,
                  MemberId = participant.MemberNo,
                 TilStede = importCheckIn && participant.CheckedIn.GetValueOrDefault(),
+            };
+
+        public static Delegat FromInputModel(DelegatInputModel model) =>
+            new(model.Delegatnummer ?? 0, model.Navn)
+            {
+                Gruppe = model.Gruppe,
+                Epost = model.Epost,
+                Telefon = model.Telefon
             };
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using AutoMapper;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Stemmesystem.Shared.Models;
@@ -9,13 +8,6 @@ namespace Stemmesystem.Client.Services.CSV
 {
     public class CsvImport
     {
-        private readonly IMapper _mapper;
-
-        public CsvImport(IMapper mapper)
-        {
-            _mapper = mapper;
-        }
-        
         private readonly CsvConfiguration _csvConfiguration = new(CultureInfo.InvariantCulture)
         {
             PrepareHeaderForMatch = args => args.Header.ToLower(),
@@ -27,13 +19,13 @@ namespace Stemmesystem.Client.Services.CSV
         {
             using var csv = new CsvReader(reader, _csvConfiguration);
             
-            var list = new List<CsvDelegat>();
+            var list = new List<DelegatInputModel>();
             await foreach (var delegat in csv.GetRecordsAsync<CsvDelegat>())
             {
-                list.Add(delegat);
+                list.Add(delegat.ToInputModel());
             }
 
-            return _mapper.Map<List<DelegatInputModel>>(list);
+            return list;
         }
 
         public async Task<IEnumerable<SakInputModel>> LesSaker(TextReader reader, int arrangementId)
