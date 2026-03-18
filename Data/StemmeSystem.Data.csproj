@@ -9,7 +9,6 @@
   <ItemGroup>
     <PackageReference Include="Duende.IdentityServer" Version="7.4.7" />
     <PackageReference Include="Duende.IdentityServer.EntityFramework.Storage" Version="7.4.7" />
-    <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="7.0.20" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="10.0.5" />
