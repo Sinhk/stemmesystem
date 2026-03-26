@@ -122,7 +122,7 @@ builder.Services.AddOptions<EmailSettings>()
 builder.Services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
 builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
 
-builder.Services.AddAutoMapper(typeof(ApiAutoMapperProfile));
+builder.Services.AddAutoMapper(c => c.AddProfile(typeof(ApiAutoMapperProfile)));
 builder.Services.AddFusionCache()
     .WithDefaultEntryOptions(new FusionCacheEntryOptions {
         Duration = TimeSpan.FromMinutes(1),
