@@ -2,9 +2,7 @@
 @using Stemmesystem.Web.Components
 @using Microsoft.AspNetCore.Components
 @using Stemmesystem.Shared.Models
-@using AutoMapper
 @inject ISakService SakService
-@inject IMapper _mapper
 @inject NavigationManager Nav
 
 <EditForm EditContext="EditContext" OnValidSubmit="@HandleValidSubmit">
@@ -65,7 +63,7 @@
         
         if (result.Success)
         {
-            Sak = _mapper.Map<SakInputModel>(result.Value);    
+            Sak = result.Value!.ToInputModel();    
             context.MarkAsUnmodified();
             return true;
         }

@@ -2,10 +2,8 @@
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
-@using AutoMapper
 @inject ISakService _sakService
 @inject NavigationManager _nav
-@inject IMapper _mapper
 
 <EditForm EditContext="EditContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -75,7 +73,7 @@
         if (_voteringExpanded && _voteringer == null)
         {
             var voteringer = await _sakService.HentVoteringer(new HentVoteringerRequest(Sak.Id));
-            _voteringer = _mapper.Map<List<VoteringInputModel>>(voteringer);
+            _voteringer = voteringer.ToInputModels();
         }
     }
 
@@ -87,7 +85,7 @@
         if (Sak.Id != default)
         {
             var sak = await _sakService.OppdaterSak(Sak);
-            _mapper.Map(sak, Sak);
+            sak.ApplyToInputModel(Sak);
         }
         else
         {
@@ -99,7 +97,7 @@
                 return false;
             }
             
-            _mapper.Map(sakDto, Sak);
+            sakDto?.ApplyToInputModel(Sak);
         }
         context.MarkAsUnmodified();
         return true;

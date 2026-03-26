@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data;
 using Stemmesystem.Server.Data.Entities;
@@ -15,12 +13,10 @@ namespace Stemmesystem.Server.Services
     public class ArrangementService : IArrangementService
     {
         private readonly StemmesystemContext _context;
-        private readonly IMapper _mapper;
         private readonly IFusionCache _cache;
 
-        public ArrangementService(StemmesystemContext context, IMapper mapper, IFusionCache cache)
+        public ArrangementService(StemmesystemContext context, IFusionCache cache)
         {
-            _mapper = mapper;
             _cache = cache;
             _context = context;
         }
@@ -36,20 +32,25 @@ namespace Stemmesystem.Server.Services
 
         public async Task<ArrangementDto?> HentArrangementAsync(string navn, CancellationToken cancellationToken = default)
         {
-            return await GetSingleQuery(_context)
+            var arrangement = await GetSingleQuery(_context)
                 .Where(a => a.Navn == navn)
-                .ProjectTo<ArrangementDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(cancellationToken);
+            return arrangement?.ToDto();
         }
 
         public async Task<ArrangementDto> NyttArrangement(ArrangementInputModel model)
         {
             if (!await IsNameAvailable(model.Navn!))
                 throw new StemmeException($"Det finnes allered et arrangement med navn {model.Navn}");
-            var entity = _mapper.Map<Arrangement>(model);
+            var entity = new Arrangement(model.Navn!)
+            {
+                Beskrivelse = model.Beskrivelse,
+                Startdato = model.Startdato,
+                Sluttdato = model.Sluttdato
+            };
             _context.Arrangement.Add(entity);
             await _context.SaveChangesAsync();
-            return _mapper.Map<ArrangementDto>(entity);
+            return entity.ToDto();
         }
 
         public async Task<bool> IsNameAvailable(string name)
@@ -74,23 +75,22 @@ namespace Stemmesystem.Server.Services
 
         public async Task<List<ArrangementInfo>> HentArrangementerAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.Arrangement
+            var arrangementer = await _context.Arrangement
                 .AsSplitQuery()
                 .Include(a=> a.Delegater)
                 .Include(a=> a.Saker)
                 .ThenInclude(s => s.Voteringer)
                 .Where(a=> a.Aktiv == true)
-                .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
+            return arrangementer.Select(a => a.ToInfo()).ToList();
         }
 
         public async Task<ArrangementDto?> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
         {
             var arrangement = await GetSingleQuery(_context)
                 .Where(a => a.Id == id)
-                .ProjectTo<ArrangementDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(cancellationToken);
-            return arrangement;
+            return arrangement?.ToDto();
         }
 
         public async Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel model)
@@ -113,15 +113,10 @@ namespace Stemmesystem.Server.Services
         {
             return await _cache.GetOrSetAsync<IReadOnlyCollection<VoteringDto>>($"aktive-{request.ArrangementId}", async token =>
             {
-                return await _context.Arrangement
-                    .AsSplitQuery()
-                    .Where(a => a.Id == request.ArrangementId)
-                    .SelectMany(a => a.Saker)
-                    .SelectMany(s => s.Voteringer)
-                    .Where(v => v.Aktiv)
-                    .ProjectTo<VoteringDto>(_mapper.ConfigurationProvider)
+                var voteringer = await _context.Votering
+                    .Where(v => v.Sak.ArrangementId == request.ArrangementId && v.Aktiv)
                     .ToArrayAsync(cancellationToken: token);
-
+                return voteringer.Select(v => v.ToDto()).ToArray();
             }, options =>
             {
                 options.Duration = TimeSpan.FromSeconds(2);
@@ -133,13 +128,13 @@ namespace Stemmesystem.Server.Services
         {
             return await _cache.GetOrSetAsync($"resultater-{request.ArrangementId}", async token =>
             {
-                return await _context.Arrangement
-                    .Where(a=> a.Id == request.ArrangementId)
-                    .SelectMany(a => a.Saker)
-                    .SelectMany(s => s.Voteringer)
-                    .Where(v => v.Publisert)
-                    .ProjectTo<VoteringResultatDto>(_mapper.ConfigurationProvider)
+                var voteringer = await _context.Votering
+                    .Where(v => v.Sak.ArrangementId == request.ArrangementId && v.Publisert)
+                    .Include(v => v.Sak)
+                    .Include(v => v.Stemmer)
+                    .Include(v => v.AvgitStemme)
                     .ToArrayAsync(cancellationToken: token);
+                return voteringer.Select(v => v.ToResultatDto()).ToArray();
             }, token: cancellationToken);
         }
 
@@ -147,10 +142,13 @@ namespace Stemmesystem.Server.Services
         {
             return await _cache.GetOrSetAsync<ArrangementInfo?>($"ArrangementInfo({request.ArrangementId})", async token =>
             {
-                return await _context.Arrangement
-                    .Where(a=> a.Id == request.ArrangementId)
-                    .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
-                    .SingleOrDefaultAsync(token);
+                var arrangement = await _context.Arrangement
+                    .Where(a => a.Id == request.ArrangementId)
+                    .Include(a => a.Delegater)
+                    .Include(a => a.Saker)
+                        .ThenInclude(s => s.Voteringer)
+                    .FirstOrDefaultAsync(token);
+                return arrangement?.ToInfo();
             });
         }
 
