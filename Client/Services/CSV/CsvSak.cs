@@ -3,24 +3,24 @@ using CsvHelper.Configuration;
 
 namespace Stemmesystem.Client.Services.CSV
 {
-    public record CsvSak
+    public record CsvCase
     {
-        public string? Nummer { get; set; }
-        public string? Tittel { get; set; }
-        public string? Beskrivelse { get; set; }
-        public string? Votering { get; set; }
-        public string? VoteringBeskrivelse { get; set; }
-        public bool? HemmeligVotering { get; set; }
-        public List<string>? Valg { get; set; }
-        public int? KanVelge { get; set; }
+        public string? Number { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public string? Ballot { get; set; }
+        public string? BallotDescription { get; set; }
+        public bool? SecretBallot { get; set; }
+        public List<string>? Choices { get; set; }
+        public int? MaxChoices { get; set; }
     }
     
-    public sealed class CsvSakMap : ClassMap<CsvSak>
+    public sealed class CsvCaseMap : ClassMap<CsvCase>
     {
-        public CsvSakMap()
+        public CsvCaseMap()
         {
             AutoMap(CultureInfo.InvariantCulture);
-            Map(s => s.Valg).Convert(args =>
+            Map(s => s.Choices).Convert(args =>
             {
                 if (args.Row.TryGetField<string>("valg", out var valg))
                     return valg.Split(',').ToList();

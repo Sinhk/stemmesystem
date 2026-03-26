@@ -3,7 +3,7 @@
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
 @using AutoMapper
-@inject ISakService _sakService
+@inject ICaseService _sakService
 @inject NavigationManager _nav
 @inject IMapper _mapper
 
@@ -13,13 +13,13 @@
     <ValidationSummary />
     <div class="form-row">
         <div class="col-2">
-            <FocusableInputText @ref="firstInput" class="form-control" placeholder="Saknummer" @bind-Value="Sak.Nummer"/>
+            <FocusableInputText @ref="firstInput" class="form-control" placeholder="Saknummer" @bind-Value="Sak.Number"/>
         </div>
         <div class="col-8">
-            <InputText class="form-control" placeholder="Tittel" @bind-Value="Sak.Tittel"/>
+            <InputText class="form-control" placeholder="Tittel" @bind-Value="Sak.Title"/>
         </div>
         <div class="col-8">
-            <InputText class="my-1 form-control" placeholder="Beskrivelse" @bind-Value="Sak.Beskrivelse"/>    
+            <InputText class="my-1 form-control" placeholder="Beskrivelse" @bind-Value="Sak.Description"/>    
         </div>
         
         <div class="col-auto">
@@ -40,7 +40,7 @@
             {
                 <VoteringFormInline Votering="@votering" />
             }
-            <button class="btn-sm btn-success" @onclick:preventDefault @onclick="@(() => _voteringer.Add(new VoteringInputModel {SakId = Sak.Id}))">Legg til votering</button>
+            <button class="btn-sm btn-success" @onclick:preventDefault @onclick="@(() => _voteringer.Add(new BallotInputModel {SakId = Sak.Id}))">Legg til votering</button>
         }
         
     }
@@ -50,13 +50,13 @@
     [Parameter]
     public int ArrangementId {get;set;} 
     [Parameter]
-    public SakInputModel Sak {get;set;} = null!;
+    public CaseInputModel Sak {get;set;} = null!;
 
     public EditContext? EditContext { get; set; }
     private CustomValidator? customValidator;
     private FocusableInputText? firstInput;
     private bool _voteringExpanded;
-    private ICollection<VoteringInputModel>? _voteringer;
+    private ICollection<BallotInputModel>? _voteringer;
 
     protected override void OnInitialized()
     {
@@ -74,8 +74,8 @@
         _voteringExpanded = !_voteringExpanded;
         if (_voteringExpanded && _voteringer == null)
         {
-            var voteringer = await _sakService.HentVoteringer(new HentVoteringerRequest(Sak.Id));
-            _voteringer = _mapper.Map<List<VoteringInputModel>>(voteringer);
+            var voteringer = await _sakService.GetBallots(new GetBallotsRequest(Sak.Id));
+            _voteringer = _mapper.Map<List<BallotInputModel>>(voteringer);
         }
     }
 
@@ -86,12 +86,12 @@
         
         if (Sak.Id != default)
         {
-            var sak = await _sakService.OppdaterSak(Sak);
+            var sak = await _sakService.UpdateCase(Sak);
             _mapper.Map(sak, Sak);
         }
         else
         {
-            var (sakDto, errors) = await _sakService.LagreNySak(Sak);
+            var (sakDto, errors) = await _sakService.CreateCase(Sak);
             if (errors?.Count > 0)
             {
                 customValidator?.DisplayErrors(errors);

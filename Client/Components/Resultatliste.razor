@@ -4,7 +4,7 @@
 @using System.ComponentModel.DataAnnotations
 
 <div class="row" @onclick="@OnTitleClick">
-    <h3>@Arrangement.Navn</h3>
+    <h3>@Arrangement.Name</h3>
     <span class="ml-2 mt-1 oi @(_expanded ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
 </div>
 @if (_expanded)
@@ -22,7 +22,7 @@
     [Parameter, Required]
     public ArrangementInfo Arrangement { get; set; } = null!;
     
-    private IReadOnlyCollection<VoteringResultatDto>? _voteringer;
+    private IReadOnlyCollection<BallotResultDto>? _voteringer;
 
     private bool _nyPublisert = false;
     private bool _expanded;
@@ -32,7 +32,7 @@
         _expanded = !_expanded;
         if (_voteringer == null)
         {
-            var resultater = await ArrangementService.HentResultater(new ArrangementRequest { ArrangementId = Arrangement.Id });
+            var resultater = await ArrangementService.GetResultater(new ArrangementRequest { ArrangementId = Arrangement.Id });
             _voteringer = resultater;
         }
     }

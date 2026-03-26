@@ -1,4 +1,4 @@
-@inject IDelegatService DelegatService
+@inject IDelegateService DelegatService
 @inject IDelegatkodeAuthService AuthService
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
@@ -7,7 +7,7 @@
 
 @if (_delegat != null)
 {
-    <div>Delegat: <wbr>@_delegat.Delegatnummer&nbsp;(@_delegat.Navn)</div>
+    <div>Delegat: <wbr>@_delegat.DelegateNumber&nbsp;(@_delegat.Name)</div>
 }
 else
 {
@@ -33,7 +33,7 @@ else
 }
 
 @code {
-    private DelegatDto? _delegat;
+    private DelegateDto? _delegat;
     
     protected override async Task OnInitializedAsync()
     {
@@ -44,8 +44,8 @@ else
     {
         try
         {
-            var result = await DelegatService.HentDelegatInfo();
-            _delegat = result.Delegat;
+            var result = await DelegatService.GetDelegateInfo();
+            _delegat = result.Delegate;
         }
         catch (Grpc.Core.RpcException ex) when (ex.Status.DebugException is AccessTokenNotAvailableException te)
         {
@@ -65,7 +65,7 @@ else
     /*
     protected override async Task OnInitializedAsync()
     {
-        arrangementer = await ArrangementService.HentArrangementAsync();
+        arrangementer = await ArrangementService.GetArrangementAsync();
     }
     */
     private async Task DelegatLogin(){

@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Stemmesystem.Server.Hubs;
 using Stemmesystem.Shared;
 using Stemmesystem.Shared.SignalR;
@@ -9,18 +8,18 @@ namespace Stemmesystem.Server.Services;
 public class NotificationManager
 {
 
-    private readonly IHubContext<DelegatHub, IDelegatHubClient> _delegatContext;
+    private readonly IHubContext<DelegateHub, IDelegateHubClient> _delegateContext;
     private readonly IHubContext<AdminHub, IAdminHubClient> _adminContext;
 
-    public NotificationManager(IHubContext<DelegatHub, IDelegatHubClient> delegatContext, IHubContext<AdminHub, IAdminHubClient> adminContext)
+    public NotificationManager(IHubContext<DelegateHub, IDelegateHubClient> delegateContext, IHubContext<AdminHub, IAdminHubClient> adminContext)
     {
-        _delegatContext = delegatContext;
+        _delegateContext = delegateContext;
         _adminContext = adminContext;
     }
 
-    public IDelegatHubClient ForArrangement(int arrangementId)
+    public IDelegateHubClient ForArrangement(int arrangementId)
     {
-        var client = _delegatContext.Clients.Group(arrangementId.ToString());
+        var client = _delegateContext.Clients.Group(arrangementId.ToString());
         return client;
     }
 

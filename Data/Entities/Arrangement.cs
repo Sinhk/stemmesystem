@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Stemmesystem.Data.Entities;
 using Stemmesystem.Data.Models;
 using Stemmesystem.Shared.Interfaces;
 using Stemmesystem.Shared.MinSpeiding;
+using DelegateEntity = Stemmesystem.Data.Entities.Delegate;
 
 namespace Stemmesystem.Server.Data.Entities;
 
@@ -12,59 +13,63 @@ public class Arrangement
 {
     public int Id { get; internal set; }
 
-    public Votering? FinnVotering(int voteringId)
+    public Ballot? FindBallot(int ballotId)
     {
-        return Saker.SelectMany(s => s.Voteringer).FirstOrDefault(v => v.Id == voteringId);
+        return Cases.SelectMany(s => s.Ballots).FirstOrDefault(v => v.Id == ballotId);
     }
 
-    public string Navn { get; init; }
+    [Column("Navn")]
+    public string Name { get; init; }
 
-    public string? Beskrivelse { get; set; }
-    [Column(TypeName="date")]
-    public DateTime? Startdato { get; set; }
-    [Column(TypeName="date")]
-    public DateTime? Sluttdato { get; set; }
-    public bool Aktiv { get; set; }
+    [Column("Beskrivelse")]
+    public string? Description { get; set; }
+    [Column("Startdato", TypeName="date")]
+    public DateTime? StartDate { get; set; }
+    [Column("Sluttdato", TypeName="date")]
+    public DateTime? EndDate { get; set; }
+    [Column("Aktiv")]
+    public bool Active { get; set; }
 
 
-    public IList<Sak> Saker { get; set; } = new List<Sak>();
+    public IList<Case> Cases { get; set; } = new List<Case>();
 
-    public IList<Delegat> Delegater { get; set; } = new List<Delegat>();
+    public IList<DelegateEntity> Delegates { get; set; } = new List<DelegateEntity>();
         
     public MinSpeidingOptions? MinSpeidingOptions { get; set; }
         
 
-    public Arrangement(string navn)
+    public Arrangement(string name)
     {
-        Navn = navn;
-        Aktiv = true;
+        Name = name;
+        Active = true;
     }
 
-    public void LeggTil(Sak sak)
+    public void Add(Case caseItem)
     {
-        Saker.Add(sak);
+        Cases.Add(caseItem);
     }
 
-    public void NyDelegat(int nummer, string navn, string? kode = null)
+    public DelegateEntity AddDelegate(int number, string name, string? code = null)
     {
-        var delegat = new Delegat(nummer, navn, kode);
-        Delegater.Add(delegat);
+        var delegateEntity = new DelegateEntity(number, name, code);
+        Delegates.Add(delegateEntity);
+        return delegateEntity;
     }
 
-    public IEnumerable<Votering> AktiveVoteringer()
+    public IEnumerable<Ballot> ActiveBallots()
     {
-        return Saker.SelectMany(s => s.Voteringer).Where(v => v.Aktiv);
+        return Cases.SelectMany(s => s.Ballots).Where(v => v.Active);
     }
 
-    public Delegat NyDelegat(NyDelegatModel model, string delegatkode)
+    public DelegateEntity AddDelegate(NewDelegateModel model, string delegateCode)
     {
-        var delegat = new Delegat(model.Nummer, model.Navn, delegatkode)
+        var delegateEntity = new DelegateEntity(model.Number, model.Name, delegateCode)
         {
-            Epost = model.Epost,
-            Telefon = model.Telefon
+            Email = model.Email,
+            Phone = model.Phone
         };
-        Delegater.Add(delegat);
-        return delegat;
+        Delegates.Add(delegateEntity);
+        return delegateEntity;
     }
 }
 

@@ -7,16 +7,16 @@
 @inject IArrangementService ArrangementService
 @inject IAdminNotifierService AdminNotifier
 @implements IDisposable
-@inherits OwningComponentBase<Stemmesystem.Client.SignalR.IDelegatNotifierService>
+@inherits OwningComponentBase<Stemmesystem.Client.SignalR.IDelegateNotifierService>
 @attribute [Authorize]
 <div class="row">
-    <h3><b>@_arrangement?.Navn</b></h3>    
+    <h3><b>@_arrangement?.Name</b></h3>    
 </div>
 <div class="row">
-    <div class="col">Saker: @_arrangement?.Saker.Count </div>
+    <div class="col">Saker: @_arrangement?.Cases.Count </div>
 </div>
 <div class="row">
-    <div class="col">Delegater: @_arrangement?.Delegater.Count</div>
+    <div class="col">Delegater: @_arrangement?.Delegates.Count</div>
     <div class="col">Delegater til stede: @_delegaterTilstede</div>
     <div class="col">Aktive delegater: @_aktiveDelegater</div>
 </div>
@@ -38,7 +38,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var arrangement = await ArrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId});
+        var arrangement = await ArrangementService.GetArrangementAsync(new GetArrangementRequest {Id = ArrangementId});
         if(arrangement != null)
             _arrangement = arrangement;
         Console.WriteLine("Arrangement hentet");
@@ -48,15 +48,15 @@
         Console.WriteLine("Active subscription connected");
         _aktiveDelegater = await Service.GetActiveCount(ArrangementId);
         
-        _tilstedeSubscription = AdminNotifier.OnTilstedeCountChanged(TilstedeCountChanged);
+        _tilstedeSubscription = AdminNotifier.OnPresentCountChanged(TilstedeCountChanged);
         await AdminNotifier.Start();
         Console.WriteLine("Tilstede subscribtion connected");
-        var tilstedeResponse = await ArrangementService.GetTilstedeCount(new TilstedeCountRequest(ArrangementId));
+        var tilstedeResponse = await ArrangementService.GetPresentCount(new PresentCountRequest(ArrangementId));
         _delegaterTilstede = tilstedeResponse.Count;
         Console.WriteLine("Tilstede count fetched");
     }
 
-    private void TilstedeCountChanged(TilstedeCountChangedEvent e)
+    private void TilstedeCountChanged(PresentCountChangedEvent e)
     {
         if (e.ArrangementId != ArrangementId) return;
         _delegaterTilstede = e.Count;

@@ -13,24 +13,24 @@ namespace Stemmesystem.Client.Pages
         public int? Id{ get; set; }
 
         private ArrangementInfo? _arrangement;
-        private DelegatDto? _delegat;
-        private readonly ConcurrentDictionary<int, VoteringDto> _voteringer = new();
-        private IDelegatNotifierService Notifier => Service;
+        private DelegateDto? _delegate;
+        private readonly ConcurrentDictionary<int, BallotDto> _ballots = new();
+        private IDelegateNotifierService Notifier => Service;
 
         private bool _disposed;
 
-        private IDisposable? _startetSubscription;
-        private IDisposable? _stoppetSubscription;
+        private IDisposable? _startedSubscription;
+        private IDisposable? _stoppedSubscription;
 
         protected override async Task OnInitializedAsync()
         {
-            var result = await DelegatService.HentDelegatInfo();
-            _delegat = result.Delegat;
+            var result = await DelegateService.GetDelegateInfo();
+            _delegate = result.Delegate;
             
             ArrangementInfo? arrangement;
             if(Id != null)
             {
-                arrangement = await ArrangementService.HentArrangementInfoAsync(new ArrangementRequest {ArrangementId = Id.Value});
+                arrangement = await ArrangementService.GetArrangementInfoAsync(new ArrangementRequest {ArrangementId = Id.Value});
             }
             else
             {
@@ -46,14 +46,14 @@ namespace Stemmesystem.Client.Pages
             }
 
             _arrangement = arrangement;
-            var voteringer = await ArrangementService.FinnAktiveVoteringer(new ArrangementRequest {ArrangementId = _arrangement.Id});
-            foreach (var votering in voteringer)
+            var ballots = await ArrangementService.GetActiveBallots(new ArrangementRequest {ArrangementId = _arrangement.Id});
+            foreach (var ballot in ballots)
             {
-                _voteringer[votering.Id] = votering;
+                _ballots[ballot.Id] = ballot;
             }
 
-            _startetSubscription = Notifier.OnVoteringStartet(VoteringStartet);
-            _stoppetSubscription = Notifier.OnVoteringStoppet(VoteringStoppet);
+            _startedSubscription = Notifier.OnBallotStarted(BallotStarted);
+            _stoppedSubscription = Notifier.OnBallotStopped(BallotStopped);
             await Notifier.Start();
         }
         
@@ -61,20 +61,20 @@ namespace Stemmesystem.Client.Pages
         { 
             if (_disposed)
                 return;
-            _startetSubscription?.Dispose();
-            _stoppetSubscription?.Dispose();
+            _startedSubscription?.Dispose();
+            _stoppedSubscription?.Dispose();
             _disposed = true;
         }
 
-        private void VoteringStartet(VoteringStartetEvent e)
+        private void BallotStarted(BallotStartedEvent e)
         {
-            _voteringer[e.Votering.Id] = e.Votering;
+            _ballots[e.Ballot.Id] = e.Ballot;
             StateHasChanged();
         }
 
-        private void VoteringStoppet(VoteringStoppetEvent e)
+        private void BallotStopped(BallotStoppedEvent e)
         {
-            _voteringer.Remove(e.VoteringId, out _);
+            _ballots.Remove(e.BallotId, out _);
             StateHasChanged();
         }
     }

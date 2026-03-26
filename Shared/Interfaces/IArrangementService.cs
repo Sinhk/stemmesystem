@@ -9,30 +9,30 @@ namespace Stemmesystem.Shared.Interfaces;
 [Service]
 public interface IArrangementService
 {
-    Task<ArrangementDto?> HentArrangementAsync(HentArrangementRequest request, CancellationToken cancellationToken = default);
-    Task<List<ArrangementInfo>> HentArrangementerAsync(CancellationToken cancellationToken = default);
-    Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request);
-    Task<IReadOnlyCollection<VoteringResultatDto>> HentResultater(ArrangementRequest request,
+    Task<ArrangementDto?> GetArrangementAsync(GetArrangementRequest request, CancellationToken cancellationToken = default);
+    Task<List<ArrangementInfo>> GetArrangementsAsync(CancellationToken cancellationToken = default);
+    Task<ArrangementInfo?> GetArrangementInfoAsync(ArrangementRequest request);
+    Task<IReadOnlyCollection<BallotResultDto>> GetResults(ArrangementRequest request,
         CancellationToken cancellationToken = default);
-    Task<IReadOnlyCollection<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request, CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<BallotDto>> GetActiveBallots(ArrangementRequest request, CancellationToken cancellationToken = default);
 
 
-    Task<ArrangementDto> NyttArrangement(ArrangementInputModel dto);
-    Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel dto);
-    Task<TilstedeCountResponse> GetTilstedeCount(TilstedeCountRequest request, CancellationToken cancellationToken = default);
+    Task<ArrangementDto> CreateArrangement(ArrangementInputModel dto);
+    Task<ArrangementDto> UpdateArrangement(ArrangementInputModel dto);
+    Task<PresentCountResponse> GetPresentCount(PresentCountRequest request, CancellationToken cancellationToken = default);
 }
 
-public record TilstedeCountRequest(int ArrangementId);
-public record TilstedeCountResponse(int Count);
+public record PresentCountRequest(int ArrangementId);
+public record PresentCountResponse(int Count);
 
 [ProtoContract]
-public record HentArrangementRequest
+public record GetArrangementRequest
 {
     [ProtoMember(1)]
     
     public int? Id { get; init; }
     [ProtoMember(2)]
-    public string? Navn { get; init; }
+    public string? Name { get; init; }
 }
 
 [ProtoContract]
@@ -43,7 +43,7 @@ public record ArrangementRequest
 }
 
 [ProtoContract(SkipConstructor = true)]
-public record FinnAktiveVotringerRequest
+public record GetActiveBallotsRequest
 {
     [ProtoMember(1, IsRequired = true)]
     public int ArrangementId { get; init; }

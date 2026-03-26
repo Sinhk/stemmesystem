@@ -3,7 +3,7 @@
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
 @using AutoMapper
-@inject IAdminDelegatService _delegatService
+@inject IAdminDelegateService _delegatService
 @inject IMapper _mapper
 
 <EditForm class="form-inline" EditContext="EditContext" OnValidSubmit="@HandleValidSubmit">
@@ -11,11 +11,11 @@
     <CustomValidator @ref="customValidator" />
     <ValidationSummary />
     
-    <input @ref="numInput" class="form-control" placeholder="Delegatnummer" @bind-value="Delegat.Delegatnummer"/>
-    <InputText class="form-control" placeholder="Navn" @bind-Value="Delegat.Navn"/>
+    <input @ref="numInput" class="form-control" placeholder="Delegatnummer" @bind-value="Delegat.DelegateNumber"/>
+    <InputText class="form-control" placeholder="Navn" @bind-Value="Delegat.Name"/>
     <InputText class="form-control" placeholder="Gruppe" @bind-Value="Delegat.Gruppe"/>
-    <InputText class="form-control" placeholder="Epost" @bind-Value="Delegat.Epost"/>
-    <InputText class="form-control" placeholder="Telefon" @bind-Value="Delegat.Telefon"/>
+    <InputText class="form-control" placeholder="Epost" @bind-Value="Delegat.Email"/>
+    <InputText class="form-control" placeholder="Telefon" @bind-Value="Delegat.Phone"/>
     @if (ArrangementId != null)
     {
         <button type="submit" class="btn btn-primary" disabled="@(Delegat.Id != null && !context.IsModified())">Lagre</button>    
@@ -28,7 +28,7 @@
     private ElementReference numInput;
 
     [Parameter]
-    public DelegatInputModel Delegat { get; set; } = null!;
+    public DelegateInputModel Delegat { get; set; } = null!;
 
     [Parameter]
     public int? ArrangementId { get; set; }
@@ -64,7 +64,7 @@
     private async Task OppdaterDelegat(int arrangementId)
     {
         Delegat.ArrangementId = arrangementId;
-        var delegat = await _delegatService.OppdaterDelegat(Delegat);
+        var delegat = await _delegatService.UpdateDelegate(Delegat);
         _mapper.Map(delegat, Delegat);
         
     }
@@ -72,7 +72,7 @@
     private async Task LeggTilDelegat(int arrangementId)
     {
         Delegat.ArrangementId = arrangementId;
-        var delegat = await _delegatService.RegistrerNyDelegat(Delegat);
+        var delegat = await _delegatService.RegisterNewDelegate(Delegat);
         _mapper.Map(delegat, Delegat);
     }
     
@@ -80,7 +80,7 @@
     {
         if (delegatId != null && ArrangementId != null)
         {
-            await _delegatService.SlettDelegat(new SlettDelegatRequest(ArrangementId.Value, delegatId.Value), cancellationToken);
+            await _delegatService.DeleteDelegate(new DeleteDelegateRequest(ArrangementId.Value, delegatId.Value), cancellationToken);
         }
         
         await OnDelete.InvokeAsync();

@@ -1,5 +1,5 @@
-﻿@inject IStemmeService StemmeService
-@inject ISakService SakService
+﻿@inject IVoteService StemmeService
+@inject ICaseService SakService
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Shared
@@ -20,11 +20,11 @@
     }
     else
     {
-        foreach (var sak in _saker.Values.OrderBy(s => s.Nummer))
+        foreach (var sak in _saker.Values.OrderBy(s => s.Number))
         {
-            <h5>@sak.Nummer - @sak.Tittel</h5>
-            <p><small>@sak.Beskrivelse</small></p>
-            foreach (var voteringId in sak.Voteringer.Keys)
+            <h5>@sak.Number - @sak.Title</h5>
+            <p><small>@sak.Description</small></p>
+            foreach (var voteringId in sak.Ballots.Keys)
             {
                 var votering = _voteringer[voteringId];
                 <SakslisteLinje Votering="@votering" ArrangementId="@ArrangementId" Notifier="Notifier"></SakslisteLinje>
@@ -47,24 +47,24 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var saker = await SakService.HentSaker(new SakerRequest(ArrangementId));
+        var saker = await SakService.GetCases(new CasesRequest(ArrangementId));
 
         _saker = new ConcurrentDictionary<int, DashboardSakModel>();
         _voteringer = new ConcurrentDictionary<int, DashboardVoteringModel>();
         foreach (var sakDto in saker)
         {
-            var sak = new DashboardSakModel(sakDto.Id, sakDto.Nummer, sakDto.Tittel, sakDto.Beskrivelse, sakDto.Voteringer.Select(v => v.Id));
+            var sak = new DashboardSakModel(sakDto.Id, sakDto.Number, sakDto.Title, sakDto.Description, sakDto.Ballots.Select(v => v.Id));
             _saker[sak.Id] = sak;
 
-            foreach (var voteringDto in sakDto.Voteringer)
+            foreach (var voteringDto in sakDto.Ballots)
             {
-                var votering = new DashboardVoteringModel(voteringDto.Id, voteringDto.Tittel, voteringDto.Beskrivelse, voteringDto.Valg, voteringDto.AvgitStemme, voteringDto.KanVelge, voteringDto.Stemmer)
+                var votering = new DashboardVoteringModel(voteringDto.Id, voteringDto.Title, voteringDto.Description, voteringDto.Choices, voteringDto.VotedDelegates, voteringDto.MaxChoices, voteringDto.Votes)
                 {
-                    Aktiv = voteringDto.Aktiv,
-                    Lukket = voteringDto.Lukket,
-                    Publisert = voteringDto.Publisert,
-                    DelegaterTilstede = voteringDto.DelegaterTilstede,
-                    SluttTid = voteringDto.SluttTid
+                    Active = voteringDto.Active,
+                    Locked = voteringDto.Locked,
+                    Published = voteringDto.Published,
+                    DelegatesPresent = voteringDto.DelegatesPresent,
+                    EndTime = voteringDto.EndTime
                 };
 
                 _voteringer[votering.Id] = votering;
@@ -73,26 +73,26 @@
 
         _subscriptions.AddRange(new[]
         {
-            Notifier.OnVoteringStartet(OnVoteringStartet),
-            Notifier.OnVoteringStoppet(OnVoteringStoppet),
-            Notifier.OnVoteringLukket(OnVoteringLukket),
-            Notifier.OnVoteringPublisert(OnVoteringPublisert),
-            Notifier.OnNyVotering(NyVotering),
-            Notifier.OnNyStemme(OnNyStemme),
-            Notifier.OnStemmeFjernet(OnStemmeFjernet)
+            Notifier.OnBallotStarted(OnVoteringStartet),
+            Notifier.OnBallotStopped(OnVoteringStoppet),
+            Notifier.OnBallotLocked(OnVoteringLukket),
+            Notifier.OnBallotPublished(OnVoteringPublisert),
+            Notifier.OnNewBallot(NyVotering),
+            Notifier.OnNewVote(OnNyStemme),
+            Notifier.OnVoteRemoved(OnStemmeFjernet)
         });
         await Notifier.Start();
-        await Notifier.KobleTilArrangement(ArrangementId);
+        await Notifier.JoinArrangement(ArrangementId);
     }
 
-    private void OnNyStemme(NyStemmeEvent e)
+    private void OnNyStemme(NewVoteEvent e)
     {
         var (voteringId, stemme) = e;
         _voteringer.TryGetValue(voteringId, out var votering);
 
         if (votering is not null)
         {
-            votering.Stemmer[stemme.Id] = stemme;
+            votering.Votes[stemme.Id] = stemme;
         }
         else
         {
@@ -101,13 +101,13 @@
         StateHasChanged();
     }
 
-    private void OnStemmeFjernet(StemmeFjernetEvent e)
+    private void OnStemmeFjernet(VoteRemovedEvent e)
     {
         var (voteringId, stemmeId) = e;
         _voteringer.TryGetValue(voteringId, out var votering);
         if (votering != null)
         {
-            votering.Stemmer.Remove(stemmeId, out _);
+            votering.Votes.Remove(stemmeId, out _);
         }
         else
         {
@@ -116,19 +116,19 @@
         StateHasChanged();
     }
 
-    private void OnVoteringStoppet(VoteringStoppetEvent e)
+    private void OnVoteringStoppet(BallotStoppedEvent e)
     {
         var (voteringId, _, stemmer) = e;
 
         if (_voteringer.TryGetValue(voteringId, out var votering))
         {
-            votering.Aktiv = false;
-            votering.SluttTid = e.Time;
+            votering.Active = false;
+            votering.EndTime = e.Time;
 
-            votering.Stemmer.Clear();
+            votering.Votes.Clear();
             foreach (var stemme in stemmer)
             {
-                votering.Stemmer[stemme.Id] = stemme;
+                votering.Votes[stemme.Id] = stemme;
             }
         }
         else
@@ -138,11 +138,11 @@
         StateHasChanged();
     }
 
-    private void OnVoteringStartet(VoteringStartetEvent e)
+    private void OnVoteringStartet(BallotStartedEvent e)
     {
-        if(_voteringer.TryGetValue(e.Votering.Id, out var votering))
+        if(_voteringer.TryGetValue(e.Ballot.Id, out var votering))
         {
-            votering.Aktiv = true;
+            votering.Active = true;
             StateHasChanged();
         }
         else
@@ -151,12 +151,12 @@
         }
     }
 
-    private void OnVoteringLukket(VoteringLukketEvent e)
+    private void OnVoteringLukket(BallotLockedEvent e)
     {
-        if (_voteringer.TryGetValue(e.VoteringId, out var votering))
+        if (_voteringer.TryGetValue(e.BallotId, out var votering))
         {
-            votering.Lukket = true;
-            votering.DelegaterTilstede = e.DelegaterTilstede;
+            votering.Locked = true;
+            votering.DelegatesPresent = e.DelegatesPresent;
             StateHasChanged();
         }
         else
@@ -165,7 +165,7 @@
         }
     }
 
-    private void OnVoteringPublisert(VoteringPublisertEvent e)
+    private void OnVoteringPublisert(BallotPublishedEvent e)
     {
         var (arrangementId,_, voteringId) = e;
         if (arrangementId != ArrangementId)
@@ -173,7 +173,7 @@
 
         if (_voteringer.TryGetValue(voteringId, out var votering))
         {
-            votering.Publisert = true;
+            votering.Published = true;
             StateHasChanged();
         }
         else
@@ -182,13 +182,13 @@
         }
     }
 
-    private void NyVotering(NyVoteringEvent e)
+    private void NyVotering(NewBallotEvent e)
     {
-        var votering = e.Votering;
-        if(_saker.TryGetValue(votering.SakId, out var sak))
+        var votering = e.Ballot;
+        if(_saker.TryGetValue(votering.CaseId, out var sak))
         {
-            sak.Voteringer[votering.Id] = votering.Id;
-            _voteringer[votering.Id] = new DashboardVoteringModel(votering.Id, votering.Tittel, votering.Beskrivelse, votering.Valg,votering.AvgitStemme, votering.KanVelge);
+            sak.Ballots[votering.Id] = votering.Id;
+            _voteringer[votering.Id] = new DashboardVoteringModel(votering.Id, votering.Title, votering.Description, votering.Choices,votering.VotedDelegates, votering.MaxChoices);
         }
         StateHasChanged();
     }
@@ -196,7 +196,7 @@
 
     public async ValueTask DisposeAsync()
     {
-        await Notifier.KobleFraArrangement(ArrangementId);
+        await Notifier.LeaveArrangement(ArrangementId);
         foreach (var s in _subscriptions)
         {
             s?.Dispose();
@@ -206,57 +206,57 @@
     internal record DashboardSakModel
     {
         public int Id { get; init; }
-        public string? Nummer { get; init; }
-        public string? Tittel { get; init; }
-        public string? Beskrivelse { get; init; }
-        public ConcurrentDictionary<int,int> Voteringer { get; init; }
+        public string? Number { get; init; }
+        public string? Title { get; init; }
+        public string? Description { get; init; }
+        public ConcurrentDictionary<int,int> Ballots { get; init; }
 
         public DashboardSakModel(int Id, string? Nummer, string? Tittel, string? Beskrivelse, IEnumerable<int> Voteringer)
         {
             this.Id = Id;
-            this.Nummer = Nummer;
-            this.Tittel = Tittel;
-            this.Beskrivelse = Beskrivelse;
-            this.Voteringer = new ConcurrentDictionary<int,int>(Voteringer.Select(v => new KeyValuePair<int, int>(v,v)));
+            this.Number = Nummer;
+            this.Title = Tittel;
+            this.Description = Beskrivelse;
+            this.Ballots = new ConcurrentDictionary<int,int>(Voteringer.Select(v => new KeyValuePair<int, int>(v,v)));
         }
     }
 
     public record DashboardVoteringModel
     {
-        public DashboardVoteringModel(int Id, string tittel, string beskrivelse, IEnumerable<ValgDto> valg, IEnumerable<DelegatDto> avgitStemme, int kanVelge, IEnumerable<StemmeDto>? Stemmer = null)
+        public DashboardVoteringModel(int Id, string tittel, string beskrivelse, IEnumerable<ChoiceDto> valg, IEnumerable<DelegateDto> avgitStemme, int kanVelge, IEnumerable<VoteDto>? Stemmer = null)
         {
             this.Id = Id;
-            Tittel = tittel;
-            Beskrivelse = beskrivelse;
-            KanVelge = kanVelge;
-            Valg = valg
-                .Select(v => new DashboardValgModel(v.Id,v.Navn,v.SortId))
+            Title = tittel;
+            Description = beskrivelse;
+            MaxChoices = kanVelge;
+            Choices = valg
+                .Select(v => new DashboardValgModel(v.Id,v.Name,v.SortId))
                 .ToArray();
 
-            AvgitStemme = avgitStemme
+            VotedDelegates = avgitStemme
                 .Select(d => d.Id)
                 .ToArray();
 
-            this.Stemmer = Stemmer is null 
-                ? new ConcurrentDictionary<Guid, StemmeDto>() 
-                : new ConcurrentDictionary<Guid, StemmeDto>(Stemmer.Select(s => new KeyValuePair<Guid, StemmeDto>(s.Id, s)));
+            this.Votes = Stemmer is null 
+                ? new ConcurrentDictionary<Guid, VoteDto>() 
+                : new ConcurrentDictionary<Guid, VoteDto>(Stemmer.Select(s => new KeyValuePair<Guid, VoteDto>(s.Id, s)));
         }
 
         public int Id { get; }
-        public string Tittel { get; }
-        public string Beskrivelse { get; }
-        public bool Aktiv { get; set; }
-        public bool Lukket { get; set; }
-        public bool Publisert { get; set; }
-        public int? DelegaterTilstede { get; set; }
-        public DateTime? SluttTid { get; set; }
+        public string Title { get; }
+        public string Description { get; }
+        public bool Active { get; set; }
+        public bool Locked { get; set; }
+        public bool Published { get; set; }
+        public int? DelegatesPresent { get; set; }
+        public DateTime? EndTime { get; set; }
 
-        public ConcurrentDictionary<Guid, StemmeDto> Stemmer { get; }
-        public IReadOnlyCollection<int> AvgitStemme { get; }
-        public IReadOnlyCollection<DashboardValgModel> Valg { get; }
-        public int KanVelge { get; }
+        public ConcurrentDictionary<Guid, VoteDto> Votes { get; }
+        public IReadOnlyCollection<int> VotedDelegates { get; }
+        public IReadOnlyCollection<DashboardValgModel> Choices { get; }
+        public int MaxChoices { get; }
     }
     
-    public record DashboardValgModel(Guid Id, string Navn, int? SortId);
+    public record DashboardValgModel(Guid Id, string Name, int? SortId);
 
 }

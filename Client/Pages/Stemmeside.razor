@@ -3,13 +3,13 @@
 @attribute [Authorize(Roles = "Delegat")]
 
 @inject IArrangementService ArrangementService
-@inject IDelegatService DelegatService
+@inject IDelegateService DelegateService
 @inject NavigationManager NavigationManager
 
 @using Stemmesystem.Shared.Interfaces
 @using Microsoft.AspNetCore.Authorization
 @implements IDisposable
-@inherits OwningComponentBase<Stemmesystem.Client.SignalR.IDelegatNotifierService>
+@inherits OwningComponentBase<Stemmesystem.Client.SignalR.IDelegateNotifierService>
 
 @if (_arrangement == null)
 {
@@ -17,23 +17,23 @@
 }
 else
 {
-    <h2>@_arrangement.Navn</h2>
-    if (_delegat == null)
+    <h2>@_arrangement.Name</h2>
+    if (_delegate == null)
     {
         <h3>Fant ikke delegat-info. Noe er galt</h3>
     }
     else
     {
-        <h3>Delegat: @_delegat.Delegatnummer (@_delegat.Navn)</h3>
+        <h3>Delegat: @_delegate.DelegateNumber (@_delegate.Name)</h3>
         <div class="row">
             <h3>Voteringer</h3>
         </div>
         <div class="row">
-            @if (_voteringer.Any())
+            @if (_ballots.Any())
             {
-                foreach (var votering in _voteringer.Values)
+                foreach (var ballot in _ballots.Values)
                 {
-                    <AktivVotering @key="votering.Id" Votering=votering/>
+                    <AktivVotering @key="ballot.Id" Votering=ballot/>
                 }
             }
             else

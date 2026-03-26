@@ -25,11 +25,11 @@ namespace Stemmesystem.Client.Pages
                 return;
             if (authState.User.IsInRole("admin"))
             {
-                var arrangement = await _arrangementService.HentArrangementerAsync();
+                var arrangement = await _arrangementService.GetArrangementsAsync();
                 _arrangementer = arrangement;
 
                 var notifier = ScopedServices.GetRequiredService<IAdminNotifierService>();
-                _subscription = notifier.OnVoteringPublisert(OnVoteringPublisert);
+                _subscription = notifier.OnBallotPublished(OnBallotPublished);
                 await notifier.Start();
             }
             else if (authState.User.IsInRole("Delegat"))
@@ -38,16 +38,16 @@ namespace Stemmesystem.Client.Pages
                 if (arrangementClaim?.Value != null)
                 {
                     var id = int.Parse(arrangementClaim.Value);
-                    var arrangement = await _arrangementService.HentArrangementInfoAsync(new ArrangementRequest {ArrangementId = id});
+                    var arrangement = await _arrangementService.GetArrangementInfoAsync(new ArrangementRequest {ArrangementId = id});
                     if (arrangement != null) _arrangementer = new List<ArrangementInfo> { arrangement };
-                    var notifier = ScopedServices.GetRequiredService<IDelegatNotifierService>();
-                    _subscription = notifier.OnVoteringPublisert(OnVoteringPublisert);
+                    var notifier = ScopedServices.GetRequiredService<IDelegateNotifierService>();
+                    _subscription = notifier.OnBallotPublished(OnBallotPublished);
                     await notifier.Start();
                 }
             }
         }
         
-        private void OnVoteringPublisert(VoteringPublisertEvent e)
+        private void OnBallotPublished(BallotPublishedEvent e)
         {
             _nyPublisert = true;
             StateHasChanged();

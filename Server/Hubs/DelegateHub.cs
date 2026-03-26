@@ -6,12 +6,12 @@ using Stemmesystem.Shared.SignalR;
 
 namespace Stemmesystem.Server.Hubs;
 
-public class DelegatHub : Hub<IDelegatHubClient>
+public class DelegateHub : Hub<IDelegateHubClient>
 {
     private static readonly ConcurrentDictionary<string, int> Tracker = new();
     private static readonly ConcurrentDictionary<int, int> Counts = new();
 
-    public  int GetActiveCount(int arrangementId)
+    public int GetActiveCount(int arrangementId)
     {
         Counts.TryGetValue(arrangementId, out var i);
         return i;
@@ -31,9 +31,9 @@ public class DelegatHub : Hub<IDelegatHubClient>
                     var x = Tracker.AddOrUpdate(Context.User.GetSubjectId(), _ => 1, (_, i) => i + 1);
                     if (x == 1)
                     {
-                        var arrangemntId = int.Parse(arrangement.Value);
-                        Counts.AddOrUpdate(arrangemntId, _ => 1, (_, i) => i+1);
-                        await CountChanged(arrangemntId);
+                        var arrangementId = int.Parse(arrangement.Value);
+                        Counts.AddOrUpdate(arrangementId, _ => 1, (_, i) => i+1);
+                        await CountChanged(arrangementId);
                     }
                 }
 
@@ -46,10 +46,10 @@ public class DelegatHub : Hub<IDelegatHubClient>
         await base.OnConnectedAsync();
     }
 
-    private async Task CountChanged(int arrangemntId)
+    private async Task CountChanged(int arrangementId)
     {
-        var count = Counts[arrangemntId];
-        await Clients.Groups("admin").ActiveCountChanged(new ActiveCountChangedEvent(arrangemntId,count));
+        var count = Counts[arrangementId];
+        await Clients.Groups("admin").ActiveCountChanged(new ActiveCountChangedEvent(arrangementId, count));
     }
 
     
@@ -69,9 +69,9 @@ public class DelegatHub : Hub<IDelegatHubClient>
                     {
                         if (x == 1)
                         {
-                            var arrangemntId = int.Parse(arrangement.Value);
-                            Counts.AddOrUpdate(arrangemntId, _ => 0, (_, i) => i-1);
-                            await CountChanged(arrangemntId);
+                            var arrangementId = int.Parse(arrangement.Value);
+                            Counts.AddOrUpdate(arrangementId, _ => 0, (_, i) => i-1);
+                            await CountChanged(arrangementId);
                         }
                     }
                 }

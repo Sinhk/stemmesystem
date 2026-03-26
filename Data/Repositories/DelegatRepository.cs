@@ -1,30 +1,30 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Stemmesystem.Data.Entities;
+using DelegateEntity = Stemmesystem.Data.Entities.Delegate;
 
 namespace Stemmesystem.Data.Repositories;
 
-public interface IDelegatRepository
+public interface IDelegateRepository
 {
-    Task<Delegat?> ValiderKode(string delegatkode, CancellationToken cancellationToken = default);
+    Task<DelegateEntity?> ValidateCode(string delegateCode, CancellationToken cancellationToken = default);
 }
 
-public class DelegatRepository : IDelegatRepository
+public class DelegateRepository : IDelegateRepository
 {
     private readonly StemmesystemContext _context;
 
-    public DelegatRepository(StemmesystemContext context)
+    public DelegateRepository(StemmesystemContext context)
     {
         _context = context;
     }
 
-    public async Task<Delegat?> ValiderKode(string delegatkode, CancellationToken cancellationToken = default)
+    public async Task<DelegateEntity?> ValidateCode(string delegateCode, CancellationToken cancellationToken = default)
     {
-        delegatkode = delegatkode.ToUpper();
-        var delegat = await _context.Delegat
+        delegateCode = delegateCode.ToUpper();
+        var delegateEntity = await _context.Delegates
             .Include(d => d.Arrangement)
-            .Where(d => d.Delegatkode == delegatkode)
+            .Where(d => d.DelegateCode == delegateCode)
             .FirstOrDefaultAsync(cancellationToken);
-        return delegat;
+        return delegateEntity;
 
     }
 }

@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Components
 @using Stemmesystem.Shared.Models
 @using AutoMapper
-@inject ISakService SakService
+@inject ICaseService SakService
 @inject IMapper _mapper
 @inject NavigationManager Nav
 
@@ -13,13 +13,13 @@
     <ValidationSummary />
     <div class="form-row">
         <div class="col-2">
-            <FocusableInputText @ref="firstInput" class="form-control" placeholder="Saknummer" @bind-Value="Sak.Nummer"/>
+            <FocusableInputText @ref="firstInput" class="form-control" placeholder="Saknummer" @bind-Value="Sak.Number"/>
         </div>
         <div class="col-8">
-            <InputText class="form-control" placeholder="Tittel" @bind-Value="Sak.Tittel"/>
+            <InputText class="form-control" placeholder="Tittel" @bind-Value="Sak.Title"/>
         </div>
         <div class="col-8">
-            <InputText class="my-1 form-control" placeholder="Beskrivelse" @bind-Value="Sak.Beskrivelse"/>    
+            <InputText class="my-1 form-control" placeholder="Beskrivelse" @bind-Value="Sak.Description"/>    
         </div>
         
         <div class="col-auto">
@@ -27,14 +27,14 @@
         </div>
     </div>
     <h5>Votering</h5>
-    @{var votering = Sak.Voteringer?.FirstOrDefault();}
-    <h6>@votering?.Tittel</h6>
-    <span><small>@votering?.Beskrivelse</small></span>
-    <span>Hemmelig: @votering?.Hemmelig</span>
+    @{var votering = Sak.Ballots?.FirstOrDefault();}
+    <h6>@votering?.Title</h6>
+    <span><small>@votering?.Description</small></span>
+    <span>Hemmelig: @votering?.Secret</span>
     <br>
-    <span>Kan velge: @votering?.KanVelge</span>
+    <span>Kan velge: @votering?.MaxChoices</span>
     <br>
-    <span>Valg: @string.Join(", ", votering?.Valg.Select(v => v.Navn) ?? Enumerable.Empty<string>())</span>
+    <span>Valg: @string.Join(", ", votering?.Choices.Select(v => v.Name) ?? Enumerable.Empty<string>())</span>
     <hr/>
 </EditForm>
 @code {
@@ -42,7 +42,7 @@
     public int ArrangementId{get;set;}
 
     [Parameter]
-    public SakInputModel Sak { get; set; } = null!;
+    public CaseInputModel Sak { get; set; } = null!;
 
     public EditContext? EditContext { get; set; } 
     private CustomValidator? customValidator;
@@ -61,11 +61,11 @@
 
     internal async Task<bool> HandleValidSubmit(EditContext context){
         customValidator?.ClearErrors();
-        var result = await SakService.LagreNySak(Sak);
+        var result = await SakService.CreateCase(Sak);
         
         if (result.Success)
         {
-            Sak = _mapper.Map<SakInputModel>(result.Value);    
+            Sak = _mapper.Map<CaseInputModel>(result.Value);    
             context.MarkAsUnmodified();
             return true;
         }

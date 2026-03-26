@@ -7,7 +7,7 @@
 @using Stemmesystem.Web.Services.CSV
 
 @inject CsvImport _import
-@inject ISakService _sakService
+@inject ICaseService _sakService
 
 <div class="row">
     <p>Importer Saker:</p>
@@ -29,7 +29,7 @@
 <hr/>
 @code {
     private string? _error;
-    private List<SakInputModel> _importSaker = new();
+    private List<CaseInputModel> _importSaker = new();
     private IDictionary<int,SakImportForm> _sakForms = new Dictionary<int, SakImportForm>();
 
 
@@ -45,7 +45,7 @@
             await using var stream = e.File.OpenReadStream();
             using var reader = new StreamReader(stream);
             var saker = await _import.LesSaker(reader, ArrangementId);
-            _importSaker = new List<SakInputModel>(saker);
+            _importSaker = new List<CaseInputModel>(saker);
         }
         catch (Exception ex)
         {

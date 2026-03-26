@@ -23,7 +23,7 @@ else
     }
     else
     {
-        <h3>Rediger arrangement <b>@_arrangement.Navn</b></h3>    
+        <h3>Rediger arrangement <b>@_arrangement.Name</b></h3>    
     }    
     </div>
 
@@ -33,15 +33,15 @@ else
         <CustomValidator @ref="_customValidator" />
         <ValidationSummary />
         <div class="form-group">
-            <label>Navn<InputText class="form-control" placeholder="Navn" @bind-Value="_arrangement.Navn" disabled="@(_arrangement.Id != null)"/></label>
-            <label>Beskrivelse<InputText class="form-control" placeholder="Beskrivelse" @bind-Value="_arrangement.Beskrivelse"/></label>
+            <label>Navn<InputText class="form-control" placeholder="Navn" @bind-Value="_arrangement.Name" disabled="@(_arrangement.Id != null)"/></label>
+            <label>Beskrivelse<InputText class="form-control" placeholder="Beskrivelse" @bind-Value="_arrangement.Description"/></label>
         </div>
         <div class="form-row">
             <div class="form-group col-md.6">
-                <label>Startdato<InputDate class="form-control" @bind-Value="_arrangement.Startdato"/></label>
+                <label>Startdato<InputDate class="form-control" @bind-Value="_arrangement.StartDate"/></label>
             </div>
             <div class="form-group col-md-6">
-                <label>Sluttdato<InputDate class="form-control" @bind-Value="_arrangement.Sluttdato"/></label>
+                <label>Sluttdato<InputDate class="form-control" @bind-Value="_arrangement.EndDate"/></label>
             </div>
         </div>
         <button type="submit" class="btn btn-primary" disabled="@(_arrangement.Id != null && !context.IsModified())">Lagre</button>
@@ -57,13 +57,13 @@ else
         {
             <DelegatImport ArrangementId="@_arrangement.Id.Value"/>
             <div class="row">
-                @foreach (var delegat in Delegater.OrderBy(d => d.Delegatnummer ?? int.MaxValue))
+                @foreach (var delegat in Delegater.OrderBy(d => d.DelegateNumber ?? int.MaxValue))
                 {
                     <DelegatFormInline Delegat="@delegat" ArrangementId="@_arrangement.Id.Value" OnDelete="() => Delegater.Remove(delegat)" />
                 }
             </div>
             <div class="row">
-                <button class="btn btn-success" @onclick="@(_ => Delegater.Add(new DelegatInputModel()))">Legg til</button>
+                <button class="btn btn-success" @onclick="@(_ => Delegater.Add(new DelegateInputModel()))">Legg til</button>
             </div>
         }
         
@@ -81,7 +81,7 @@ else
                 }
             </div>
             <div class="row">
-                <button class="btn btn-success" @onclick="@(_ => Saker.Add(new SakInputModel()))">Legg til</button>
+                <button class="btn btn-success" @onclick="@(_ => Saker.Add(new CaseInputModel()))">Legg til</button>
             </div>
         }
         <div class="row mt-2" @onclick=@(_ => _minSpeidingExpanded=!_minSpeidingExpanded)>
@@ -104,9 +104,9 @@ else
     private CustomValidator? _customValidator;
 
     private bool _delegaterExpanded;
-    public ICollection<DelegatInputModel> Delegater
+    public ICollection<DelegateInputModel> Delegater
     {
-        get => _delegater ??= new List<DelegatInputModel>();
+        get => _delegater ??= new List<DelegateInputModel>();
         private set => _delegater = value;
     }
 
@@ -116,24 +116,24 @@ else
     private bool _minSpeidingExpanded;
     
     private bool _sakerExpanded;
-    public ICollection<SakInputModel> Saker
+    public ICollection<CaseInputModel> Saker
     {
-        get => _saker ??= new List<SakInputModel>();
+        get => _saker ??= new List<CaseInputModel>();
         private set => _saker = value;
     }
-    private ICollection<DelegatInputModel>? _delegater;
-    private ICollection<SakInputModel>? _saker;
+    private ICollection<DelegateInputModel>? _delegater;
+    private ICollection<CaseInputModel>? _saker;
     private bool _ready;
 
     protected override async Task OnInitializedAsync(){
         if(ArrangementId != null){
-            var arrangement = await ArrangementService.HentArrangementAsync(new HentArrangementRequest {Id = ArrangementId.Value});
+            var arrangement = await ArrangementService.GetArrangementAsync(new GetArrangementRequest {Id = ArrangementId.Value});
             if(arrangement != null)
             {
                 _arrangement = Automapper.Map<ArrangementInputModel>(arrangement);
 
-                Delegater = Automapper.Map<ICollection<DelegatInputModel>>(arrangement.Delegater);
-                Saker = Automapper.Map<ICollection<SakInputModel>>(arrangement.Saker);
+                Delegater = Automapper.Map<ICollection<DelegateInputModel>>(arrangement.Delegates);
+                Saker = Automapper.Map<ICollection<CaseInputModel>>(arrangement.Cases);
             }
         }
 
@@ -159,7 +159,7 @@ else
     {
         if (errors.Count <= 0)
         {
-            var arrangement = await ArrangementService.OppdaterArrangement(_arrangement);
+            var arrangement = await ArrangementService.UpdateArrangement(_arrangement);
             Automapper.Map(arrangement, _arrangement);
         }
     }
@@ -168,7 +168,7 @@ else
     {
         if (errors.Count <= 0)
         {
-            var arrangement = await ArrangementService.NyttArrangement(_arrangement);
+            var arrangement = await ArrangementService.CreateArrangement(_arrangement);
             Automapper.Map(arrangement, _arrangement);
             Navigation.NavigateTo($"admin/arrangement/{arrangement.Id}");
         }

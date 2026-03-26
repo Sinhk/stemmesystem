@@ -7,15 +7,16 @@ using Stemmesystem.Data.Entities;
 using Stemmesystem.Data.Models;
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared.MinSpeiding;
+using DelegateEntity = Stemmesystem.Data.Entities.Delegate;
 
 namespace Stemmesystem.Data
 {
     public class StemmesystemContext : ApiAuthorizationDbContext<ApplicationUser>, IDataProtectionKeyContext
     {
-        public DbSet<Delegat> Delegat => Set<Delegat>();
-        public DbSet<Arrangement> Arrangement => Set<Arrangement>();
-        public DbSet<Sak> Sak => Set<Sak>();
-        public DbSet<Votering> Votering => Set<Votering>();
+        public DbSet<DelegateEntity> Delegates => Set<DelegateEntity>();
+        public DbSet<Arrangement> Arrangements => Set<Arrangement>();
+        public DbSet<Case> Cases => Set<Case>();
+        public DbSet<Ballot> Ballots => Set<Ballot>();
 
         public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
@@ -41,51 +42,31 @@ namespace Stemmesystem.Data
                 });
             });
 
-            modelBuilder.Entity<Sak>(e =>{});
-            modelBuilder.Entity<Votering>(e =>
+            modelBuilder.Entity<Case>(e =>{});
+            modelBuilder.Entity<Ballot>(e =>
             {
-                e.HasMany(v => v.AvgitStemme).WithMany(d=> d.HarStemmtI);
+                e.HasMany(v => v.VotedDelegates).WithMany(d=> d.VotedIn);
             });
 
-            modelBuilder.Entity<Stemme>(e =>
+            modelBuilder.Entity<Vote>(e =>
             {
                 e.HasKey(s => s.Id);
             });
 
-            modelBuilder.Entity<Delegat>(e =>
+            modelBuilder.Entity<DelegateEntity>(e =>
             {
-                e.HasIndex(x => new { x.ArrangementId, x.Delegatnummer }).IsUnique();
-                e.HasIndex(x => x.Delegatkode).IsUnique();
-                e.Property(x => x.TilStede).HasDefaultValue(true);
+                e.HasIndex(x => new { x.ArrangementId, x.DelegateNumber }).IsUnique();
+                e.HasIndex(x => x.DelegateCode).IsUnique();
+                e.Property(x => x.Present).HasDefaultValue(true);
                 
                 e
-                    .HasMany(d=> d.HarStemmtI)
-                    .WithMany(v => v.AvgitStemme)
+                    .HasMany(d=> d.VotedIn)
+                    .WithMany(v => v.VotedDelegates)
                     .UsingEntity<Dictionary<string, object>>(
                         "DelegatVotering",
-                        j => j.HasOne<Votering>().WithMany().OnDelete(DeleteBehavior.Cascade),
-                        j => j.HasOne<Delegat>().WithMany().OnDelete(DeleteBehavior.ClientCascade));
+                        j => j.HasOne<Ballot>().WithMany().OnDelete(DeleteBehavior.Cascade),
+                        j => j.HasOne<DelegateEntity>().WithMany().OnDelete(DeleteBehavior.ClientCascade));
             });
         }
     }
-    
-    /*
-    public class StemmesystemContextFactory : IDesignTimeDbContextFactory<StemmesystemContext>
-    {
-        public StemmesystemContext CreateDbContext(string[] args)
-        {
-            var provider = args[0];
-            var optionsBuilder = new DbContextOptionsBuilder<StemmesystemContext>();
-            var options = provider switch
-            {
-                "Sqlite" => optionsBuilder.UseSqlite("not important",x=> x.MigrationsAssembly("SqliteMigrations")).Options
-                , "SqlServer" => optionsBuilder.UseSqlServer("not important",x=> x.MigrationsAssembly("SqlServerMigrations")).Options
-                , "Postgres" => optionsBuilder.UseNpgsql("not important",x=> x.MigrationsAssembly("PostgresMigrations")).Options
-                , _ => throw new Exception($"Unsupported provider: {provider}")
-            };
-                
-            return new StemmesystemContext(options, null);
-        }
-    }
-*/
 }

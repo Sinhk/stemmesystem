@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Stemmesystem.Data.Models;
 using Stemmesystem.Shared;
 
-public class StemmeProfileService : ProfileService<ApplicationUser>
+public class VoteProfileService : ProfileService<ApplicationUser>
 {
     public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
     {
@@ -36,11 +36,11 @@ public class StemmeProfileService : ProfileService<ApplicationUser>
         await base.IsActiveAsync(context);
     }
 
-    public StemmeProfileService(UserManager<ApplicationUser> userManager, IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory) : base(userManager, claimsFactory)
+    public VoteProfileService(UserManager<ApplicationUser> userManager, IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory) : base(userManager, claimsFactory)
     {
     }
 
-    public StemmeProfileService(UserManager<ApplicationUser> userManager, IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory, ILogger<ProfileService<ApplicationUser>> logger) : base(userManager, claimsFactory, logger)
+    public VoteProfileService(UserManager<ApplicationUser> userManager, IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory, ILogger<ProfileService<ApplicationUser>> logger) : base(userManager, claimsFactory, logger)
     {
     }
     

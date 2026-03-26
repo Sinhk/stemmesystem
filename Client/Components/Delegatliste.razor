@@ -1,4 +1,4 @@
-﻿@inject IAdminDelegatService DelegatService
+﻿@inject IAdminDelegateService DelegatService
 @inject IPinSender PinSender
 @inject NavigationManager Navigation
 @using Stemmesystem.Shared.Interfaces
@@ -37,39 +37,39 @@
         else
         {
             <tbody>
-            @foreach (var delegat in _delegater.Values.OrderBy(s => s.Delegatnummer))
+            @foreach (var delegat in _delegater.Values.OrderBy(s => s.DelegateNumber))
             {
                 <tr>
-                    <td>@delegat.Delegatnummer: @delegat.Navn</td>
+                    <td>@delegat.DelegateNumber: @delegat.Name</td>
                     @if (_showPin)
                     {
-                        <td>@delegat.Delegatkode</td>
+                        <td>@delegat.DelegateCode</td>
                     }
                     <td>
-                        <ToggleInput Value="delegat.TilStede" ValueChanged="@(b => SetTilstede(delegat.Id, b))"/>
+                        <ToggleInput Value="delegat.Present" ValueChanged="@(b => SetTilstede(delegat.Id, b))"/>
                     </td>
                     <td>
                         
-                        @if (!string.IsNullOrEmpty(delegat.Telefon))
+                        @if (!string.IsNullOrEmpty(delegat.Phone))
                         {
                             <SendPinSmsComponent DelegatId="delegat.Id" OnSendt="@(() => SmsSendt(delegat.Id))"/>
                         }
-                        @if (!string.IsNullOrEmpty(delegat.Epost))
+                        @if (!string.IsNullOrEmpty(delegat.Email))
                         {
                             <SendPinEmailComponent DelegatId="delegat.Id" OnSendt="@(() => EpostSendt(delegat.Id))"/>
                         }
                     </td>
                     <td>
                         <ul class="list-unstyled">
-                            @if (delegat.SendtEmail != null)
+                            @if (delegat.EmailSentAt != null)
                             {
-                                <li>Epost sendt @delegat.SendtEmail.Value.ToString("g")</li>
+                                <li>Epost sendt @delegat.EmailSentAt.Value.ToString("g")</li>
                             }
-                            @if (delegat.SendtSms != null)
+                            @if (delegat.SmsSentAt != null)
                             {
-                                <li>SMS sendt @delegat.SendtSms.Value.ToString("g")</li>
+                                <li>SMS sendt @delegat.SmsSentAt.Value.ToString("g")</li>
                             }
-                            @if (delegat.SendtEmail == null && delegat.SendtSms == null)
+                            @if (delegat.EmailSentAt == null && delegat.SmsSentAt == null)
                             {
                                 <li class="text-danger">Nei</li>
                             }
@@ -90,12 +90,12 @@
     private bool _expanded;
     private bool _showPin;
 
-    private Dictionary<int, AdminDelegatDto> _delegater = null!;
+    private Dictionary<int, AdminDelegateDto> _delegater = null!;
 
 
     protected override async Task OnInitializedAsync()
     {
-        var delegater = await DelegatService.HentDelegater(new HentDelegatRequest(ArrangementId));
+        var delegater = await DelegatService.GetDelegates(new GetDelegateRequest(ArrangementId));
         _delegater = delegater.ToDictionary(d => d.Id);
     }
 
@@ -104,7 +104,7 @@
         var delegat = _delegater.GetValueOrDefault(delegatId);
         if (delegat != null)
         {
-            delegat.SendtSms = DateTime.Now;
+            delegat.SmsSentAt = DateTime.Now;
         }
     }
     private void EpostSendt(int delegatId)
@@ -112,22 +112,22 @@
         var delegat = _delegater.GetValueOrDefault(delegatId);
         if (delegat != null)
         {
-            delegat.SendtEmail = DateTime.Now;
+            delegat.EmailSentAt = DateTime.Now;
         }
     }
 
     private async Task SetTilstede(int delegatId, bool tilStede)
     {
-        await DelegatService.SetTilStede(new SetTilstedeRequest(delegatId, tilStede));
-        _delegater[delegatId].TilStede = tilStede;
+        await DelegatService.SetPresent(new SetPresentRequest(delegatId, tilStede));
+        _delegater[delegatId].Present = tilStede;
     }
     
     private async Task SetTilstede(bool tilStede)
     {
-        await DelegatService.SetTilStedeForAll(new SetTilstedeForAllRequest(ArrangementId, tilStede));
+        await DelegatService.SetPresentForAll(new SetPresentForAllRequest(ArrangementId, tilStede));
         foreach (var delegat in _delegater.Values)
         {
-            delegat.TilStede = tilStede;
+            delegat.Present = tilStede;
         }
     }
 }

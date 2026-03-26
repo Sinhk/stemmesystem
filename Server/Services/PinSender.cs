@@ -25,20 +25,20 @@ public class PinSender : IPinSender
 
     public async Task<SendPinResult> SendEmail(SendPinRequest request, CancellationToken cancellationToken = default)
     {
-        var (delegatId, baseUrl) = request;
-        var delegat = await _context.Delegat
-            .Where(d => d.Id == delegatId)
+        var (delegateId, baseUrl) = request;
+        var delegateEntity = await _context.Delegates
+            .Where(d => d.Id == delegateId)
             .Include(d=> d.Arrangement)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        if (delegat == null)
-            throw new StemmeException($"Fant ikke delegat med id {delegatId}");
-        if (string.IsNullOrEmpty(delegat.Epost))
-            throw new StemmeException($"Delegat {delegat.Delegatnummer} ({delegat.Navn}) har ikke e-postadresse");
+        if (delegateEntity == null)
+            throw new VotingException($"Fant ikke delegat med id {delegateId}");
+        if (string.IsNullOrEmpty(delegateEntity.Email))
+            throw new VotingException($"Delegat {delegateEntity.DelegateNumber} ({delegateEntity.Name}) har ikke e-postadresse");
             
-        var msg = $"Hei {delegat.Navn}. Din PIN-kode for avstemming på {delegat.Arrangement.Navn} er: {delegat.Delegatkode}. Bruk PIN-koden på {baseUrl} for å avgi din stemme i de sakene der du har stemmerett. Du kan også bruke lenken: {baseUrl}/pin/{delegat.Delegatkode}";
-        var model = new EpostModel(delegat.Epost, $"PIN-kode til {delegat.Arrangement.Navn}")
+        var msg = $"Hei {delegateEntity.Name}. Din PIN-kode for avstemming på {delegateEntity.Arrangement.Name} er: {delegateEntity.DelegateCode}. Bruk PIN-koden på {baseUrl} for å avgi din stemme i de sakene der du har stemmerett. Du kan også bruke lenken: {baseUrl}/pin/{delegateEntity.DelegateCode}";
+        var model = new EpostModel(delegateEntity.Email, $"PIN-kode til {delegateEntity.Arrangement.Name}")
         {
-            TilNavn = delegat.Navn,
+            TilNavn = delegateEntity.Name,
             PlainTextMessage = msg
         };
         
@@ -48,34 +48,34 @@ public class PinSender : IPinSender
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Feil ved sending av e-post til {Delegat}", delegat.Navn);
+            _logger.LogError(e, "Feil ved sending av e-post til {Delegat}", delegateEntity.Name);
             return new SendPinResult(false);
         }
 
-        delegat.SendtEmailInternal = DateTimeOffset.UtcNow;
+        delegateEntity.EmailSentAtInternal = DateTimeOffset.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
         return new SendPinResult(true);
     }
 
     public async Task<SendPinResult> SendSms(SendPinRequest request, CancellationToken cancellationToken = default)
     {
-        var (delegatId, baseUrl) = request;
-        var delegat = await _context.Delegat
-            .Where(d => d.Id == delegatId)
+        var (delegateId, baseUrl) = request;
+        var delegateEntity = await _context.Delegates
+            .Where(d => d.Id == delegateId)
             .Include(d => d.Arrangement)
             .FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        if (delegat == null)
-            throw new StemmeException($"Fant ikke delegat med id{delegatId}");
-        if (string.IsNullOrEmpty(delegat.Telefon))
-            throw new StemmeException($"Delegat {delegat.Delegatnummer} ({delegat.Navn}) har ikke telefonnummer");
+        if (delegateEntity == null)
+            throw new VotingException($"Fant ikke delegat med id{delegateId}");
+        if (string.IsNullOrEmpty(delegateEntity.Phone))
+            throw new VotingException($"Delegat {delegateEntity.DelegateNumber} ({delegateEntity.Name}) har ikke telefonnummer");
 
         var uri = new Uri(baseUrl, UriKind.Absolute);
-        var msg = $"Hei {delegat.Navn}. Din PIN-kode for avstemming på {delegat.Arrangement.Navn} er {delegat.Delegatkode}. Bruk PIN-koden på {uri} for å avgi din stemme. Du kan også bruke lenken: {new Uri(uri,$"pin/{delegat.Delegatkode}")}";
+        var msg = $"Hei {delegateEntity.Name}. Din PIN-kode for avstemming på {delegateEntity.Arrangement.Name} er {delegateEntity.DelegateCode}. Bruk PIN-koden på {uri} for å avgi din stemme. Du kan også bruke lenken: {new Uri(uri,$"pin/{delegateEntity.DelegateCode}")}";
 
-        var success = await _smsSender.SendSms(delegat.Telefon, msg);
+        var success = await _smsSender.SendSms(delegateEntity.Phone, msg);
         if (success)
         {
-            delegat.SendtSmsInternal = DateTimeOffset.UtcNow;
+            delegateEntity.SmsSentAtInternal = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
         }
         

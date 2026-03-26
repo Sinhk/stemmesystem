@@ -6,34 +6,34 @@ using Stemmesystem.Shared.SignalR;
 
 namespace Stemmesystem.Client.SignalR;
 
-public interface IDelegatNotifierService : ISignalRClient
+public interface IDelegateNotifierService : ISignalRClient
 {
-    IDisposable? OnVoteringStartet(Action<VoteringStartetEvent> action);
-    IDisposable? OnVoteringStoppet(Action<VoteringStoppetEvent> action);
-    IDisposable? OnVoteringPublisert(Action<VoteringPublisertEvent> action);
+    IDisposable? OnBallotStarted(Action<BallotStartedEvent> action);
+    IDisposable? OnBallotStopped(Action<BallotStoppedEvent> action);
+    IDisposable? OnBallotPublished(Action<BallotPublishedEvent> action);
     IDisposable OnActiveCountChanged(Action<ActiveCountChangedEvent> action);
     Task<int> GetActiveCount(int arrangementId, CancellationToken cancellationToken = default);
 }
 
 public interface IAdminNotifierService : ISignalRClient
 {
-    Task KobleTilArrangement(int arrangementId, CancellationToken cancellationToken = default);
-    Task KobleFraArrangement(int arrangementId, CancellationToken cancellationToken = default);
-    IDisposable? OnVoteringStartet(Action<VoteringStartetEvent> action);
-    IDisposable? OnVoteringStoppet(Action<VoteringStoppetEvent> action);
-    IDisposable? OnNyStemme(Action<NyStemmeEvent> action);
-    IDisposable? OnStemmeFjernet(Action<StemmeFjernetEvent> action);
-    IDisposable? OnVoteringLukket(Action<VoteringLukketEvent> action);
-    IDisposable? OnVoteringPublisert(Action<VoteringPublisertEvent> action);
-    IDisposable? OnNyVotering(Action<NyVoteringEvent> action);
-    IDisposable? OnHarStemt(Action<HarStemtEvent> action);
+    Task JoinArrangement(int arrangementId, CancellationToken cancellationToken = default);
+    Task LeaveArrangement(int arrangementId, CancellationToken cancellationToken = default);
+    IDisposable? OnBallotStarted(Action<BallotStartedEvent> action);
+    IDisposable? OnBallotStopped(Action<BallotStoppedEvent> action);
+    IDisposable? OnNewVote(Action<NewVoteEvent> action);
+    IDisposable? OnVoteRemoved(Action<VoteRemovedEvent> action);
+    IDisposable? OnBallotLocked(Action<BallotLockedEvent> action);
+    IDisposable? OnBallotPublished(Action<BallotPublishedEvent> action);
+    IDisposable? OnNewBallot(Action<NewBallotEvent> action);
+    IDisposable? OnVoted(Action<VotedEvent> action);
 
-    IDisposable OnTilstedeCountChanged(Action<TilstedeCountChangedEvent> action);
+    IDisposable OnPresentCountChanged(Action<PresentCountChangedEvent> action);
 }
 
-public class DelegatNotifierService : SignalRClientBase, IDelegatNotifierService
+public class DelegateNotifierService : SignalRClientBase, IDelegateNotifierService
 {
-    public DelegatNotifierService(NavigationManager navigationManager, IAccessTokenProvider tokenProvider) : base(navigationManager, tokenProvider, "hubs/delegat")
+    public DelegateNotifierService(NavigationManager navigationManager, IAccessTokenProvider tokenProvider) : base(navigationManager, tokenProvider, "hubs/delegat")
     {
     }
     public async Task<int> GetActiveCount(int arrangementId, CancellationToken cancellationToken = default)
@@ -51,15 +51,15 @@ public class DelegatNotifierService : SignalRClientBase, IDelegatNotifierService
         return 0;
     }
 
-    public IDisposable OnVoteringStartet(Action<VoteringStartetEvent> action)
-        => HubConnection.On(nameof(IDelegatHubClient.VoteringStartet), action);
+    public IDisposable OnBallotStarted(Action<BallotStartedEvent> action)
+        => HubConnection.On(nameof(IDelegateHubClient.BallotStarted), action);
 
-    public IDisposable OnVoteringStoppet(Action<VoteringStoppetEvent> action)
-        => HubConnection.On(nameof(IDelegatHubClient.VoteringStoppet), action);
-    public IDisposable OnVoteringPublisert(Action<VoteringPublisertEvent> action)
-        => HubConnection.On(nameof(IDelegatHubClient.VoteringPublisert), action);
+    public IDisposable OnBallotStopped(Action<BallotStoppedEvent> action)
+        => HubConnection.On(nameof(IDelegateHubClient.BallotStopped), action);
+    public IDisposable OnBallotPublished(Action<BallotPublishedEvent> action)
+        => HubConnection.On(nameof(IDelegateHubClient.BallotPublished), action);
     public IDisposable OnActiveCountChanged(Action<ActiveCountChangedEvent> action)
-        => HubConnection.On(nameof(IDelegatHubClient.ActiveCountChanged), action);
+        => HubConnection.On(nameof(IDelegateHubClient.ActiveCountChanged), action);
 }
 
 public class AdminNotifierService : SignalRClientBase, IAdminNotifierService
@@ -68,11 +68,11 @@ public class AdminNotifierService : SignalRClientBase, IAdminNotifierService
     {
     }
 
-    public async Task KobleTilArrangement(int arrangementId, CancellationToken cancellationToken = default)
+    public async Task JoinArrangement(int arrangementId, CancellationToken cancellationToken = default)
     {
         try
         {
-            await HubConnection.InvokeAsync("KobleTilArrangement", arrangementId, cancellationToken);
+            await HubConnection.InvokeAsync("JoinArrangement", arrangementId, cancellationToken);
         }
         catch (Exception e)
         {
@@ -81,11 +81,11 @@ public class AdminNotifierService : SignalRClientBase, IAdminNotifierService
         }
     }
 
-    public async Task KobleFraArrangement(int arrangementId, CancellationToken cancellationToken = default)
+    public async Task LeaveArrangement(int arrangementId, CancellationToken cancellationToken = default)
     {
         try
         {
-            await HubConnection.InvokeAsync("KobleFraArrangement", arrangementId, cancellationToken);
+            await HubConnection.InvokeAsync("LeaveArrangement", arrangementId, cancellationToken);
         }
         catch (Exception e)
         {
@@ -94,21 +94,21 @@ public class AdminNotifierService : SignalRClientBase, IAdminNotifierService
         }
     }
 
-    public IDisposable OnVoteringStartet(Action<VoteringStartetEvent> action) => HubConnection.On(nameof(IDelegatHubClient.VoteringStartet), action);
+    public IDisposable OnBallotStarted(Action<BallotStartedEvent> action) => HubConnection.On(nameof(IDelegateHubClient.BallotStarted), action);
 
-    public IDisposable OnVoteringStoppet(Action<VoteringStoppetEvent> action) => HubConnection.On(nameof(IDelegatHubClient.VoteringStoppet), action);
+    public IDisposable OnBallotStopped(Action<BallotStoppedEvent> action) => HubConnection.On(nameof(IDelegateHubClient.BallotStopped), action);
 
-    public IDisposable OnNyStemme(Action<NyStemmeEvent> action) => HubConnection.On(nameof(IAdminHubClient.NyStemme), action);
+    public IDisposable OnNewVote(Action<NewVoteEvent> action) => HubConnection.On(nameof(IAdminHubClient.NewVote), action);
 
-    public IDisposable OnStemmeFjernet(Action<StemmeFjernetEvent> action) => HubConnection.On(nameof(IAdminHubClient.StemmeFjernet), action);
+    public IDisposable OnVoteRemoved(Action<VoteRemovedEvent> action) => HubConnection.On(nameof(IAdminHubClient.VoteRemoved), action);
 
-    public IDisposable OnVoteringLukket(Action<VoteringLukketEvent> action) => HubConnection.On(nameof(IAdminHubClient.VoteringLukket), action);
+    public IDisposable OnBallotLocked(Action<BallotLockedEvent> action) => HubConnection.On(nameof(IAdminHubClient.BallotLocked), action);
 
-    public IDisposable OnVoteringPublisert(Action<VoteringPublisertEvent> action) => HubConnection.On(nameof(IAdminHubClient.VoteringPublisert), action);
+    public IDisposable OnBallotPublished(Action<BallotPublishedEvent> action) => HubConnection.On(nameof(IDelegateHubClient.BallotPublished), action);
 
-    public IDisposable OnNyVotering(Action<NyVoteringEvent> action) => HubConnection.On(nameof(IAdminHubClient.NyVotering), action);
+    public IDisposable OnNewBallot(Action<NewBallotEvent> action) => HubConnection.On(nameof(IAdminHubClient.NewBallot), action);
 
-    public IDisposable OnHarStemt(Action<HarStemtEvent> action) => HubConnection.On(nameof(IAdminHubClient.HarStemt), action);
+    public IDisposable OnVoted(Action<VotedEvent> action) => HubConnection.On(nameof(IAdminHubClient.Voted), action);
 
-    public IDisposable OnTilstedeCountChanged(Action<TilstedeCountChangedEvent> action) => HubConnection.On(nameof(IAdminHubClient.TilstedeCountChanged), action);
+    public IDisposable OnPresentCountChanged(Action<PresentCountChangedEvent> action) => HubConnection.On(nameof(IAdminHubClient.PresentCountChanged), action);
 }

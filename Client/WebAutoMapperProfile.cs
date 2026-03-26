@@ -9,22 +9,22 @@ namespace Stemmesystem.Client
     {
         public WebAutoMapperProfile()
         {
-            CreateMap<CsvDelegat, DelegatInputModel>()
+            CreateMap<CsvDelegate, DelegateInputModel>()
                 .ForMember(d=> d.Id, o=> o.Ignore())
                 .ForMember(d=> d.ArrangementId, o=> o.Ignore())
                 ;
             
-            CreateMap<CsvSak, SakInputModel>()
+            CreateMap<CsvCase, CaseInputModel>()
                 .ForMember(d=> d.Id, o=> o.Ignore())
                 .ForMember(d=> d.ArrangementId, o=> o.Ignore())
-                .ForMember(d=> d.Voteringer, o=> o.Ignore())
+                .ForMember(d=> d.Ballots, o=> o.Ignore())
                 ;
 
-            CreateMap<DelegatDto, DelegatInputModel>()
+            CreateMap<DelegateDto, DelegateInputModel>()
                 .ForMember(d => d.Id, opt => opt.Condition(s => s.Id != default));
             CreateMap<ArrangementDto, ArrangementInputModel>();
-            CreateMap<SakDto, SakInputModel>();
-            CreateMap<VoteringDto, VoteringInputModel>();
+            CreateMap<CaseDto, CaseInputModel>();
+            CreateMap<BallotDto, BallotInputModel>();
 
         }
     }

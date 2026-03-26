@@ -2,6 +2,7 @@
 using Stemmesystem.Data.Entities;
 using Stemmesystem.Server.Data.Entities;
 using Stemmesystem.Shared.Models;
+using DelegateEntity = Stemmesystem.Data.Entities.Delegate;
 
 namespace Stemmesystem.Api;
 
@@ -9,56 +10,40 @@ public class ApiAutoMapperProfile : Profile
 {
     public ApiAutoMapperProfile()
     {
-        /*CreateMap<ArrangementDto, Arrangement>()
-            .ForMember(d => d.Id, o => o.Ignore())
-            .ForMember(d => d.Aktiv, o => o.Ignore())
-            .ForMember(d => d.Saker, o => o.Ignore())
-            .ForMember(d => d.Delegater, o => o.Ignore())
-            .ReverseMap()
-            ;
-            */
-
         CreateMap<Arrangement, ArrangementDto>();
         CreateMap<Arrangement, ArrangementInfo>()
-            .ForMember(d => d.VoteringerCount, opt => opt.MapFrom(s => s.Saker.Sum(sak => sak.Voteringer.Count)));
+            .ForMember(d => d.BallotsCount, opt => opt.MapFrom(s => s.Cases.Sum(c => c.Ballots.Count)));
         CreateMap<ArrangementInputModel, Arrangement>(MemberList.Source);
             
-        CreateMap<Delegat, DelegatDto>()
+        CreateMap<DelegateEntity, DelegateDto>()
             .ReverseMap();
         
-        CreateMap<Delegat, AdminDelegatDto>()
+        CreateMap<DelegateEntity, AdminDelegateDto>()
             .ReverseMap();
 
-        CreateMap<Sak, SakDto>();
-        CreateMap<Sak, AdminSakDto>();
-        CreateMap<Sak, SakInfoDto>();
-        CreateMap<SakInputModel, Sak>(MemberList.Source);
+        CreateMap<Case, CaseDto>();
+        CreateMap<Case, AdminCaseDto>();
+        CreateMap<Case, CaseInfoDto>();
+        CreateMap<CaseInputModel, Case>(MemberList.Source);
             
 
-        CreateMap<Stemme, StemmeDto>()
+        CreateMap<Vote, VoteDto>()
             .ReverseMap();
 
-        CreateMap<Votering, VoteringDto>();
-        CreateMap<Votering, AdminVoteringDto>();
-        CreateMap<Votering, VoteringResultatDto>()
-            .ForMember(v =>v.SakNavn, opt => opt.MapFrom(s => s.Sak.Tittel))
-            .ForMember(v =>v.AvgitteStemmer, opt => opt.MapFrom(s => s.AvgitStemme.Count));
-        CreateMap<Votering, VoteringInputModel>()
-            .ForMember(s => s.Startet, o => o.Ignore())
-            .ReverseMap();;
-        /*CreateMap<Votering, VoteringDto>()
-            .ForMember(v=> v.Id,opt =>
-            {
-                opt.MapFrom(s => s.Id);
-                opt.Condition(v => v.Id != default);
-            })
+        CreateMap<Ballot, BallotDto>();
+        CreateMap<Ballot, AdminBallotDto>();
+        CreateMap<Ballot, BallotResultDto>()
+            .ForMember(v => v.CaseName, opt => opt.MapFrom(s => s.Case.Title))
+            .ForMember(v => v.CaseNumber, opt => opt.MapFrom(s => s.Case.Number))
+            .ForMember(v => v.CastVoteCount, opt => opt.MapFrom(s => s.VotedDelegates.Count));
+        CreateMap<Ballot, BallotInputModel>()
+            .ForMember(s => s.Started, o => o.Ignore())
             .ReverseMap();
-            */
             
-        CreateMap<Valg, ValgDto>()
+        CreateMap<Choice, ChoiceDto>()
             .ReverseMap();
 
-        CreateMap<DelegatInputModel, Delegat>(MemberList.Source);
+        CreateMap<DelegateInputModel, DelegateEntity>(MemberList.Source);
 
     }
 

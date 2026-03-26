@@ -11,17 +11,17 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(2)]
         [Required(ErrorMessage = "Navn er påkrevd")]
         [StringLength(20)]
-        public string Navn { get; init; }
+        public string Name { get; init; }
         [ProtoMember(3)]
-        public string? Beskrivelse { get; set; }
+        public string? Description { get; set; }
         
         [ProtoMember(4)]
-        public DateTime? Startdato { get; set; }
+        public DateTime? StartDate { get; set; }
         [ProtoMember(5)]
-        public DateTime? Sluttdato { get; set; }
+        public DateTime? EndDate { get; set; }
 
-        [ProtoMember(6)] public List<DelegatDto> Delegater { get; init; } = new();
-        [ProtoMember(7)] public List<SakDto> Saker { get; init; } = new();
+        [ProtoMember(6)] public List<DelegateDto> Delegates { get; init; } = new();
+        [ProtoMember(7)] public List<CaseDto> Cases { get; init; } = new();
     }
     
     [ProtoContract]
@@ -30,15 +30,15 @@ namespace Stemmesystem.Shared.Models
         [ProtoMember(1)]
         public int Id { get; init; }
         [ProtoMember(2)]
-        public string Navn { get; init; } = null!;
+        public string Name { get; init; } = null!;
         [ProtoMember(3)]
-        public string? Beskrivelse { get; set; }
+        public string? Description { get; set; }
         [ProtoMember(4)]
-        public int DelegaterCount { get; set; }
+        public int DelegatesCount { get; set; }
         [ProtoMember(5)]
-        public int SakerCount { get; set; }
+        public int CasesCount { get; set; }
         [ProtoMember(6)]
-        public int VoteringerCount { get; set; }
+        public int BallotsCount { get; set; }
     }
 
     [ProtoContract]
@@ -48,13 +48,13 @@ namespace Stemmesystem.Shared.Models
         public int? Id { get; init; }
         [Required(ErrorMessage = "Navn er påkrevd")]
         [ProtoMember(2)]
-        public string? Navn { get; set; }
+        public string? Name { get; set; }
         [ProtoMember(3)]
-        public string? Beskrivelse { get; set; }
+        public string? Description { get; set; }
         [ProtoMember(4)]
-        public DateTime? Startdato { get; set; }
+        public DateTime? StartDate { get; set; }
         [ProtoMember(5)]
-        public DateTime? Sluttdato { get; set; }
+        public DateTime? EndDate { get; set; }
 
     }
 }

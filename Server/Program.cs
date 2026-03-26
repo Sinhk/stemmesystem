@@ -70,7 +70,7 @@ builder.Services.AddIdentityServer()
             AllowedGrantTypes = {AuthConstants.DelegatkodeGrantType}
         });
     })
-    .AddProfileService<StemmeProfileService>()
+    .AddProfileService<VoteProfileService>()
     .AddInMemoryCaching();
 
 builder.Services.RemoveAll(typeof(IValidationKeysStore));
@@ -101,9 +101,9 @@ builder.Services.AddResponseCompression(opts =>
 builder.Services.AddCodeFirstGrpc();
 
 
-builder.Services.AddScoped<IDelegatRepository, DelegatRepository>();
+builder.Services.AddScoped<IDelegateRepository, DelegateRepository>();
 builder.Services.AddScoped<IArrangementRepository, ArrangementRepository>();
-builder.Services.AddScoped<DelegatService>();
+builder.Services.AddScoped<DelegateService>();
 builder.Services.AddScoped<NotificationManager>();
 builder.Services.AddScoped<MinSpeidingService>();
 builder.Services.AddScoped<UserManager>();
@@ -176,7 +176,7 @@ app.MapHealthChecks("/healthz");
 
 MinSpeidingEndpoints.MapMinSpeidingEndpoints(app);
     
-app.MapHub<DelegatHub>("/hubs/delegat");
+app.MapHub<DelegateHub>("/hubs/delegat");
 app.MapHub<AdminHub>("/hubs/admin");
 app.MapFallbackToFile("index.html");
 

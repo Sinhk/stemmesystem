@@ -1,6 +1,6 @@
 ﻿@using Stemmesystem.Shared.Models
 <div class="input-group">
-    <FocusableInputText @ref="_input" class="form-control col-6" placeholder="Navn" @bind-Value="Valg.Navn"/>
+    <FocusableInputText @ref="_input" class="form-control col-6" placeholder="Navn" @bind-Value="Valg.Name"/>
     <div class="input-group-append">
         <button type="button" class="btn btn-danger" @onclick="@(async _ => await OnTaVekkValg.InvokeAsync(Valg.Id))" tabindex="-1"><i class="oi oi-x"></i></button>
     </div>
@@ -8,7 +8,7 @@
 
 @code {
     [Parameter]
-    public ValgDto Valg { get; set; } = null!;
+    public ChoiceDto Valg { get; set; } = null!;
     
     [Parameter]
     public EventCallback<Guid> OnTaVekkValg { get; set; }

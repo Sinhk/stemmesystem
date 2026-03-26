@@ -25,66 +25,66 @@ namespace Stemmesystem.Server.Services
             _context = context;
         }
 
-        public async Task<ArrangementDto?> HentArrangementAsync(HentArrangementRequest request, CancellationToken cancellationToken = default)
+        public async Task<ArrangementDto?> GetArrangementAsync(GetArrangementRequest request, CancellationToken cancellationToken = default)
         {
             if (request.Id != null)
-                return await HentArrangementAsync(request.Id.Value, cancellationToken);
-            if (request.Navn != null)
-                return await HentArrangementAsync(request.Navn, cancellationToken);
-            throw new StemmeException("request må ha Id eller navn");
+                return await GetArrangementAsync(request.Id.Value, cancellationToken);
+            if (request.Name != null)
+                return await GetArrangementByNameAsync(request.Name, cancellationToken);
+            throw new VotingException("request må ha Id eller navn");
         }
 
-        public async Task<ArrangementDto?> HentArrangementAsync(string navn, CancellationToken cancellationToken = default)
+        public async Task<ArrangementDto?> GetArrangementByNameAsync(string name, CancellationToken cancellationToken = default)
         {
             return await GetSingleQuery(_context)
-                .Where(a => a.Navn == navn)
+                .Where(a => a.Name == name)
                 .ProjectTo<ArrangementDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<ArrangementDto> NyttArrangement(ArrangementInputModel model)
+        public async Task<ArrangementDto> CreateArrangement(ArrangementInputModel model)
         {
-            if (!await IsNameAvailable(model.Navn!))
-                throw new StemmeException($"Det finnes allered et arrangement med navn {model.Navn}");
+            if (!await IsNameAvailable(model.Name!))
+                throw new VotingException($"Det finnes allered et arrangement med navn {model.Name}");
             var entity = _mapper.Map<Arrangement>(model);
-            _context.Arrangement.Add(entity);
+            _context.Arrangements.Add(entity);
             await _context.SaveChangesAsync();
             return _mapper.Map<ArrangementDto>(entity);
         }
 
         public async Task<bool> IsNameAvailable(string name)
         {
-            return await _context.Arrangement.AllAsync(a => a.Navn != name);
+            return await _context.Arrangements.AllAsync(a => a.Name != name);
         }
 
         private IQueryable<Arrangement> GetSingleQuery(StemmesystemContext context)
         {
-            return context.Arrangement
+            return context.Arrangements
                 .AsSingleQuery()
-                .Include(a => a.Delegater)
-                .Include(a => a.Saker)
-                  .ThenInclude(s => s.Voteringer)
-                    .ThenInclude(s=> s.AvgitStemme)
-                .Include(a => a.Saker)
-                  .ThenInclude(s => s.Voteringer)
-                    .ThenInclude(s => s.Stemmer)
-                .Where(a => a.Aktiv == true)
+                .Include(a => a.Delegates)
+                .Include(a => a.Cases)
+                  .ThenInclude(s => s.Ballots)
+                    .ThenInclude(s=> s.VotedDelegates)
+                .Include(a => a.Cases)
+                  .ThenInclude(s => s.Ballots)
+                    .ThenInclude(s => s.Votes)
+                .Where(a => a.Active == true)
                 ;
         }
 
-        public async Task<List<ArrangementInfo>> HentArrangementerAsync(CancellationToken cancellationToken = default)
+        public async Task<List<ArrangementInfo>> GetArrangementsAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.Arrangement
+            return await _context.Arrangements
                 .AsSplitQuery()
-                .Include(a=> a.Delegater)
-                .Include(a=> a.Saker)
-                .ThenInclude(s => s.Voteringer)
-                .Where(a=> a.Aktiv == true)
+                .Include(a=> a.Delegates)
+                .Include(a=> a.Cases)
+                .ThenInclude(s => s.Ballots)
+                .Where(a=> a.Active == true)
                 .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<ArrangementDto?> HentArrangementAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<ArrangementDto?> GetArrangementAsync(int id, CancellationToken cancellationToken = default)
         {
             var arrangement = await GetSingleQuery(_context)
                 .Where(a => a.Id == id)
@@ -93,33 +93,33 @@ namespace Stemmesystem.Server.Services
             return arrangement;
         }
 
-        public async Task<ArrangementDto> OppdaterArrangement(ArrangementInputModel model)
+        public async Task<ArrangementDto> UpdateArrangement(ArrangementInputModel model)
         {
-            var arrangement = await _context.Arrangement
+            var arrangement = await _context.Arrangements
                 .Where(a => a.Id == model.Id)
                 .FirstOrDefaultAsync();
             if (arrangement == null)
-                throw new StemmeException($"Fant ingen arrangement med id {model.Id} å oppdatere");
+                throw new VotingException($"Fant ingen arrangement med id {model.Id} å oppdatere");
 
-            arrangement.Beskrivelse = model.Beskrivelse;
-            arrangement.Startdato = model.Startdato;
-            arrangement.Sluttdato = model.Sluttdato;
+            arrangement.Description = model.Description;
+            arrangement.StartDate = model.StartDate;
+            arrangement.EndDate = model.EndDate;
             
             await _context.SaveChangesAsync();
-            return (await HentArrangementAsync(arrangement.Id))!;
+            return (await GetArrangementAsync(arrangement.Id))!;
         }
 
-        public async Task<IReadOnlyCollection<VoteringDto>> FinnAktiveVoteringer(ArrangementRequest request, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyCollection<BallotDto>> GetActiveBallots(ArrangementRequest request, CancellationToken cancellationToken = default)
         {
-            return await _cache.GetOrSetAsync<IReadOnlyCollection<VoteringDto>>($"aktive-{request.ArrangementId}", async token =>
+            return await _cache.GetOrSetAsync<IReadOnlyCollection<BallotDto>>($"aktive-{request.ArrangementId}", async token =>
             {
-                return await _context.Arrangement
+                return await _context.Arrangements
                     .AsSplitQuery()
                     .Where(a => a.Id == request.ArrangementId)
-                    .SelectMany(a => a.Saker)
-                    .SelectMany(s => s.Voteringer)
-                    .Where(v => v.Aktiv)
-                    .ProjectTo<VoteringDto>(_mapper.ConfigurationProvider)
+                    .SelectMany(a => a.Cases)
+                    .SelectMany(s => s.Ballots)
+                    .Where(v => v.Active)
+                    .ProjectTo<BallotDto>(_mapper.ConfigurationProvider)
                     .ToArrayAsync(cancellationToken: token);
 
             }, options =>
@@ -129,38 +129,38 @@ namespace Stemmesystem.Server.Services
             }, token: cancellationToken);
         }
 
-        public async Task<IReadOnlyCollection<VoteringResultatDto>> HentResultater(ArrangementRequest request, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyCollection<BallotResultDto>> GetResults(ArrangementRequest request, CancellationToken cancellationToken = default)
         {
             return await _cache.GetOrSetAsync($"resultater-{request.ArrangementId}", async token =>
             {
-                return await _context.Arrangement
+                return await _context.Arrangements
                     .Where(a=> a.Id == request.ArrangementId)
-                    .SelectMany(a => a.Saker)
-                    .SelectMany(s => s.Voteringer)
-                    .Where(v => v.Publisert)
-                    .ProjectTo<VoteringResultatDto>(_mapper.ConfigurationProvider)
+                    .SelectMany(a => a.Cases)
+                    .SelectMany(s => s.Ballots)
+                    .Where(v => v.Published)
+                    .ProjectTo<BallotResultDto>(_mapper.ConfigurationProvider)
                     .ToArrayAsync(cancellationToken: token);
             }, token: cancellationToken);
         }
 
-        public async Task<ArrangementInfo?> HentArrangementInfoAsync(ArrangementRequest request)
+        public async Task<ArrangementInfo?> GetArrangementInfoAsync(ArrangementRequest request)
         {
             return await _cache.GetOrSetAsync<ArrangementInfo?>($"ArrangementInfo({request.ArrangementId})", async token =>
             {
-                return await _context.Arrangement
+                return await _context.Arrangements
                     .Where(a=> a.Id == request.ArrangementId)
                     .ProjectTo<ArrangementInfo>(_mapper.ConfigurationProvider)
                     .SingleOrDefaultAsync(token);
             });
         }
 
-        public async Task<TilstedeCountResponse> GetTilstedeCount(TilstedeCountRequest request, CancellationToken cancellationToken = default)
+        public async Task<PresentCountResponse> GetPresentCount(PresentCountRequest request, CancellationToken cancellationToken = default)
         {
-            var count = await _context.Arrangement.Where(a => a.Id == request.ArrangementId)
-                .Select(a => a.Delegater.Count(d => d.TilStede))
+            var count = await _context.Arrangements.Where(a => a.Id == request.ArrangementId)
+                .Select(a => a.Delegates.Count(d => d.Present))
                 .SingleOrDefaultAsync(cancellationToken);
 
-            return new TilstedeCountResponse(count);
+            return new PresentCountResponse(count);
         }
     }
 }

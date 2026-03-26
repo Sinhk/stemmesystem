@@ -29,8 +29,8 @@ class DelegatkodeAuthService : IDelegatkodeAuthService
         var request = new TokenRequest
         {
             Address = "connect/token",
-            GrantType = AuthConstants.DelegatkodeGrantType,
-            ClientId = AuthConstants.DelegatkodeClientId,
+            GrantType = AuthConstants.DelegateCodeGrantType,
+            ClientId = AuthConstants.DelegateCodeClientId,
             ClientSecret = "passord",
             Parameters =
             {

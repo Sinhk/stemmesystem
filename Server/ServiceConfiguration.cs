@@ -9,10 +9,10 @@ internal static class ServiceConfiguration
 {
     public static void MapGrpcServices(this WebApplication webApplication)
     {
-        webApplication.MapGrpcService<DelegatService>();
-        webApplication.MapGrpcService<SakService>();
+        webApplication.MapGrpcService<DelegateService>();
+        webApplication.MapGrpcService<CaseService>();
         webApplication.MapGrpcService<ArrangementService>();
-        webApplication.MapGrpcService<StemmeService>();
+        webApplication.MapGrpcService<VoteService>();
         webApplication.MapGrpcService<PinSender>();
         webApplication.MapGrpcService<MinSpeidingOptionsRepository>();
     }

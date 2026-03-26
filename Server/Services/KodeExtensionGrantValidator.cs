@@ -9,24 +9,24 @@ namespace Stemmesystem.Server.Services;
 
 public class KodeExtensionGrantValidator : IExtensionGrantValidator
 {
-    private readonly IDelegatRepository _delegatRepository;
+    private readonly IDelegateRepository _delegateRepository;
 
-    public KodeExtensionGrantValidator(IDelegatRepository delegatRepository)
+    public KodeExtensionGrantValidator(IDelegateRepository delegateRepository)
     {
-        _delegatRepository = delegatRepository;
+        _delegateRepository = delegateRepository;
     }
     
     public async Task ValidateAsync(ExtensionGrantValidationContext context)
     {
-        var delegatkode = context.Request.Raw["delegatkode"];
-        if (string.IsNullOrEmpty(delegatkode))
+        var delegateCode = context.Request.Raw["delegatkode"];
+        if (string.IsNullOrEmpty(delegateCode))
         {
             context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "ingen delegatkode funnet");
             return;
         }
 
-        var delegat = await _delegatRepository.ValiderKode(delegatkode);
-        if (delegat == null)
+        var delegateEntity = await _delegateRepository.ValidateCode(delegateCode);
+        if (delegateEntity == null)
         {
             context.Result = new GrantValidationResult(TokenRequestErrors.InvalidGrant, "ugyldig delegatkode");
             return;
@@ -35,18 +35,18 @@ public class KodeExtensionGrantValidator : IExtensionGrantValidator
         var claims = new List<Claim>
         {
             new(JwtClaimTypes.Role, "Delegat"),
-            new(AuthConstants.ArrangementClaimType, delegat.ArrangementId.ToString()),
+            new(AuthConstants.ArrangementClaimType, delegateEntity.ArrangementId.ToString()),
         };
-        if (delegat.Navn != null) 
-            claims.Add(new Claim(JwtClaimTypes.Name, delegat.Navn));
+        if (delegateEntity.Name != null) 
+            claims.Add(new Claim(JwtClaimTypes.Name, delegateEntity.Name));
 
-        if (delegat.Epost != null)
-            claims.Add(new Claim(JwtClaimTypes.Email, delegat.Epost));
+        if (delegateEntity.Email != null)
+            claims.Add(new Claim(JwtClaimTypes.Email, delegateEntity.Email));
         
-        if (delegat.Telefon != null)
-            claims.Add(new Claim(JwtClaimTypes.PhoneNumber, delegat.Telefon));
+        if (delegateEntity.Phone != null)
+            claims.Add(new Claim(JwtClaimTypes.PhoneNumber, delegateEntity.Phone));
 
-        context.Result = new GrantValidationResult(delegat.Delegatkode, AuthConstants.DelegatkodeGrantType, claims);
+        context.Result = new GrantValidationResult(delegateEntity.DelegateCode, AuthConstants.DelegatkodeGrantType, claims);
     }
 
     public string GrantType => AuthConstants.DelegatkodeGrantType;

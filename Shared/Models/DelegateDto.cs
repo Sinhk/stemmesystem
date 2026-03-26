@@ -4,42 +4,42 @@ using ProtoBuf;
 namespace Stemmesystem.Shared.Models
 {
     [ProtoContract]
-    [ProtoInclude(8,typeof(AdminDelegatDto))]
-    public record DelegatDto
+    [ProtoInclude(8,typeof(AdminDelegateDto))]
+    public record DelegateDto
     {
         [ProtoMember(1)]
         public int Id { get; internal set; }
         [ProtoMember(2)]
-        public int? Delegatnummer { get; set; }
+        public int? DelegateNumber { get; set; }
         [ProtoMember(3)]
-        public string? Navn { get; set; }
+        public string? Name { get; set; }
         [ProtoMember(4)]
-        public string? Gruppe { get; set; }
+        public string? Group { get; set; }
         [ProtoMember(5)]
-        public string? Epost { get; set; }
+        public string? Email { get; set; }
         [ProtoMember(6)]
-        public string? Telefon { get; set; }
+        public string? Phone { get; set; }
         [ProtoMember(7)]
         public int ArrangementId { get; set; }
     }
 
     [ProtoContract]
-    public record AdminDelegatDto : DelegatDto
+    public record AdminDelegateDto : DelegateDto
     {
         [ProtoMember(9)]
-        public string? Delegatkode { get; init; }
+        public string? DelegateCode { get; init; }
         
         [ProtoMember(10)]
-        public DateTime? SendtEmail { get; set; }
+        public DateTime? EmailSentAt { get; set; }
         [ProtoMember(11)]
-        public DateTime? SendtSms { get; set; }
+        public DateTime? SmsSentAt { get; set; }
         
         [ProtoMember(12)]
-        public bool TilStede { get; set; }
+        public bool Present { get; set; }
     }
     
     [ProtoContract]
-    public class DelegatInputModel
+    public class DelegateInputModel
     {
         [ProtoMember(10)] 
         public int ArrangementId { get; set; }
@@ -47,21 +47,21 @@ namespace Stemmesystem.Shared.Models
         public int? Id { get; set; }
         [ProtoMember(2)]
         [Required(ErrorMessage = "Delegatnummer er påkrevd")]
-        public int? Delegatnummer { get; set; }
+        public int? DelegateNumber { get; set; }
 
         [ProtoMember(3)]
         [Required(ErrorMessage = "Navn er påkrevd")]
         [StringLength(100)]
-        public string? Navn { get; set; }
+        public string? Name { get; set; }
         [ProtoMember(4)]
-        public string? Gruppe { get; set; }
+        public string? Group { get; set; }
 
         [ProtoMember(5)]
         [EmailAddress(ErrorMessage = "Ikke gyldig epost")]
-        public string? Epost { get; set; }
+        public string? Email { get; set; }
         [ProtoMember(6)]
         [Phone(ErrorMessage = "Ikke gyldig telefonnummer")]
-        public string? Telefon { get; set; }
+        public string? Phone { get; set; }
     }
 
 }

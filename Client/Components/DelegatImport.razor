@@ -5,7 +5,7 @@
 @using Stemmesystem.Shared.Models
 
 @inject CsvImport Import
-@inject IAdminDelegatService DelegatService
+@inject IAdminDelegateService DelegatService
 
 <div class="row">
     <p>Importer delegater:</p>
@@ -30,7 +30,7 @@
 <hr/>
 @code {
     private string? _error;
-    private List<DelegatInputModel> _importDelegater = new();
+    private List<DelegateInputModel> _importDelegater = new();
     private bool _genererNummer;
     private IDictionary<int,DelegatFormInline> _delegatForms = new Dictionary<int, DelegatFormInline>();
 
@@ -47,7 +47,7 @@
             await using var stream = e.File.OpenReadStream();
             using var reader = new StreamReader(stream);
             var delegater = await Import.LesDelagater(reader);
-            _importDelegater = new List<DelegatInputModel>(delegater);
+            _importDelegater = new List<DelegateInputModel>(delegater);
         }
         catch (Exception ex)
         {
@@ -59,12 +59,12 @@
     private async Task LagreImport()
     {
         _error = null;
-        if (!_genererNummer && _importDelegater.GroupBy(d=> d.Delegatnummer).Any(g => g.Count() > 1))
+        if (!_genererNummer && _importDelegater.GroupBy(d=> d.DelegateNumber).Any(g => g.Count() > 1))
         {
             _error = "Set unike nummer, eller huk av \"Generer nummer\"";
             return;
         }
-        if (!_genererNummer && _importDelegater.Any(d => !d.Delegatnummer.HasValue))
+        if (!_genererNummer && _importDelegater.Any(d => !d.DelegateNumber.HasValue))
         {
             _error = "Alle delegater må ha nummer. Huk av \"Generer nummer\" for å sette de automatisk";
             return;
@@ -72,10 +72,10 @@
 
         if (_genererNummer)
         {
-            var delegater = await DelegatService.HentDelegater(new HentDelegatRequest(ArrangementId));
-            var num = delegater.Max(d => d.Delegatnummer);
+            var delegater = await DelegatService.GetDelegates(new GetDelegateRequest(ArrangementId));
+            var num = delegater.Max(d => d.DelegateNumber);
             foreach (var form in _delegatForms.Values){
-                form.Delegat.Delegatnummer = ++num;
+                form.Delegate.DelegateNumber = ++num;
             }
         }
 

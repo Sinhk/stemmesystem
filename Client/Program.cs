@@ -38,11 +38,11 @@ builder.Services.AddScoped(services =>
 
 
 builder.Services.AddGrpcClient<IArrangementService>();
-builder.Services.AddGrpcClient<IDelegatService>();
-builder.Services.AddGrpcClient<IAdminDelegatService>();
-builder.Services.AddGrpcClient<IStemmeService>();
-builder.Services.AddGrpcClient<IAdminStemmeService>();
-builder.Services.AddGrpcClient<ISakService>();
+builder.Services.AddGrpcClient<IDelegateService>();
+builder.Services.AddGrpcClient<IAdminDelegateService>();
+builder.Services.AddGrpcClient<IVoteService>();
+builder.Services.AddGrpcClient<IAdminVoteService>();
+builder.Services.AddGrpcClient<ICaseService>();
 builder.Services.AddGrpcClient<IPinSender>();
 builder.Services.AddGrpcClient<IMinSpeidingOptionsRepository>();
 
@@ -52,7 +52,7 @@ JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<IDelegatkodeAuthService, DelegatkodeAuthService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationProvider>();
-builder.Services.AddScoped<IDelegatNotifierService, DelegatNotifierService>();
+builder.Services.AddScoped<IDelegateNotifierService, DelegatNotifierService>();
 builder.Services.AddScoped<IAdminNotifierService, AdminNotifierService>();
 
 

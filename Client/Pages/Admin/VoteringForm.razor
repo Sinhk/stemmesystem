@@ -6,7 +6,7 @@
 @using Stemmesystem.Web.Components
 @using Microsoft.AspNetCore.Authorization
 @inject IArrangementService _arrangementService
-@inject ISakService _sakService
+@inject ICaseService _sakService
 @inject NavigationManager _navigation
 
 @attribute [Authorize(Roles = "admin")]
@@ -25,21 +25,21 @@ else
     <CustomValidator @ref="_customValidator" />
     <ValidationSummary />
     <div class="form-group">
-        <label>Tittel<InputText class="form-control" placeholder="Tittel" @bind-Value="_voteringInput.Tittel"/></label>
+        <label>Tittel<InputText class="form-control" placeholder="Tittel" @bind-Value="_voteringInput.Title"/></label>
     </div>
     <div class="form-group">
-        <label>Kan velge<InputNumber class="form-control" placeholder="Kan velge" @bind-Value="_voteringInput.KanVelge"/></label>
+        <label>Kan velge<InputNumber class="form-control" placeholder="Kan velge" @bind-Value="_voteringInput.MaxChoices"/></label>
     </div>
     <div class="form-check">
-        <InputCheckbox class="form-check-input" placeholder="Hemmelig" @bind-Value="_voteringInput.Hemmelig" id="hemmeligCheck"/>
+        <InputCheckbox class="form-check-input" placeholder="Hemmelig" @bind-Value="_voteringInput.Secret" id="hemmeligCheck"/>
         <label class="form-check-label" for="hemmeligCheck">Hemmelig</label>
     </div>
 
     <h4>Valg</h4>
-    @foreach (var valg in _voteringInput.Valg.OrderBy(v => v.SortId))
+    @foreach (var valg in _voteringInput.Choices.OrderBy(v => v.SortId))
     {
         <div class="form-row">
-        <InputText class="form-control col-6" placeholder="Navn" @bind-Value="valg.Navn"/>
+        <InputText class="form-control col-6" placeholder="Navn" @bind-Value="valg.Name"/>
         <button type="button" class="btn btn-danger btn-sm col-2" @onclick="@(_ => TaVekkValg(valg.Id))">ta vekk</button>
         </div>
     }
@@ -61,21 +61,21 @@ else
 
     private CustomValidator? _customValidator;
 
-    private VoteringInputModel _voteringInput = new ();
+    private BallotInputModel _voteringInput = new ();
 
     protected override async Task OnInitializedAsync(){
         if(VoteringId != null)
         {
-            var votering = await _sakService.HentVotering(new HentVoteringRequest(SakId, VoteringId.Value));
+            var votering = await _sakService.GetBallot(new GetBallotRequest(SakId, VoteringId.Value));
             if(votering != null)
-                _voteringInput = new VoteringInputModel
+                _voteringInput = new BallotInputModel
                 {
                     SakId = SakId,
-                    Beskrivelse = votering.Beskrivelse,
-                    Hemmelig = votering.Hemmelig,
-                    Tittel = votering.Tittel,
-                    KanVelge = votering.KanVelge,
-                    Valg = votering.Valg
+                    Beskrivelse = votering.Description,
+                    Hemmelig = votering.Secret,
+                    Tittel = votering.Title,
+                    KanVelge = votering.MaxChoices,
+                    Valg = votering.Choices
                 };
         }
     }
@@ -86,7 +86,7 @@ else
         
         if (_voteringInput.Id != default)
         {
-            await _sakService.OppdaterVotering(_voteringInput);
+            await _sakService.UpdateBallot(_voteringInput);
         }
         else
         {
@@ -95,7 +95,7 @@ else
                 _customValidator?.DisplayErrors(errors);
                 return;
             }
-            var (votering, err) = await _sakService.LagreNyVotering(_voteringInput);
+            var (votering, err) = await _sakService.CreateBallot(_voteringInput);
             if (err.Count > 0)
             {
                 _customValidator?.DisplayErrors(err);
@@ -109,12 +109,12 @@ else
 
     private void LeggTilValg()
     {
-        _voteringInput.Valg.Add(new ValgDto(){SortId = _voteringInput.Valg.Count});
+        _voteringInput.Choices.Add(new ChoiceDto(){SortId = _voteringInput.Choices.Count});
     }
 
     private void TaVekkValg(Guid valgId)
     {
-        _voteringInput.Valg.RemoveAll(v => v.Id == valgId);
+        _voteringInput.Choices.RemoveAll(v => v.Id == valgId);
     }
 
 }

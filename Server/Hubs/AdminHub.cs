@@ -8,11 +8,11 @@ namespace Stemmesystem.Server.Hubs;
 [Authorize(Roles = "admin")]
 public class AdminHub : Hub<IAdminHubClient>
 {
-    public async Task KobleTilArrangement(int arrangementId)
+    public async Task JoinArrangement(int arrangementId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, arrangementId.ToString());
     }
-    public async Task KobleFraArrangement(int arrangementId)
+    public async Task LeaveArrangement(int arrangementId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, arrangementId.ToString());
     }

@@ -1,12 +1,12 @@
 ﻿namespace Stemmesystem.Web.Services.CSV
 {
-    public record CsvDelegat
+    public record CsvDelegate
     {
-        public int Delegatnummer { get; set; }
-        public string? Navn { get; set; }
-        public string? Gruppe { get; set; }
-        public string? Epost { get; set; }
-        public string? Telefon { get; set; }
+        public int DelegateNumber { get; set; }
+        public string? Name { get; set; }
+        public string? Group { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
         
     }
 

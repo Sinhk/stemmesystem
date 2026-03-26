@@ -5,7 +5,7 @@
 @using Stemmesystem.Shared.Models
 @using Stemmesystem.Web.Components
 @using Microsoft.AspNetCore.Authorization
-@inject IAdminDelegatService _delegatService
+@inject IAdminDelegateService _delegatService
 @inject NavigationManager _navigation
 
 @attribute [Authorize(Roles = "admin")]
@@ -16,23 +16,23 @@
 }
 else
 {
-    <h3>Rediger delegat @_delegat.Delegatnummer</h3>    
+    <h3>Rediger delegat @_delegat.DelegateNumber</h3>    
 }
 <EditForm Model="@_delegat" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <CustomValidator @ref="_customValidator" />
     <ValidationSummary />
     <div class="form-group">
-        <label>Delegatnummer<InputNumber class="form-control" placeholder="Delegatnummer" @bind-Value="_delegat.Delegatnummer" disabled="@(_delegat.Id != null)"/></label>
+        <label>Delegatnummer<InputNumber class="form-control" placeholder="Delegatnummer" @bind-Value="_delegat.DelegateNumber" disabled="@(_delegat.Id != null)"/></label>
     </div>
     <div class="form-group">
-        <label>Navn<InputText class="form-control" placeholder="Navn" @bind-Value="_delegat.Navn"/></label>
+        <label>Navn<InputText class="form-control" placeholder="Navn" @bind-Value="_delegat.Name"/></label>
     </div>
     <div class="form-group">
-        <label>Epost<InputText class="form-control" placeholder="Epost" @bind-Value="_delegat.Epost"/></label>
+        <label>Epost<InputText class="form-control" placeholder="Epost" @bind-Value="_delegat.Email"/></label>
     </div>
     <div class="form-group">
-        <label>Telefon<InputText class="form-control" placeholder="Telefon" @bind-Value="_delegat.Telefon"/></label>
+        <label>Telefon<InputText class="form-control" placeholder="Telefon" @bind-Value="_delegat.Phone"/></label>
     </div>
 
     <button type="submit" class="btn btn-primary" disabled="@(_delegat.Id != null && !context.IsModified())">Lagre</button>
@@ -46,19 +46,19 @@ else
 
     private CustomValidator? _customValidator;
 
-    private DelegatInputModel _delegat = new();
+    private DelegateInputModel _delegat = new();
 
     protected override async Task OnInitializedAsync(){
         if(DelegatId != null){
-            var delegat = await _delegatService.HentDelegat(new HentDelegatRequest(ArrangementId, DelegatId.Value));
+            var delegat = await _delegatService.GetDelegate(new GetDelegateRequest(ArrangementId, DelegatId.Value));
             if (delegat != null)
-                _delegat = new DelegatInputModel
+                _delegat = new DelegateInputModel
                 {
-                    Delegatnummer = delegat.Delegatnummer,
-                    Epost = delegat.Epost,
+                    Delegatnummer = delegat.DelegateNumber,
+                    Epost = delegat.Email,
                     Gruppe = delegat.Gruppe,
-                    Navn = delegat.Navn,
-                    Telefon = delegat.Telefon
+                    Navn = delegat.Name,
+                    Telefon = delegat.Phone
                 };
         }
     }
@@ -83,7 +83,7 @@ else
         if (errors.Count <= 0)
         {
             _delegat.ArrangementId = ArrangementId;
-            await _delegatService.OppdaterDelegat(_delegat);
+            await _delegatService.UpdateDelegate(_delegat);
         }
     }
 
@@ -92,7 +92,7 @@ else
         if (errors.Count <= 0)
         {
             _delegat.ArrangementId = ArrangementId;
-            var delegat = await _delegatService.RegistrerNyDelegat(_delegat);
+            var delegat = await _delegatService.RegisterNewDelegate(_delegat);
             _navigation.NavigateTo($"/admin/arrangement/{ArrangementId}/delegat/{delegat.Id}");
         }
     }

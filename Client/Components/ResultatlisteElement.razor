@@ -3,18 +3,18 @@
 
 <div class="card">
     <div class="card-header" @onclick="@(_ => _visDetaljer = !_visDetaljer)">
-        @Votering.SakNummer: @Votering.SakNavn - @Votering.Tittel
+        @Votering.CaseNumber: @Votering.CaseName - @Votering.Title
         <span class="ml-2 mt-1 oi float-right @(_visDetaljer ? "oi-chevron-top" : "oi-chevron-bottom")"></span>
     </div>
     <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
         <div class="card-body">
             
             <div class="row">
-                <div class="col-auto"><b>Delegater som stemte:</b> @(Votering.AvgitteStemmer)</div>
+                <div class="col-auto"><b>Delegater som stemte:</b> @(Votering.CastVoteCount)</div>
                 <div class="col-auto"><b>Tellende stemmer (ikke blanke):</b> @(_tellendeStemmer)</div>
-                @if(Votering.DelegaterTilstede != null)
+                @if(Votering.DelegatesPresent != null)
                 {
-                    <div class="col-auto"><b>Delegater til stede:</b> @Votering.DelegaterTilstede</div>
+                    <div class="col-auto"><b>Delegater til stede:</b> @Votering.DelegatesPresent</div>
                 }
             </div>
             @if (_tellendeStemmer == 0)
@@ -36,7 +36,7 @@
 @code {
 
     [Parameter]
-    public VoteringResultatDto Votering { get; set; } = null!;
+    public BallotResultDto Votering { get; set; } = null!;
 
 
     private Dictionary<Guid, string> _valg = new();
@@ -48,24 +48,24 @@
 
     protected override void OnInitialized()
     {
-        _valg = Votering.Valg.ToDictionary(v => v.Id, v => v.Navn);
-        _resultater = new Dictionary<Guid, int>(Votering.Valg.Count);
-        foreach(var valg in Votering.Valg)
+        _valg = Votering.Choices.ToDictionary(v => v.Id, v => v.Name);
+        _resultater = new Dictionary<Guid, int>(Votering.Choices.Count);
+        foreach(var valg in Votering.Choices)
         {
             _resultater[valg.Id] = 0;
         }
 
         _blankt = 0;
-        foreach (var stemme in Votering.Stemmer)
+        foreach (var stemme in Votering.Votes)
         {
-            if (stemme.ValgId == Konstanter.BlankStemme)
+            if (stemme.ChoiceId == Konstanter.BlankStemme)
             {
                 _blankt++;
                 continue;
             }
 
-            _resultater[stemme.ValgId]++;
+            _resultater[stemme.ChoiceId]++;
         }
-        _tellendeStemmer = Votering.AvgitteStemmer - _blankt;
+        _tellendeStemmer = Votering.CastVoteCount - _blankt;
     }
 }

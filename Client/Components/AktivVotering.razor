@@ -2,18 +2,18 @@
 @using Stemmesystem.Shared
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
-@inject IStemmeService _stemmeService
-@inject ISakService _sakService
+@inject IVoteService _stemmeService
+@inject ICaseService _sakService
 
 <div class="col-xl-4 col-md-6">
     <div class="card">
         <div class="card-header">
-            <h5 class="card-title">@Sak?.Tittel</h5>
-            <h6 class="card-subtitle mb-2 text-muted">@Sak?.Beskrivelse</h6>
+            <h5 class="card-title">@Sak?.Title</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@Sak?.Description</h6>
         </div>
         <div class="card-body">
-            <h5 class="card-title">@Votering.Tittel</h5>
-            <h6 class="card-subtitle mb-2 text-muted">@Votering.Beskrivelse</h6>
+            <h5 class="card-title">@Votering.Title</h5>
+            <h6 class="card-subtitle mb-2 text-muted">@Votering.Description</h6>
             @if (!_loading)
             {
                 @if (_harStemmt && !Endre)
@@ -30,7 +30,7 @@
                         </div>
                     }
                     <CascadingValue Value=this>
-                        @if (Votering.KanVelge > 1)
+                        @if (Votering.MaxChoices > 1)
                         {
                             <Flervalgsvotering @bind-Error="_error"/>
                         }
@@ -51,11 +51,11 @@
 
 @code {
     [Parameter]
-    public VoteringDto Votering { get; set; } = null!;
+    public BallotDto Votering { get; set; } = null!;
     
-    public SakInfoDto? Sak { get; set; }
+    public CaseInfoDto? Sak { get; set; }
     
-    internal List<StemmeDto>? Stemmer = new();
+    internal List<VoteDto>? Votes = new();
     private bool _harStemmt;
     private bool Endre { get; set; } = false;
 
@@ -71,9 +71,9 @@
     public async Task RegistrerStemme(ICollection<Guid> valg)
     {
         _error = null;
-        if (valg.Count > Votering.KanVelge)
+        if (valg.Count > Votering.MaxChoices)
         {
-            _error = $"For mange valg! Du kan bare velge {Votering.KanVelge}";
+            _error = $"For mange valg! Du kan bare velge {Votering.MaxChoices}";
             return;
         }
         if (valg.Count == 0)
@@ -82,8 +82,8 @@
         }
         try
         {
-            var stemmer = await _stemmeService.AvgiStemmeAsync(new AvgiStemmeRequest(Votering.Id, valg));
-            Stemmer = stemmer;
+            var stemmer = await _stemmeService.CastVoteAsync(new CastVoteRequest(Votering.Id, valg));
+            Votes = stemmer;
             _harStemmt = true;
             Endre = false;
         }
@@ -102,21 +102,21 @@
     protected override async Task OnInitializedAsync()
     {
         _loading = true;
-        var (harStemmt, stemmeDtos) = await _stemmeService.HarStemmt(new StemmeRequest(Votering.Id));
+        var (harStemmt, stemmeDtos) = await _stemmeService.HasVoted(new VoteRequest(Votering.Id));
         _harStemmt = harStemmt;
         if (stemmeDtos != null)
-            Stemmer = stemmeDtos;
+            Votes = stemmeDtos;
 
-        var sakResult = await _sakService.HentSakInfo(new SakRequest(Votering.SakId));
+        var sakResult = await _sakService.GetCaseInfo(new CaseRequest(Votering.CaseId));
         Sak = sakResult.Value;
         _loading = false;
     }
 
     private string StemmerSomString()
     {
-        if (Stemmer?.Any() != true) return "";
+        if (Votes?.Any() != true) return "";
 
-        var navn = Stemmer.Select(s => s.ValgId == Konstanter.BlankStemme ? "Blankt" : Votering.Valg.First(v => v.Id == s.ValgId).Navn).ToList();
+        var navn = Votes.Select(s => s.ChoiceId == Konstanter.BlankStemme ? "Blankt" : Votering.Choices.First(v => v.Id == s.ChoiceId).Name).ToList();
         
         return navn.Count == 1 ? navn.First() : $"{string.Join(", ", navn.SkipLast(1))} og {navn.Last()}";
     }

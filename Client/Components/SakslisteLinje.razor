@@ -1,5 +1,5 @@
 
-@inject IAdminStemmeService StemmeService
+@inject IAdminVoteService StemmeService
 
 @using System.Collections.Concurrent
 @using Stemmesystem.Shared.Interfaces
@@ -13,27 +13,27 @@
     <div class="card-header" @onclick="@(_ => _visDetaljer = !_visDetaljer)">
         <div class="row">
             <div class="col">
-                @Votering.Tittel
+                @Votering.Title
                 <span>
-                    <small>@Votering.Beskrivelse</small>
+                    <small>@Votering.Description</small>
                 </span>
-                @if(Votering.Publisert)
+                @if(Votering.Published)
                 {
                     <span class="badge badge-success">Publisert</span>
                 }
-                else if(Votering.Lukket)
+                else if(Votering.Locked)
                 {
                     <span class="badge badge-primary">Lukket</span>
                 }
-                else if(Votering.Aktiv)
+                else if(Votering.Active)
                 {
                 <span class="badge badge-danger">Aktiv</span>
                 }
             </div>
             <div class="col">
-                @if (Votering.Lukket)
+                @if (Votering.Locked)
                 {
-                    <span>Avgitte stemmer:@_harStemt.Count@(Votering.DelegaterTilstede is null ? "" : $"/{Votering.DelegaterTilstede}")</span>
+                    <span>Avgitte stemmer:@_harStemt.Count@(Votering.DelegatesPresent is null ? "" : $"/{Votering.DelegatesPresent}")</span>
                 }
                 else
                 {
@@ -45,30 +45,30 @@
             </div>
 
             <div class="col">
-                @if (Votering.Aktiv)
+                @if (Votering.Active)
                 {
                     <div class="text-right">
                         <button class="btn btn-danger" @onclick:stopPropagation @onclick="@(async () => await StoppVotering(ArrangementId, Votering.Id))">Stopp</button>
                     </div>
                 }
-                else if (!Votering.Lukket)
+                else if (!Votering.Locked)
                 {
                     <div class="text-right">
                         <button class="btn btn-success" @onclick:stopPropagation @onclick="@(async () => await StartVotering(ArrangementId, Votering.Id))">Start</button>
 
-                        @if (Votering.SluttTid != null)
+                        @if (Votering.EndTime != null)
                         {
                             <button class="btn btn-primary" @onclick:stopPropagation @onclick="@(async () => await LukkVotering(ArrangementId, Votering.Id))">Lukk</button>
                         }
                     </div>
                 }
-                else if (!Votering.Publisert)
+                else if (!Votering.Published)
                 {
                     <div class="text-right">
                         <button class="btn btn-primary" @onclick:stopPropagation @onclick="@(async () => await PubliserVotering(ArrangementId, Votering.Id))">Publiser</button>
                     </div>
                 }
-                @if(Votering.Lukket)
+                @if(Votering.Locked)
                 {
                     <div class="text-right">
                         <button class="btn btn-primary" @onclick:stopPropagation @onclick="@(async () => await NyRunde(ArrangementId, Votering.Id))">Ny Runde</button>
@@ -80,11 +80,11 @@
     </div>
     <div class="collapse @(_visDetaljer ? "show" : "")" id="collapseOne">
         <div class="card-body">
-            @if (Votering.Lukket)
+            @if (Votering.Locked)
             {
-                <span>Kan velge: <b>@Votering.KanVelge</b></span><br/>
+                <span>Kan velge: <b>@Votering.MaxChoices</b></span><br/>
 
-                var blankeStemmer = Votering.Stemmer.Values.Count(s => s.ValgId == Konstanter.BlankStemme);
+                var blankeStemmer = Votering.Votes.Values.Count(s => s.ChoiceId == Konstanter.BlankStemme);
                 var avgitteStemmer = _harStemt.Count;
                 var tellendeStemmer = avgitteStemmer - blankeStemmer;
 
@@ -96,25 +96,25 @@
                 {
                     <span>Tellende stemmer: <b>@tellendeStemmer</b></span>
                     <br/>
-                    <span>Stemmer totalt: <b>@Votering.Stemmer.Count</b></span>
-                    @if (Votering.KanVelge > 1)
+                    <span>Stemmer totalt: <b>@Votering.Votes.Count</b></span>
+                    @if (Votering.MaxChoices > 1)
                     {
                         <br/><i>ved flervalg vil stemmer totalt være høyere enn tellende</i>
                     }
                     <ul>
-                        @foreach (var valg in Votering.Valg.OrderBy(v => v.SortId))
+                        @foreach (var valg in Votering.Choices.OrderBy(v => v.SortId))
                         {
-                            var stemmer = Votering.Stemmer.Values.Count(s => s.ValgId == valg.Id);
-                            <li>@valg.Navn: @stemmer (@(Math.Round(100m * stemmer / tellendeStemmer, 2))%)</li>
+                            var stemmer = Votering.Votes.Values.Count(s => s.ChoiceId == valg.Id);
+                            <li>@valg.Name: @stemmer (@(Math.Round(100m * stemmer / tellendeStemmer, 2))%)</li>
                         }
                     </ul>
                     <p>Blanke stemmer: @blankeStemmer</p>
                 }
 
-                if (Votering.KanVelge == 1 && avgitteStemmer != Votering.Stemmer.Count)
+                if (Votering.MaxChoices == 1 && avgitteStemmer != Votering.Votes.Count)
                 {
                     <ul>
-                        @foreach (var d in Votering.Stemmer.Values.GroupBy(x => x.DelegatId))
+                        @foreach (var d in Votering.Votes.Values.GroupBy(x => x.DelegateId))
                         {
                             <li>Stemmer fra id @d.Key: @d.Count()</li>
                         }
@@ -144,7 +144,7 @@
     [CascadingParameter(Name = "DelegaterTilestede")]
     public int DelegaterTilstede { get; set; }
     
-    private VoteringInputModel? _nyRunde;
+    private BallotInputModel? _nyRunde;
     private bool _visDetaljer;
     private ConcurrentDictionary<int, bool> _harStemt = new();
     private IDisposable? _subscription;
@@ -152,60 +152,60 @@
 
     protected override void OnInitialized()
     {
-        _subscription = Notifier.OnHarStemt(OnHarStemt);
+        _subscription = Notifier.OnVoted(OnHarStemt);
 
-        foreach (var delegatId in Votering.AvgitStemme)
+        foreach (var delegatId in Votering.VotedDelegates)
         {
             _harStemt[delegatId] = true;    
         }
     }
 
-    private void OnHarStemt(HarStemtEvent e)
+    private void OnHarStemt(VotedEvent e)
     {
-        if (e.VoteringId != Votering.Id) return;
+        if (e.BallotId != Votering.Id) return;
         InvokeAsync(() =>
         {
-            _harStemt[e.DelegatId] = true;
+            _harStemt[e.DelegateId] = true;
             StateHasChanged();
         });
     }
 
     private async Task StartVotering(int arrangementId, int voteringId)
     {
-        await StemmeService.StartVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        await StemmeService.StartBallot(new AdminBallotRequest(arrangementId, voteringId));
     }
 
     private async Task StoppVotering(int arrangementId, int voteringId)
     {
-        await StemmeService.StoppVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        await StemmeService.StopBallot(new AdminBallotRequest(arrangementId, voteringId));
     }
 
     private async Task LukkVotering(int arrangementId, int voteringId)
     {
-        await StemmeService.LukkVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        await StemmeService.LockBallot(new AdminBallotRequest(arrangementId, voteringId));
     }
 
     private async Task PubliserVotering(int arrangementId, int voteringId)
     {
-        await StemmeService.PubliserVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        await StemmeService.PublishBallot(new AdminBallotRequest(arrangementId, voteringId));
     }
 
 
     private async Task NyRunde(int arrangementId, int voteringId)
     {
-        _nyRunde = await StemmeService.KopierVotering(new AdminStemmeRequest(arrangementId, voteringId));
+        _nyRunde = await StemmeService.CopyBallot(new AdminBallotRequest(arrangementId, voteringId));
         var num = 2;
-        if (_nyRunde.Tittel.Contains(". runde", StringComparison.OrdinalIgnoreCase))
+        if (_nyRunde.Title.Contains(". runde", StringComparison.OrdinalIgnoreCase))
         {
-            if(int.TryParse(_nyRunde.Tittel.Split('.',StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[0],out num))
+            if(int.TryParse(_nyRunde.Title.Split('.',StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)[0],out num))
             {
                 num++;
-                _nyRunde.Tittel = num + _nyRunde.Tittel[1..];
+                _nyRunde.Title = num + _nyRunde.Title[1..];
             }
         }
         else
         {
-            var split = _nyRunde.Tittel.Split("Runde",StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            var split = _nyRunde.Title.Split("Runde",StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             if (split.Length > 1)
             {
                 var numStr = split[1];

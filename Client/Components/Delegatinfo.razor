@@ -1,14 +1,14 @@
-﻿@inject IDelegatService DelegatService
+﻿@inject IDelegateService DelegatService
 @using Stemmesystem.Shared.Interfaces
 @using Stemmesystem.Shared.Models
 
 @if (_delegat != null)
 {
-    <div>Delegat: @_delegat.Delegatnummer (@_delegat.Navn)</div>
+    <div>Delegat: @_delegat.DelegateNumber (@_delegat.Name)</div>
 }
 
 @code {
-    private DelegatDto? _delegat;
+    private DelegateDto? _delegat;
     protected override async Task OnInitializedAsync()
     {
         await LoadDelegat();
@@ -16,7 +16,7 @@
 
     private async Task LoadDelegat()
     {
-        var result = await DelegatService.HentDelegatInfo();
-        _delegat = result.Delegat;
+        var result = await DelegatService.GetDelegateInfo();
+        _delegat = result.Delegate;
     }
 }

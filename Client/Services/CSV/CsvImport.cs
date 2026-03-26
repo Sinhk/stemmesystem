@@ -23,45 +23,45 @@ namespace Stemmesystem.Client.Services.CSV
             MissingFieldFound = null
         };
 
-        public async Task<IEnumerable<DelegatInputModel>> LesDelagater(TextReader reader)
+        public async Task<IEnumerable<DelegateInputModel>> ReadDelegates(TextReader reader)
         {
             using var csv = new CsvReader(reader, _csvConfiguration);
             
-            var list = new List<CsvDelegat>();
-            await foreach (var delegat in csv.GetRecordsAsync<CsvDelegat>())
+            var list = new List<CsvDelegate>();
+            await foreach (var delegateRecord in csv.GetRecordsAsync<CsvDelegate>())
             {
-                list.Add(delegat);
+                list.Add(delegateRecord);
             }
 
-            return _mapper.Map<List<DelegatInputModel>>(list);
+            return _mapper.Map<List<DelegateInputModel>>(list);
         }
 
-        public async Task<IEnumerable<SakInputModel>> LesSaker(TextReader reader, int arrangementId)
+        public async Task<IEnumerable<CaseInputModel>> ReadCases(TextReader reader, int arrangementId)
         {
             using var csv = new CsvReader(reader, _csvConfiguration);
-            csv.Context.RegisterClassMap<CsvSakMap>();
-            var list = new List<SakInputModel>();
-            await foreach (var sak in csv.GetRecordsAsync<CsvSak>())
+            csv.Context.RegisterClassMap<CsvCaseMap>();
+            var list = new List<CaseInputModel>();
+            await foreach (var csvCase in csv.GetRecordsAsync<CsvCase>())
             {
-                list.Add(new SakInputModel
+                list.Add(new CaseInputModel
                 {
                     ArrangementId = arrangementId,
-                    Nummer = sak.Nummer,
-                    Tittel = sak.Tittel,
-                    Beskrivelse = sak.Beskrivelse
-                    , Voteringer = new List<VoteringInputModel>
+                    Number = csvCase.Number,
+                    Title = csvCase.Title,
+                    Description = csvCase.Description
+                    , Ballots = new List<BallotInputModel>
                     {
                         new()
                         {
-                            Tittel = sak.Votering ?? "" 
-                            , Beskrivelse = sak.VoteringBeskrivelse
-                            , Hemmelig = sak.HemmeligVotering.GetValueOrDefault()
-                            , KanVelge = sak.KanVelge ?? 1
-                            , Valg = new List<ValgDto>(sak.Valg?.Select(v => new ValgDto
+                            Title = csvCase.Ballot ?? "" 
+                            , Description = csvCase.BallotDescription
+                            , Secret = csvCase.SecretBallot.GetValueOrDefault()
+                            , MaxChoices = csvCase.MaxChoices ?? 1
+                            , Choices = new List<ChoiceDto>(csvCase.Choices?.Select(v => new ChoiceDto
                             {
                                 Id = new Guid()
-                                , Navn = v.Trim(' ','"')
-                            }) ?? Enumerable.Empty<ValgDto>() )
+                                , Name = v.Trim(' ','"')
+                            }) ?? Enumerable.Empty<ChoiceDto>() )
                         }
                     }
                 });
@@ -71,25 +71,25 @@ namespace Stemmesystem.Client.Services.CSV
             return list;
         }
 
-        public static string SakFormat
+        public static string CaseFormat
         {
             get
             {
                 using var writer = new StringWriter();
                 using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-                csv.Context.RegisterClassMap<CsvSakMap>();
-                csv.WriteHeader<CsvSak>();
+                csv.Context.RegisterClassMap<CsvCaseMap>();
+                csv.WriteHeader<CsvCase>();
                 csv.NextRecord();
-                csv.WriteRecord(new CsvSak()
+                csv.WriteRecord(new CsvCase()
                 {
-                    Tittel = "Import sak",
-                    Beskrivelse = "beskrivelse",
-                    HemmeligVotering = true,
-                    Nummer = "1.2.3",
-                    Votering = "kun 1 votering",
-                    VoteringBeskrivelse = "med beskrivelse",
-                    Valg = new List<string>{"en,eller,flere"},
-                    KanVelge = 1
+                    Title = "Import sak",
+                    Description = "beskrivelse",
+                    SecretBallot = true,
+                    Number = "1.2.3",
+                    Ballot = "kun 1 votering",
+                    BallotDescription = "med beskrivelse",
+                    Choices = new List<string>{"en,eller,flere"},
+                    MaxChoices = 1
                 });
                 csv.Flush();
                 return writer.ToString();
