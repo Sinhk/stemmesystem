@@ -1,10 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
+using Duende.IdentityServer;
 using Duende.IdentityServer.EntityFramework.Storage;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services.KeyManagement;
 using Duende.IdentityServer.Stores;
+using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -20,6 +21,7 @@ using Stemmesystem.Data;
 using Stemmesystem.Data.Models;
 using Stemmesystem.Data.Repositories;
 using Stemmesystem.Server;
+using Stemmesystem.Server.Auth;
 using Stemmesystem.Server.Data.Repositories;
 using Stemmesystem.Server.Features.MinSpeiding;
 using Stemmesystem.Server.Hubs;
@@ -45,48 +47,94 @@ builder.Services.AddDataProtection()
     .PersistKeysToDbContext<StemmesystemContext>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>()    
-    .AddEntityFrameworkStores<StemmesystemContext>()
-   ;
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        // MaxLengthForKeys = 0 keeps composite key columns as `text` (PostgreSQL unlimited)
+        // matching the design-time migration snapshot. AddDefaultIdentity sets 128 by default
+        // which would cause a PendingModelChangesWarning at runtime.
+        options.Stores.MaxLengthForKeys = 0;
+    })
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<StemmesystemContext>();
 
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
 builder.Services.AddIdentityServer()
     .AddExtensionGrantValidator<KodeExtensionGrantValidator>()
-    .AddApiAuthorization<ApplicationUser, StemmesystemContext>(options =>
+    .AddAspNetIdentity<ApplicationUser>()
+    .AddInMemoryIdentityResources(new IdentityResource[]
     {
-        options.IdentityResources["openid"].UserClaims.Add("name");
-        options.ApiResources.Single().UserClaims.Add("name");
-        options.IdentityResources["openid"].UserClaims.Add("role");
-        options.ApiResources.Single().UserClaims.Add("role");
-        options.Clients.Add(new Client
+        new IdentityResources.OpenId { UserClaims = { "name", "role" } },
+        new IdentityResources.Profile(),
+    })
+    .AddInMemoryApiResources(new ApiResource[]
+    {
+        new ApiResource("Stemmesystem.ServerAPI")
         {
-            ClientId = AuthConstants.DelegatkodeClientId, 
-            ClientSecrets = new List<Secret>
-            {
-                new("passord".Sha256())
-            },
-            AllowedGrantTypes = {AuthConstants.DelegatkodeGrantType}
-        });
+            UserClaims = { "name", "role" },
+            Scopes = { "Stemmesystem.ServerAPI" },
+        },
+    })
+    .AddInMemoryApiScopes(new ApiScope[]
+    {
+        new ApiScope("Stemmesystem.ServerAPI"),
+    })
+    .AddInMemoryClients(new Client[]
+    {
+        new Client
+        {
+            ClientId = "Stemmesystem.Client",
+            AllowedGrantTypes = GrantTypes.Code,
+            RequireClientSecret = false,
+            RequirePkce = true,
+            AllowAccessTokensViaBrowser = true,
+            AllowedScopes = { "openid", "profile", "Stemmesystem.ServerAPI" },
+        },
+        new Client
+        {
+            ClientId = AuthConstants.DelegatkodeClientId,
+            ClientSecrets = { new Secret("passord".Sha256()) },
+            AllowedGrantTypes = { AuthConstants.DelegatkodeGrantType },
+            AllowedScopes = { "openid", "profile", "Stemmesystem.ServerAPI" },
+        },
     })
     .AddProfileService<StemmeProfileService>()
     .AddInMemoryCaching();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IRedirectUriValidator, SameOriginRedirectUriValidator>();
 
 builder.Services.RemoveAll(typeof(IValidationKeysStore));
 builder.Services.RemoveAll(typeof(ISigningCredentialStore));
 builder.Services.AddTransient<ISigningCredentialStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
 builder.Services.AddTransient<IValidationKeysStore>(serviceProvider => serviceProvider.GetRequiredService<IAutomaticKeyManagerKeyStore>());
 
-builder.Services.AddAuthentication()
-    .AddGoogle("Google", options =>
+// Use a policy scheme that forwards Bearer token requests to the LocalApi handler
+// and all other requests to the cookie scheme — replacing the scheme selector that
+// Microsoft.AspNetCore.ApiAuthorization.IdentityServer registered via AddIdentityServerJwt().
+const string SmartScheme = "SmartScheme";
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = SmartScheme;
+})
+.AddPolicyScheme(SmartScheme, SmartScheme, options =>
+{
+    options.ForwardDefaultSelector = ctx =>
     {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    })
-    .AddIdentityServerJwt();
-
-builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>());
+        string? authorization = ctx.Request.Headers.Authorization;
+        if (!string.IsNullOrEmpty(authorization) &&
+            authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            return IdentityServerConstants.LocalApi.AuthenticationScheme;
+        return IdentityConstants.ApplicationScheme;
+    };
+})
+.AddGoogle("Google", options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+})
+.AddLocalApi();
 
 builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
@@ -122,7 +170,7 @@ builder.Services.AddOptions<EmailSettings>()
 builder.Services.AddSingleton<IKeyGenerator, RngKeyGenerator>();
 builder.Services.AddSingleton<IKeyHasher, KeyHasher>();
 
-builder.Services.AddAutoMapper(typeof(ApiAutoMapperProfile));
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<ApiAutoMapperProfile>());
 builder.Services.AddFusionCache()
     .WithDefaultEntryOptions(new FusionCacheEntryOptions {
         Duration = TimeSpan.FromMinutes(1),
@@ -163,6 +211,19 @@ app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Extract the SignalR access token from the query string for hub requests and move it
+// to the Authorization header so that AddLocalApi() can authenticate the connection.
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/hubs"))
+    {
+        var accessToken = context.Request.Query["access_token"].ToString();
+        if (!string.IsNullOrEmpty(accessToken))
+            context.Request.Headers.Authorization = $"Bearer {accessToken}";
+    }
+    await next();
+});
 
 app.UseIdentityServer();
 app.UseAuthentication();
