@@ -47,10 +47,16 @@ builder.Services.AddDataProtection()
     .PersistKeysToDbContext<StemmesystemContext>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>()    
-    .AddEntityFrameworkStores<StemmesystemContext>()
-   ;
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        // MaxLengthForKeys = 0 keeps composite key columns as `text` (PostgreSQL unlimited)
+        // matching the design-time migration snapshot. AddDefaultIdentity sets 128 by default
+        // which would cause a PendingModelChangesWarning at runtime.
+        options.Stores.MaxLengthForKeys = 0;
+    })
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<StemmesystemContext>();
 
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
