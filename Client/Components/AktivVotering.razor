@@ -78,7 +78,7 @@
         }
         if (valg.Count == 0)
         {
-            valg.Add(Konstanter.BlankStemme);
+            valg.Add(Constants.BlankVote);
         }
         try
         {
@@ -116,7 +116,7 @@
     {
         if (Votes?.Any() != true) return "";
 
-        var navn = Votes.Select(s => s.ChoiceId == Konstanter.BlankStemme ? "Blankt" : Votering.Choices.First(v => v.Id == s.ChoiceId).Name).ToList();
+        var navn = Votes.Select(s => s.ChoiceId == Constants.BlankVote ? "Blankt" : Votering.Choices.First(v => v.Id == s.ChoiceId).Name).ToList();
         
         return navn.Count == 1 ? navn.First() : $"{string.Join(", ", navn.SkipLast(1))} og {navn.Last()}";
     }

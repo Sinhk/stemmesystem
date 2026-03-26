@@ -12,8 +12,8 @@
     }
 </div>
 <div class="row mt-2 justify-content-around">
-    <button class="btn col-4 @(Base.Votes.Any(s => s.ChoiceId == Konstanter.BlankStemme) ? "btn-primary" : "btn-outline-primary")" @onclick="@(async e => await Base.RegistrerStemme(Konstanter.BlankStemme))">Stem blankt</button>
-    <button class="btn col-4 @(Base.Votes.Any() && Base.Votes.All(s => s.ChoiceId != Konstanter.BlankStemme) ? "btn-success" : "btn-outline-success")" @onclick="@(async e => await Base.RegistrerStemme(_valg))">Stem</button>
+    <button class="btn col-4 @(Base.Votes.Any(s => s.ChoiceId == Constants.BlankVote) ? "btn-primary" : "btn-outline-primary")" @onclick="@(async e => await Base.RegistrerStemme(Constants.BlankVote))">Stem blankt</button>
+    <button class="btn col-4 @(Base.Votes.Any() && Base.Votes.All(s => s.ChoiceId != Constants.BlankVote) ? "btn-success" : "btn-outline-success")" @onclick="@(async e => await Base.RegistrerStemme(_valg))">Stem</button>
 </div>
 
 @code {
@@ -38,7 +38,7 @@
 
     private void VoteChanged(Guid valgId)
     {
-        _valg.RemoveWhere(v => v == Konstanter.BlankStemme);
+        _valg.RemoveWhere(v => v == Constants.BlankVote);
         if (_valg.Contains(valgId))
         {
             _valg.Remove(valgId);
